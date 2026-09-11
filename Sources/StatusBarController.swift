@@ -185,7 +185,6 @@ final class StatusBarController {
     /// The bar re-hides on the user's next click (or a safety timeout). Needs
     /// Accessibility to post the click — the tile shows a grant button otherwise.
     private func activateItem(_ item: BarItem) {
-        let savedCursor = NSEvent.mouseLocation   // Cocoa (bottom-left origin)
         closeTile()
         expanded = true
         revealingAlways = false
@@ -193,8 +192,9 @@ final class StatusBarController {
         // Let the menu bar finish re-laying-out the revealed items before clicking.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
             guard let self = self else { return }
+            // Leave the cursor at the item so its just-opened menu is right under the
+            // pointer, ready to use (the click warped it there — we keep it).
             self.clickMenuBarItem(windowID: item.info.id, name: item.info.name, owner: item.info.owner)
-            self.restoreCursor(cocoa: savedCursor)
             self.armRevealCollapse()
         }
     }
@@ -214,14 +214,6 @@ final class StatusBarController {
             .post(tap: .cghidEventTap)
         CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: p, mouseButton: .left)?
             .post(tap: .cghidEventTap)
-    }
-
-    /// Warp the pointer back to where the user actually clicked, so it doesn't visibly
-    /// jump up to the menu bar. Menus stay open across a cursor warp.
-    private func restoreCursor(cocoa p: NSPoint) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(p) }) ?? NSScreen.main else { return }
-        let cg = CGPoint(x: p.x, y: screen.frame.maxY - p.y)   // Cocoa → CG top-left
-        CGWarpMouseCursorPosition(cg)
     }
 
     /// After activating an item its menu is open and the bar is revealed. Re-hide on

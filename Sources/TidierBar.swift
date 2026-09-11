@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
+import CoreImage
 
 struct BarItem: Identifiable {
     let info: MenuBarItemInfo
@@ -185,9 +186,23 @@ final class TidierBar: NSObject, NSWindowDelegate {
     /// tile render an SF Symbol (Apple items) or a monogram.
     private static func icon(for info: MenuBarItemInfo, resolved: ResolvedItem?, isApple: Bool) -> NSImage? {
         if PermissionManager.hasScreenRecording, let cap = ItemCapture.image(forWindow: info.id) {
-            return cap
+            return desaturated(cap)
         }
         return nil
+    }
+
+    /// Strip colour from a captured glyph so an item in a coloured active state (e.g.
+    /// Control Center's audio pill) doesn't clash with the otherwise-monochrome tiles.
+    /// Luminance is preserved, so white text/icons stay crisp; only the hue is dropped.
+    private static let ciContext = CIContext(options: nil)
+    private static func desaturated(_ image: NSImage) -> NSImage {
+        guard let tiff = image.tiffRepresentation, let ci = CIImage(data: tiff),
+              let filter = CIFilter(name: "CIColorControls") else { return image }
+        filter.setValue(ci, forKey: kCIInputImageKey)
+        filter.setValue(0.0, forKey: kCIInputSaturationKey)
+        guard let out = filter.outputImage,
+              let cg = ciContext.createCGImage(out, from: out.extent) else { return image }
+        return NSImage(cgImage: cg, size: image.size)
     }
 
     /// SF Symbol for a system item, matched from its title (localized-tolerant).
