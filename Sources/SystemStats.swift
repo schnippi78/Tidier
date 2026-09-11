@@ -12,9 +12,16 @@ final class SystemStats: ObservableObject {
     @Published private(set) var cpu: Double = 0
     @Published private(set) var ram: Double = 0
     @Published private(set) var battery: Double? = nil
+    @Published private(set) var disk: Double = 0          // % used, boot volume
+    @Published private(set) var diskUsedGB: Double = 0
+    @Published private(set) var diskTotalGB: Double = 0
+    @Published private(set) var netDown: Double = 0       // MB/s
+    @Published private(set) var netUp: Double = 0         // MB/s
 
     private var timer: Timer?
     private var prevCPU: host_cpu_load_info?
+    private var prevNet: (rx: UInt64, tx: UInt64)?
+    private var prevNetTime: CFAbsoluteTime = 0
 
     /// Begin sampling (call while the panel is open); `refresh()` once immediately.
     func start(interval: TimeInterval = 2) {
@@ -33,6 +40,8 @@ final class SystemStats: ObservableObject {
         if let c = readCPU() { cpu = c }
         ram = readRAM()
         battery = readBattery()
+        readDisk()
+        readNetwork()
     }
 
     // MARK: - Readers
@@ -70,6 +79,45 @@ final class SystemStats: ObservableObject {
                     + Double(stats.compressor_page_count)) * pageSize
         let total = Double(ProcessInfo.processInfo.physicalMemory)
         return total > 0 ? used / total * 100 : 0
+    }
+
+    private func readDisk() {
+        var st = statfs()
+        guard statfs("/", &st) == 0 else { return }
+        let total = Double(st.f_blocks) * Double(st.f_bsize)
+        let free  = Double(st.f_bavail) * Double(st.f_bsize)
+        guard total > 0 else { return }
+        disk = (total - free) / total * 100
+        diskTotalGB = total / 1e9
+        diskUsedGB = (total - free) / 1e9
+    }
+
+    /// Throughput = byte delta over the sample interval, summed over en* interfaces.
+    private func readNetwork() {
+        var rx: UInt64 = 0, tx: UInt64 = 0
+        var ifap: UnsafeMutablePointer<ifaddrs>?
+        if getifaddrs(&ifap) == 0, let first = ifap {
+            var p: UnsafeMutablePointer<ifaddrs>? = first
+            while let cur = p {
+                let name = String(cString: cur.pointee.ifa_name)
+                if let addr = cur.pointee.ifa_addr, addr.pointee.sa_family == UInt8(AF_LINK),
+                   name.hasPrefix("en"), let raw = cur.pointee.ifa_data {
+                    let d = raw.assumingMemoryBound(to: if_data.self)
+                    rx += UInt64(d.pointee.ifi_ibytes); tx += UInt64(d.pointee.ifi_obytes)
+                }
+                p = cur.pointee.ifa_next
+            }
+            freeifaddrs(ifap)
+        }
+        let now = CFAbsoluteTimeGetCurrent()
+        defer { prevNet = (rx, tx); prevNetTime = now }
+        guard let prev = prevNet, now > prevNetTime else { return }
+        let dt = now - prevNetTime
+        // UInt64 subtraction guards against counter resets.
+        let dRx = rx >= prev.rx ? Double(rx - prev.rx) : 0
+        let dTx = tx >= prev.tx ? Double(tx - prev.tx) : 0
+        netDown = dRx / dt / 1e6
+        netUp   = dTx / dt / 1e6
     }
 
     private func readBattery() -> Double? {

@@ -289,12 +289,14 @@ struct TidierBarView: View {
 
     private var statItems: [Stat] {
         var s: [Stat] = [
-            Stat(key: "sys.cpu", label: "CPU", value: stats.cpu, accent: .orange),
-            Stat(key: "sys.ram", label: "RAM", value: stats.ram, accent: Color(red: 0.25, green: 0.78, blue: 0.87)),
+            Stat(key: "sys.cpu",  label: "CPU",  value: stats.cpu, accent: .orange),
+            Stat(key: "sys.ram",  label: "RAM",  value: stats.ram, accent: Color(red: 0.25, green: 0.78, blue: 0.87)),
+            Stat(key: "sys.disk", label: "Disk", value: stats.disk, accent: .purple),
         ]
         if let b = stats.battery { s.append(Stat(key: "sys.batt", label: "Batterie", value: b, accent: .green)) }
         return s
     }
+    private var netStat: Stat { Stat(key: "sys.net", label: "Netzwerk", value: 0, accent: .blue) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -303,6 +305,8 @@ struct TidierBarView: View {
                     ForEach(statItems) { stat in
                         PanelTileView(content: .stat(stat), style: style, onActivate: { onStat(stat) })
                     }
+                    PanelTileView(content: .net(down: stats.netDown, up: stats.netUp),
+                                  style: style, onActivate: { onStat(netStat) })
                 }
             }
             ForEach(groups) { group in
@@ -378,7 +382,7 @@ struct Stat: Identifiable {
     var id: String { key }
 }
 
-private enum TileContent { case stat(Stat); case item(BarItem) }
+private enum TileContent { case stat(Stat); case item(BarItem); case net(down: Double, up: Double) }
 
 /// Per-tile hover state (the CLI Swift toolchain can't expand the `@State` macro,
 /// so hover is kept in a tiny ObservableObject).
@@ -407,8 +411,15 @@ private struct PanelTileView: View {
 
     // MARK: unified content accessors
 
+    private var net: (down: Double, up: Double)? {
+        if case .net(let d, let u) = content { return (d, u) }; return nil
+    }
     private var accent: Color {
-        switch content { case .stat(let s): return s.accent; case .item(let i): return tileAccent(for: i.label) }
+        switch content {
+        case .stat(let s): return s.accent
+        case .item(let i): return tileAccent(for: i.label)
+        case .net: return .blue
+        }
     }
     private var statValue: Double? { if case .stat(let s) = content { return s.value }; return nil }
     private var itemImage: NSImage? { if case .item(let i) = content { return i.image }; return nil }
@@ -417,8 +428,10 @@ private struct PanelTileView: View {
         case .stat(let s):
             if s.key == "sys.cpu" { return "cpu" }
             if s.key == "sys.ram" { return "memorychip" }
+            if s.key == "sys.disk" { return "internaldrive" }
             return "battery.100"
         case .item(let i): return i.symbolName
+        case .net: return "network"
         }
     }
     private var titleText: String {
@@ -427,6 +440,7 @@ private struct PanelTileView: View {
         case .item(let i):
             return String(i.label.split(separator: ",", maxSplits: 1).first.map(String.init)?
                 .trimmingCharacters(in: .whitespaces) ?? i.label)
+        case .net: return "Netzwerk"
         }
     }
     private var subtitleText: String? {
@@ -435,7 +449,12 @@ private struct PanelTileView: View {
         case .item(let i):
             let parts = i.label.split(separator: ",", maxSplits: 1)
             return parts.count > 1 ? parts[1].trimmingCharacters(in: .whitespaces) : nil
+        case .net(let d, let u): return String(format: "↓%@  ↑%@", Self.rate(d), Self.rate(u))
         }
+    }
+    static func rate(_ mbps: Double) -> String {
+        mbps >= 1 ? String(format: "%.1f MB/s", mbps)
+                  : String(format: "%.0f KB/s", mbps * 1000)
     }
     private var isValueGlyph: Bool {
         if case .item(let i) = content, let img = i.image, img.size.height > 0 {
@@ -541,7 +560,8 @@ private struct PanelTileView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 9).frame(width: 155, height: 52, alignment: .leading)
+        .padding(.horizontal, 9)
+        .frame(width: net != nil ? 318 : 155, height: 52, alignment: .leading)  // network spans full width for its ↓/↑ rates
         .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
