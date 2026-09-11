@@ -8,6 +8,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         LanguageManager.shared.applyStored()
         statusBar = StatusBarController()
 
+        // The tiles show the *real* menu-bar glyph (iStat text, weather °C, …),
+        // which only Screen Recording can capture. Surface the system prompt and
+        // register Tidier in the Screen Recording list on first launch so the user
+        // can enable it with one toggle.
+        if !PermissionManager.hasScreenRecording {
+            PermissionManager.requestScreenRecording()
+        }
+
         // Keep the login item in sync with the stored preference.
         if Preferences.shared.launchAtLogin, !LaunchAtLogin.isEnabled {
             LaunchAtLogin.setEnabled(true)

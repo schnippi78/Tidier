@@ -26,13 +26,19 @@ final class StatusBarController {
     private var hoverMonitor: Any?
     private var tileOpen = false
     private var cachedGroups: [BarGroup] = []
+    /// When the panel was last dismissed, so the very click that dismissed it
+    /// (via the outside-click monitor) can't immediately re-open it.
+    private var lastTileClose = Date.distantPast
 
     init() {
         StatusBarController.shared = self
         buildItems()
         applyLayout()
         setupHover()
-        TidierBar.shared.onClose = { [weak self] in self?.tileOpen = false }
+        TidierBar.shared.onClose = { [weak self] in
+            self?.tileOpen = false
+            self?.lastTileClose = Date()
+        }
         NotificationCenter.default.addObserver(
             self, selector: #selector(prefsChanged),
             name: .tidierPrefsChanged, object: nil)
@@ -130,14 +136,23 @@ final class StatusBarController {
     }
 
     /// Left-click: open/close the tile. The menu bar stays collapsed either way —
-    /// the hidden icons live only in the tile, never back in the bar.
+    /// the hidden icons live only in the tile, never back in the bar. We key off the
+    /// panel's real visibility (not a bool the dismiss monitor may already have
+    /// flipped) and debounce, so one click on `<` can only ever toggle once.
     private func toggleTile() {
-        if tileOpen { closeTile() } else { openTile() }
+        if TidierBar.shared.isVisible {
+            closeTile()
+        } else if Date().timeIntervalSince(lastTileClose) > 0.25 {
+            openTile()
+        }
+        // else: this is the same click that just dismissed the panel — ignore it.
     }
 
     private func openTile() {
         ensureCollapsed()
-        if cachedGroups.isEmpty { refreshCache() }
+        // Build directly (the launch-time cache may be empty and refreshCache only
+        // runs while expanded) so the panel is never shown blank.
+        if cachedGroups.isEmpty { cachedGroups = TidierBar.makeGroups(from: hiddenCandidates()) }
         TidierBar.shared.show(groups: cachedGroups,
                               near: toggleScreenRect(),
                               onActivate: { [weak self] in self?.activateItem($0) })
@@ -186,6 +201,7 @@ final class StatusBarController {
     private func closeTile() {
         TidierBar.shared.hide()
         tileOpen = false
+        lastTileClose = Date()
     }
 
     /// Hide icons from the menu bar without touching the tile/cache.

@@ -60,12 +60,9 @@ final class TileModel: ObservableObject {
 /// menu bar items, grouped into Apple/System and third-party. Opened when the user
 /// collapses the menu bar. Tiles are clickable (forward the click to the real item)
 /// and can be reordered by dragging.
-final class TidierBar {
+final class TidierBar: NSObject, NSWindowDelegate {
     static let shared = TidierBar()
     private var panel: NSPanel?
-    private var outsideClickMonitor: Any?
-    private var localClickMonitor: Any?
-    private var toggleRect: NSRect = .zero
 
     /// Called when the tile closes itself (outside click / app switch) so the
     /// controller can reset its open/closed state.
@@ -73,8 +70,9 @@ final class TidierBar {
 
     var isVisible: Bool { panel?.isVisible ?? false }
 
+    private override init() { super.init() }
+
     func show(groups: [BarGroup], near rect: NSRect, onActivate: @escaping (BarItem) -> Void) {
-        toggleRect = rect
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
                                  hasAccessibility: PermissionManager.hasAccessibility,
@@ -98,43 +96,20 @@ final class TidierBar {
             p.setFrameOrigin(NSPoint(x: x, y: y))
         }
         // Key (so buttons & drag-reorder receive events) but non-activating, so it
-        // behaves like Control Center and still dismisses on outside clicks.
+        // behaves like Control Center: losing key focus (a click anywhere else,
+        // including the toggle) dismisses it via windowDidResignKey.
         p.makeKeyAndOrderFront(nil)
-        startDismissMonitors()
     }
 
     func hide() {
-        stopDismissMonitors()
         panel?.orderOut(nil)
     }
 
-    /// Close the tile as soon as the user clicks anywhere outside it (in any app)
-    /// so it never lingers in the foreground — but never swallow a click on the
-    /// toggle itself, so clicking `<` cleanly closes the tile via the controller.
-    private func startDismissMonitors() {
-        stopDismissMonitors()
-        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-                self?.dismissFromMonitor()
-        }
-        localClickMonitor = NSEvent.addLocalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-                guard let self = self, let panel = self.panel else { return event }
-                if event.window != panel { self.dismissFromMonitor() }
-                return event
-        }
-    }
-
-    private func stopDismissMonitors() {
-        if let m = outsideClickMonitor { NSEvent.removeMonitor(m); outsideClickMonitor = nil }
-        if let m = localClickMonitor { NSEvent.removeMonitor(m); localClickMonitor = nil }
-    }
-
-    private func dismissFromMonitor() {
+    /// Control-Center-style dismissal: as soon as the panel is no longer the key
+    /// window (the user clicked the toggle, another app, or the desktop) close it.
+    /// Clicks on the tiles themselves keep the panel key, so they don't trigger this.
+    func windowDidResignKey(_ notification: Notification) {
         guard isVisible else { return }
-        // Let the toggle button handle its own click (open ⇄ close) rather than
-        // racing it here — otherwise `<` would close then instantly reopen.
-        if toggleRect.insetBy(dx: -4, dy: -4).contains(NSEvent.mouseLocation) { return }
         hide()
         onClose?()
     }
@@ -150,6 +125,7 @@ final class TidierBar {
         p.backgroundColor = .clear
         p.hasShadow = true
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        p.delegate = self
         return p
     }
 
@@ -255,6 +231,38 @@ private struct VisualEffectView: NSViewRepresentable {
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
 }
 
+/// Left-to-right wrapping layout so each tile keeps its glyph's natural width
+/// (wide iStat pills stay wide, simple icons stay square) — a Control-Center row
+/// rather than a rigid square grid.
+struct TileFlow: Layout {
+    var spacing: CGFloat = 10
+    var lineSpacing: CGFloat = 12
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxW = proposal.width ?? 320
+        var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0
+        for s in subviews {
+            let sz = s.sizeThatFits(.unspecified)
+            if x + sz.width > maxW, x > 0 { x = 0; y += rowH + lineSpacing; rowH = 0 }
+            x += sz.width + spacing
+            rowH = max(rowH, sz.height)
+        }
+        return CGSize(width: maxW, height: y + rowH)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let maxW = bounds.width
+        var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0
+        for s in subviews {
+            let sz = s.sizeThatFits(.unspecified)
+            if x + sz.width > maxW, x > 0 { x = 0; y += rowH + lineSpacing; rowH = 0 }
+            s.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y), proposal: ProposedViewSize(sz))
+            x += sz.width + spacing
+            rowH = max(rowH, sz.height)
+        }
+    }
+}
+
 struct TidierBarView: View {
     let groups: [BarGroup]
     let hasScreenRecording: Bool
@@ -262,8 +270,6 @@ struct TidierBarView: View {
     let onActivate: (BarItem) -> Void
 
     @ObservedObject private var model = TileModel.shared
-
-    private let columns = [GridItem(.adaptive(minimum: 72), spacing: 10)]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -280,7 +286,7 @@ struct TidierBarView: View {
                     Text(group.title.uppercased())
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    LazyVGrid(columns: columns, alignment: .leading, spacing: 10) {
+                    TileFlow(spacing: 10, lineSpacing: 12) {
                         ForEach(ordered) { item in
                             TileView(item: item, onActivate: { onActivate(item) })
                                 .onDrag { NSItemProvider(object: item.key as NSString) }
@@ -338,7 +344,18 @@ private struct TileView: View {
 
     @ObservedObject private var hover = TileHover()
 
-    private let side: CGFloat = 60
+    private let boxHeight: CGFloat = 46
+    private let iconHeight: CGFloat = 26
+    private let hPadding: CGFloat = 20
+
+    /// A captured glyph keeps its real aspect ratio (so "SSD 40% CPU 12%" stays a
+    /// wide pill); symbol/monogram fallbacks are square.
+    private var iconWidth: CGFloat {
+        guard let img = item.image, img.size.height > 0 else { return iconHeight }
+        let w = iconHeight * (img.size.width / img.size.height)
+        return min(max(w, iconHeight), 148)
+    }
+    private var boxWidth: CGFloat { max(iconWidth + hPadding, boxHeight) }
 
     var body: some View {
         Button(action: onActivate) {
@@ -350,7 +367,7 @@ private struct TileView: View {
                             RoundedRectangle(cornerRadius: 15, style: .continuous)
                                 .strokeBorder(.white.opacity(hover.on ? 0.18 : 0.08))
                         )
-                        .frame(width: side, height: side)
+                        .frame(width: boxWidth, height: boxHeight)
                     glyph
                 }
                 .scaleEffect(hover.on ? 1.06 : 1.0)
@@ -360,7 +377,7 @@ private struct TileView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: side + 12)
+                        .frame(maxWidth: boxWidth + 8)
                 }
             }
         }
@@ -374,10 +391,12 @@ private struct TileView: View {
 
     @ViewBuilder private var glyph: some View {
         if let img = item.image {
+            // The real bar glyph, 1:1 as it looks in the menu bar.
             Image(nsImage: img)
                 .resizable()
+                .interpolation(.high)
                 .scaledToFit()
-                .frame(maxWidth: 26, maxHeight: 24)
+                .frame(width: iconWidth, height: iconHeight)
         } else if let sym = item.symbolName {
             Image(systemName: sym)
                 .font(.system(size: 22, weight: .medium))
