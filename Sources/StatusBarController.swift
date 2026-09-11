@@ -29,6 +29,10 @@ final class StatusBarController {
     /// When the panel was last dismissed, so the very click that dismissed it
     /// (via the outside-click monitor) can't immediately re-open it.
     private var lastTileClose = Date.distantPast
+    /// While a tile-activated item's menu is open, the bar stays revealed; these
+    /// re-hide it once the user is done (next click, or a safety timeout).
+    private var revealCollapseMonitor: Any?
+    private var revealSafetyTimer: Timer?
 
     init() {
         StatusBarController.shared = self
@@ -149,9 +153,24 @@ final class StatusBarController {
     }
 
     private func openTile() {
-        ensureCollapsed()
-        // Build directly (the launch-time cache may be empty and refreshCache only
-        // runs while expanded) so the panel is never shown blank.
+        // macOS can't snapshot a hidden (off-screen) status item, so to show the tiles
+        // with *live* glyph values (iStat %, weather °C) we reveal the bar for a beat,
+        // re-capture + re-resolve every item while it's on-screen, then collapse and
+        // present the panel. Falls back to the last snapshot if capture yields nothing.
+        expanded = true
+        revealingAlways = false
+        applyLayout()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+            guard let self = self else { return }
+            let fresh = TidierBar.makeGroups(from: self.hiddenCandidates())
+            if !fresh.isEmpty { self.cachedGroups = fresh }
+            self.expanded = false
+            self.applyLayout()
+            self.presentTile()
+        }
+    }
+
+    private func presentTile() {
         if cachedGroups.isEmpty { cachedGroups = TidierBar.makeGroups(from: hiddenCandidates()) }
         TidierBar.shared.show(groups: cachedGroups,
                               near: toggleScreenRect(),
@@ -159,25 +178,24 @@ final class StatusBarController {
         tileOpen = true
     }
 
-    /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style):
-    /// the item is currently pushed off-screen, so briefly reveal the bar, synthesize
-    /// a click at the item's true position, then tidy back up. Needs Accessibility
-    /// (to post the click) — the tile shows a grant button otherwise.
+    /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style).
+    /// The item is currently pushed off-screen, so we reveal the bar, click the item
+    /// at its true position, and then — crucially — put the cursor back where the user
+    /// clicked and LEAVE the bar revealed so the item's own menu stays open and usable.
+    /// The bar re-hides on the user's next click (or a safety timeout). Needs
+    /// Accessibility to post the click — the tile shows a grant button otherwise.
     private func activateItem(_ item: BarItem) {
+        let savedCursor = NSEvent.mouseLocation   // Cocoa (bottom-left origin)
         closeTile()
-        let wasCollapsed = !expanded
-        if wasCollapsed { expanded = true; applyLayout() }
+        expanded = true
+        revealingAlways = false
+        applyLayout()
         // Let the menu bar finish re-laying-out the revealed items before clicking.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
             guard let self = self else { return }
-            self.clickMenuBarItem(windowID: item.info.id,
-                                  name: item.info.name,
-                                  owner: item.info.owner)
-            if wasCollapsed {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-                    self?.ensureCollapsed()
-                }
-            }
+            self.clickMenuBarItem(windowID: item.info.id, name: item.info.name, owner: item.info.owner)
+            self.restoreCursor(cocoa: savedCursor)
+            self.armRevealCollapse()
         }
     }
 
@@ -196,6 +214,40 @@ final class StatusBarController {
             .post(tap: .cghidEventTap)
         CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: p, mouseButton: .left)?
             .post(tap: .cghidEventTap)
+    }
+
+    /// Warp the pointer back to where the user actually clicked, so it doesn't visibly
+    /// jump up to the menu bar. Menus stay open across a cursor warp.
+    private func restoreCursor(cocoa p: NSPoint) {
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(p) }) ?? NSScreen.main else { return }
+        let cg = CGPoint(x: p.x, y: screen.frame.maxY - p.y)   // Cocoa → CG top-left
+        CGWarpMouseCursorPosition(cg)
+    }
+
+    /// After activating an item its menu is open and the bar is revealed. Re-hide on
+    /// the user's next click (the menu will have been used/dismissed by then), with a
+    /// safety timeout so the bar never stays revealed indefinitely.
+    private func armRevealCollapse() {
+        disarmRevealCollapse()
+        revealCollapseMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                    self?.finishReveal()
+                }
+        }
+        revealSafetyTimer = Timer.scheduledTimer(withTimeInterval: 8, repeats: false) { [weak self] _ in
+            self?.finishReveal()
+        }
+    }
+
+    private func disarmRevealCollapse() {
+        if let m = revealCollapseMonitor { NSEvent.removeMonitor(m); revealCollapseMonitor = nil }
+        revealSafetyTimer?.invalidate(); revealSafetyTimer = nil
+    }
+
+    private func finishReveal() {
+        disarmRevealCollapse()
+        ensureCollapsed()
     }
 
     private func closeTile() {
