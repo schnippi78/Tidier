@@ -5,6 +5,23 @@ extension Notification.Name {
     static let tidierPrefsChanged = Notification.Name("de.csho.Tidier.prefsChanged")
 }
 
+/// Visual layout of the Tidier Bar tiles, user-selectable from the menu.
+enum TileStyle: String, CaseIterable {
+    case dashboard   // C — CPU/RAM/battery rings + toggle/value tiles
+    case capsules    // A — Control-Center capsules (badge + title + subtitle)
+    case grid        // B — clean uniform glyph grid
+    case strip       // D — folded menu-bar strip
+
+    var title: String {
+        switch self {
+        case .dashboard: return "Dashboard (Ringe)"
+        case .capsules:  return "Kapseln"
+        case .grid:      return "Raster"
+        case .strip:     return "Leiste"
+        }
+    }
+}
+
 enum PrefKey {
     static let launchAtLogin      = "launchAtLogin"
     static let autoRehide         = "autoRehide"
@@ -12,6 +29,7 @@ enum PrefKey {
     static let enableAlwaysHidden = "enableAlwaysHidden"
     static let revealOnHover      = "revealOnHover"
     static let appLanguage        = "appLanguage"   // "" = follow system
+    static let tileStyle          = "tileStyle"
 }
 
 /// Thin observable wrapper over UserDefaults so SwiftUI can bind directly and
@@ -28,6 +46,7 @@ final class Preferences: ObservableObject {
             PrefKey.enableAlwaysHidden: false,
             PrefKey.revealOnHover:      false,
             PrefKey.appLanguage:        "",
+            PrefKey.tileStyle:          TileStyle.dashboard.rawValue,
         ])
     }
 
@@ -59,5 +78,9 @@ final class Preferences: ObservableObject {
     var appLanguage: String {
         get { d.string(forKey: PrefKey.appLanguage) ?? "" }
         set { d.set(newValue, forKey: PrefKey.appLanguage); changed() }
+    }
+    var tileStyle: TileStyle {
+        get { TileStyle(rawValue: d.string(forKey: PrefKey.tileStyle) ?? "") ?? .dashboard }
+        set { d.set(newValue.rawValue, forKey: PrefKey.tileStyle); changed() }
     }
 }

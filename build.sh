@@ -18,7 +18,7 @@ swiftc Sources/*.swift \
   -sdk "$SDK" \
   -target arm64-apple-macos14.0 \
   -swift-version 5 \
-  -framework AppKit -framework SwiftUI -framework ServiceManagement -framework ApplicationServices
+  -framework AppKit -framework SwiftUI -framework ServiceManagement -framework ApplicationServices -framework IOKit
 
 cp Info.plist "$CONTENTS/Info.plist"
 printf 'APPL????' > "$CONTENTS/PkgInfo"

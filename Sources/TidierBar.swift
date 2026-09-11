@@ -73,9 +73,11 @@ final class TidierBar: NSObject, NSWindowDelegate {
     private override init() { super.init() }
 
     func show(groups: [BarGroup], near rect: NSRect, onActivate: @escaping (BarItem) -> Void) {
+        SystemStats.shared.start()   // live CPU/RAM/battery for the dashboard rings
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
                                  hasAccessibility: PermissionManager.hasAccessibility,
+                                 style: Preferences.shared.tileStyle,
                                  onActivate: onActivate)
             .environment(\.layoutDirection, LanguageManager.shared.isRTL ? .rightToLeft : .leftToRight)
         let hosting = NSHostingView(rootView: root)
@@ -102,6 +104,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
     }
 
     func hide() {
+        SystemStats.shared.stop()
         panel?.orderOut(nil)
     }
 
@@ -136,6 +139,9 @@ final class TidierBar: NSObject, NSWindowDelegate {
         var third: [BarItem] = []
         for info in items {
             if info.owner == "Tidier" || info.name.hasPrefix("Tidier.") { continue }
+            // iStat's CPU/RAM/battery are shown natively as dashboard rings, so drop
+            // its (unreliably captured) menu bar items from the mirrored list.
+            if info.name.hasPrefix("com.bjango.istatmenus.") { continue }
             let resolved = AXResolver.resolve(at: info.centerX, y: info.centerY)
             if resolved?.bundleId == "de.csho.Tidier" { continue }
 
@@ -144,6 +150,10 @@ final class TidierBar: NSObject, NSWindowDelegate {
                 return info.isSystem
             }()
             let label = label(for: info, resolved: resolved, isApple: isApple)
+            // Battery is shown natively as a dashboard ring — drop the mirrored
+            // system battery item so it doesn't appear twice.
+            let low = label.lowercased()
+            if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { continue }
             let item = BarItem(info: info,
                                image: icon(for: info, resolved: resolved, isApple: isApple),
                                symbolName: isApple ? symbol(for: label, resolved: resolved) : nil,
@@ -267,65 +277,60 @@ struct TidierBarView: View {
     let groups: [BarGroup]
     let hasScreenRecording: Bool
     let hasAccessibility: Bool
+    let style: TileStyle
     let onActivate: (BarItem) -> Void
 
     @ObservedObject private var model = TileModel.shared
+    @ObservedObject private var stats = SystemStats.shared
+
+    private var statItems: [Stat] {
+        var s: [Stat] = [
+            Stat(key: "sys.cpu", label: "CPU", value: stats.cpu, accent: .orange),
+            Stat(key: "sys.ram", label: "RAM", value: stats.ram, accent: Color(red: 0.25, green: 0.78, blue: 0.87)),
+        ]
+        if let b = stats.battery { s.append(Stat(key: "sys.batt", label: "Batterie", value: b, accent: .green)) }
+        return s
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            if groups.isEmpty {
-                Text(L("bar.empty"))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
+            section(title: "System") {
+                TileFlow(spacing: 8, lineSpacing: 8) {
+                    ForEach(statItems) { stat in
+                        PanelTileView(content: .stat(stat), style: style, onActivate: {})
+                    }
+                }
             }
             ForEach(groups) { group in
                 let ordered = model.ordered(group.items)
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(group.title.uppercased())
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    // Grouped rounded container, like a Control Center module.
+                section(title: group.title) {
                     TileFlow(spacing: 8, lineSpacing: 8) {
                         ForEach(ordered) { item in
-                            TileView(item: item, onActivate: { onActivate(item) })
+                            PanelTileView(content: .item(item), style: style, onActivate: { onActivate(item) })
                                 .onDrag { NSItemProvider(object: item.key as NSString) }
                                 .onDrop(of: [.plainText], isTargeted: nil) { providers in
                                     guard let p = providers.first else { return false }
                                     let keys = ordered.map { $0.key }
                                     p.loadObject(ofClass: NSString.self) { obj, _ in
                                         guard let s = obj as? String else { return }
-                                        DispatchQueue.main.async {
-                                            model.move(dragged: s, before: item.key, within: keys)
-                                        }
+                                        DispatchQueue.main.async { model.move(dragged: s, before: item.key, within: keys) }
                                     }
                                     return true
                                 }
                         }
                     }
-                    .padding(10)
-                    .background(Color.primary.opacity(0.05),
-                                in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
             }
             if !hasScreenRecording {
                 Button {
-                    PermissionManager.requestScreenRecording()
-                    PermissionManager.openScreenRecordingSettings()
-                } label: {
-                    Label(L("bar.grant"), systemImage: "lock.shield").font(.caption)
-                }
-                .buttonStyle(.borderless)
-                .padding(.top, 2)
+                    PermissionManager.requestScreenRecording(); PermissionManager.openScreenRecordingSettings()
+                } label: { Label(L("bar.grant"), systemImage: "lock.shield").font(.caption) }
+                .buttonStyle(.borderless).padding(.top, 2)
             }
             if !hasAccessibility {
                 Button {
-                    PermissionManager.requestAccessibility()
-                    PermissionManager.openAccessibilitySettings()
-                } label: {
-                    Label(L("bar.grantAX"), systemImage: "accessibility").font(.caption)
-                }
+                    PermissionManager.requestAccessibility(); PermissionManager.openAccessibilitySettings()
+                } label: { Label(L("bar.grantAX"), systemImage: "accessibility").font(.caption) }
                 .buttonStyle(.borderless)
             }
         }
@@ -334,47 +339,59 @@ struct TidierBarView: View {
         .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 22)))
         .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.white.opacity(0.08)))
     }
+
+    @ViewBuilder private func section<C: View>(title: String, @ViewBuilder _ content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+            content()
+                .padding(style == .strip ? 7 : (style == .grid ? 8 : 10))
+                .background(Color.primary.opacity(0.05),
+                            in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
 }
+
+/// Accent colour per item, matched from its name — the Control-Center palette.
+func tileAccent(for label: String) -> Color {
+    let s = label.lowercased()
+    func has(_ n: [String]) -> Bool { n.contains { s.contains($0) } }
+    if has(["wlan", "wi-fi", "wifi", "airport", "airdrop"]) { return .blue }
+    if has(["bluetooth"]) { return .blue }
+    if has(["batterie", "battery", "akku"]) { return .green }
+    if has(["wetter", "weather"]) { return Color(red: 0.39, green: 0.82, blue: 0.94) }
+    if has(["fokus", "focus", "nicht stören"]) { return .indigo }
+    if has(["ton", "sound", "lautstärke", "volume", "audio", "musik", "music", "läuft"]) { return .pink }
+    if has(["spotlight", "suche", "search"]) { return .gray }
+    return .blue
+}
+
+struct Stat: Identifiable {
+    let key: String
+    let label: String
+    let value: Double
+    let accent: Color
+    var id: String { key }
+}
+
+private enum TileContent { case stat(Stat); case item(BarItem) }
 
 /// Per-tile hover state (the CLI Swift toolchain can't expand the `@State` macro,
 /// so hover is kept in a tiny ObservableObject).
 private final class TileHover: ObservableObject { @Published var on = false }
 
-/// A Control-Center-style tile. Three shapes depending on the item:
-/// • capsule — icon-like items (WLAN, Bluetooth, Nextcloud): a coloured round badge
-///   with the tinted glyph, plus a title and (from the item's AX state) a subtitle.
-/// • info    — items whose glyph carries a live value (iStat %, weather °C, battery):
-///   the real coloured glyph shown prominently with the name beneath.
-/// • square  — icon-only items with no name.
-private struct TileView: View {
-    let item: BarItem
+/// One tile, rendered in the user-chosen style. Handles both native stats (rings)
+/// and captured menu bar items.
+private struct PanelTileView: View {
+    let content: TileContent
+    let style: TileStyle
     let onActivate: () -> Void
 
     @ObservedObject private var hover = TileHover()
 
-    /// A glyph much wider than tall is a value display (iStat "MEM 15%", weather).
-    private var isWideGlyph: Bool {
-        guard let img = item.image, img.size.height > 0 else { return false }
-        return img.size.width / img.size.height > 1.7
-    }
-    private var title: String {
-        String(item.label.split(separator: ",", maxSplits: 1).first.map(String.init)?
-            .trimmingCharacters(in: .whitespaces) ?? item.label)
-    }
-    private var subtitle: String? {
-        let parts = item.label.split(separator: ",", maxSplits: 1)
-        guard parts.count > 1 else { return nil }
-        return parts[1].trimmingCharacters(in: .whitespaces)
-    }
-
     var body: some View {
         Button(action: onActivate) {
-            Group {
-                if item.label.isEmpty { squareTile }
-                else if isWideGlyph { infoTile }
-                else { capsuleTile }
-            }
-            .scaleEffect(hover.on ? 1.03 : 1.0)
+            tile.scaleEffect(hover.on ? 1.03 : 1.0)
         }
         .buttonStyle(.plain)
         .animation(.easeOut(duration: 0.12), value: hover.on)
@@ -384,98 +401,203 @@ private struct TileView: View {
         }
     }
 
-    // MARK: shapes
+    // MARK: unified content accessors
 
-    private var capsuleTile: some View {
-        HStack(spacing: 10) {
-            badge
+    private var accent: Color {
+        switch content { case .stat(let s): return s.accent; case .item(let i): return tileAccent(for: i.label) }
+    }
+    private var statValue: Double? { if case .stat(let s) = content { return s.value }; return nil }
+    private var itemImage: NSImage? { if case .item(let i) = content { return i.image }; return nil }
+    private var symbol: String? {
+        switch content {
+        case .stat(let s):
+            if s.key == "sys.cpu" { return "cpu" }
+            if s.key == "sys.ram" { return "memorychip" }
+            return "battery.100"
+        case .item(let i): return i.symbolName
+        }
+    }
+    private var titleText: String {
+        switch content {
+        case .stat(let s): return s.label
+        case .item(let i):
+            return String(i.label.split(separator: ",", maxSplits: 1).first.map(String.init)?
+                .trimmingCharacters(in: .whitespaces) ?? i.label)
+        }
+    }
+    private var subtitleText: String? {
+        switch content {
+        case .stat(let s): return "\(Int(s.value.rounded())) %"
+        case .item(let i):
+            let parts = i.label.split(separator: ",", maxSplits: 1)
+            return parts.count > 1 ? parts[1].trimmingCharacters(in: .whitespaces) : nil
+        }
+    }
+    private var isValueGlyph: Bool {
+        if case .item(let i) = content, let img = i.image, img.size.height > 0 {
+            return img.size.width / img.size.height > 1.7
+        }
+        return false
+    }
+    private var isIconOnly: Bool { if case .item(let i) = content { return i.label.isEmpty }; return false }
+    private var monogram: String { String(titleText.first ?? "•").uppercased() }
+    private var tileFill: Color { Color.primary.opacity(hover.on ? 0.16 : 0.10) }
+
+    // MARK: style dispatch
+
+    @ViewBuilder private var tile: some View {
+        switch style {
+        case .dashboard: dashboardTile
+        case .capsules:  capsuleTile
+        case .grid:      gridTile
+        case .strip:     stripTile
+        }
+    }
+
+    // Shared: white disc + tinted glyph
+    private func badge(_ d: CGFloat = 34) -> some View {
+        ZStack {
+            Circle().fill(Color.white.opacity(0.92)).frame(width: d, height: d)
+            tintedGlyph(size: d * 0.56)
+        }
+    }
+    @ViewBuilder private func tintedGlyph(size: CGFloat) -> some View {
+        Group {
+            if let img = itemImage {
+                Image(nsImage: img).resizable().renderingMode(.template).interpolation(.high)
+                    .scaledToFit().frame(width: size, height: size)
+            } else if let sym = symbol {
+                Image(systemName: sym).font(.system(size: size - 2, weight: .semibold))
+            } else {
+                Text(monogram).font(.system(size: size - 3, weight: .bold, design: .rounded))
+            }
+        }
+        .foregroundStyle(accent)
+    }
+    // Original-colour glyph (for grid/strip — "as in the bar")
+    @ViewBuilder private func rawGlyph(height: CGFloat, maxWidth: CGFloat) -> some View {
+        if let img = itemImage {
+            Image(nsImage: img).resizable().interpolation(.high).scaledToFit()
+                .frame(maxWidth: maxWidth, maxHeight: height)
+        } else if let sym = symbol {
+            Image(systemName: sym).font(.system(size: height * 0.8, weight: .medium)).foregroundStyle(accent)
+        } else {
+            Text(monogram).font(.system(size: height * 0.72, weight: .bold, design: .rounded)).foregroundStyle(.primary)
+        }
+    }
+    private func ring(_ value: Double, d: CGFloat = 40) -> some View {
+        ZStack {
+            Circle().stroke(Color.white.opacity(0.14), lineWidth: 4)
+            Circle().trim(from: 0, to: min(max(value / 100, 0), 1))
+                .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text("\(Int(value.rounded()))").font(.system(size: 11, weight: .bold)).foregroundStyle(.primary)
+        }.frame(width: d, height: d)
+    }
+
+    // MARK: C — dashboard
+    @ViewBuilder private var dashboardTile: some View {
+        if let v = statValue {
+            HStack(spacing: 10) {
+                ring(v)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(titleText).font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary)
+                    Text("\(Int(v.rounded())) %").font(.system(size: 14, weight: .semibold))
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 10).frame(width: 155, height: 54, alignment: .leading)
+            .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        } else if isValueGlyph {
+            valueGlyphTile(gradient: true)
+        } else if isIconOnly {
+            squareBadgeTile
+        } else {
+            capsuleRow
+        }
+    }
+
+    // MARK: A — capsules
+    @ViewBuilder private var capsuleTile: some View {
+        if isValueGlyph { valueGlyphTile(gradient: false) }
+        else if isIconOnly { squareBadgeTile }
+        else { capsuleRow }
+    }
+
+    private var capsuleRow: some View {
+        HStack(spacing: 9) {
+            badge()
             VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                Text(titleText).font(.system(size: 12.5, weight: .semibold))
                     .lineLimit(1).truncationMode(.tail)
-                    .foregroundStyle(.primary)
-                if let sub = subtitle {
-                    Text(sub)
-                        .font(.system(size: 11))
+                if let sub = subtitleText {
+                    Text(sub).font(.system(size: 10.5)).foregroundStyle(.secondary)
                         .lineLimit(1).truncationMode(.tail)
-                        .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 9)
-        .frame(width: 154, height: 52, alignment: .leading)
+        .padding(.horizontal, 9).frame(width: 155, height: 52, alignment: .leading)
         .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private var infoTile: some View {
+    private func valueGlyphTile(gradient: Bool) -> some View {
         VStack(spacing: 6) {
-            if let img = item.image {
-                Image(nsImage: img).resizable().interpolation(.high).scaledToFit()
-                    .frame(height: 28)
-                    .shadow(color: .black.opacity(0.25), radius: 0.5, y: 0.5)
+            if let img = itemImage {
+                Image(nsImage: img).resizable().interpolation(.high).scaledToFit().frame(height: 28)
             }
-            Text(title)
-                .font(.system(size: 10, weight: .medium))
+            Text(titleText).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
                 .lineLimit(1).truncationMode(.tail)
-                .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 16)
-        .frame(height: 54)
-        .frame(minWidth: 66)
-        .background(
-            LinearGradient(colors: [accent.opacity(hover.on ? 0.42 : 0.30),
-                                    accent.opacity(hover.on ? 0.20 : 0.12)],
-                           startPoint: .top, endPoint: .bottom),
-            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(.white.opacity(0.08))
-        )
+        .padding(.horizontal, 16).frame(height: 54).frame(minWidth: 66)
+        .background(valueTileBackground(gradient: gradient),
+                    in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private var squareTile: some View {
-        badge
-            .frame(width: 52, height: 52)
+    private func valueTileBackground(gradient: Bool) -> AnyShapeStyle {
+        if gradient {
+            return AnyShapeStyle(LinearGradient(
+                colors: [accent.opacity(hover.on ? 0.42 : 0.30), accent.opacity(0.12)],
+                startPoint: .top, endPoint: .bottom))
+        }
+        return AnyShapeStyle(tileFill)
+    }
+
+    private var squareBadgeTile: some View {
+        badge().frame(width: 52, height: 52)
             .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// A round, filled icon badge with the glyph tinted in the item's accent colour —
-    /// the Control Center look (white-ish disc + coloured symbol).
-    private var badge: some View {
-        ZStack {
-            Circle().fill(Color.white.opacity(0.92)).frame(width: 34, height: 34)
-            if let img = item.image {
-                Image(nsImage: img)
-                    .resizable().renderingMode(.template).interpolation(.high).scaledToFit()
-                    .frame(width: 19, height: 19)
-                    .foregroundStyle(accent)
-            } else if let sym = item.symbolName {
-                Image(systemName: sym).font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(accent)
+    // MARK: B — grid
+    private var gridTile: some View {
+        VStack(spacing: 4) {
+            if let v = statValue {
+                Text("\(Int(v.rounded()))%").font(.system(size: 13, weight: .semibold))
             } else {
-                Text(String(item.label.first ?? item.info.owner.first ?? "•").uppercased())
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(accent)
+                rawGlyph(height: 24, maxWidth: isValueGlyph ? 42 : 24)
+            }
+            Text(titleText.isEmpty ? " " : titleText)
+                .font(.system(size: 8.5)).foregroundStyle(.secondary)
+                .lineLimit(1).truncationMode(.tail).frame(maxWidth: 58)
+        }
+        .frame(minWidth: 60, minHeight: 60)
+        .padding(.horizontal, isValueGlyph ? 10 : 0)
+        .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    // MARK: D — strip
+    private var stripTile: some View {
+        HStack(spacing: 5) {
+            if statValue == nil { rawGlyph(height: 17, maxWidth: 40) }
+            else { Image(systemName: symbol ?? "gauge").font(.system(size: 13, weight: .medium)).foregroundStyle(accent) }
+            if let v = statValue {
+                Text("\(Int(v.rounded()))%").font(.system(size: 11, weight: .semibold))
+            } else if isValueGlyph, let sub = valueFromGlyphLabel {
+                Text(sub).font(.system(size: 11, weight: .semibold))
             }
         }
+        .padding(.horizontal, 7).frame(height: 30)
+        .background(hover.on ? tileFill : Color.clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
-
-    private var tileFill: Color { Color.primary.opacity(hover.on ? 0.16 : 0.10) }
-
-    /// Control-Center-ish accent per item, matched from its name.
-    private var accent: Color {
-        let s = item.label.lowercased()
-        func has(_ n: [String]) -> Bool { n.contains { s.contains($0) } }
-        if has(["wlan", "wi-fi", "wifi", "airport", "airdrop"]) { return .blue }
-        if has(["bluetooth"]) { return .blue }
-        if has(["batterie", "battery", "akku"]) { return .green }
-        if has(["wetter", "weather"]) { return .cyan }
-        if has(["fokus", "focus", "nicht stören"]) { return .indigo }
-        if has(["ton", "sound", "lautstärke", "volume", "audio", "musik", "music", "läuft"]) { return .pink }
-        if has(["spotlight", "suche", "search"]) { return .gray }
-        if has(["istat", "cpu", "mem", "ssd", "disk", "netz"]) { return .orange }
-        return .blue
-    }
+    private var valueFromGlyphLabel: String? { nil }
 }

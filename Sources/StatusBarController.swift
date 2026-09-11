@@ -370,6 +370,22 @@ final class StatusBarController {
         }
         menu.addItem(.separator())
 
+        // Design picker
+        let design = NSMenuItem(title: "Design", action: nil, keyEquivalent: "")
+        let designMenu = NSMenu()
+        let current = Preferences.shared.tileStyle
+        for style in TileStyle.allCases {
+            let mi = NSMenuItem(title: style.title, action: #selector(menuPickStyle(_:)), keyEquivalent: "")
+            mi.target = self
+            mi.representedObject = style.rawValue
+            mi.state = (style == current) ? .on : .off
+            designMenu.addItem(mi)
+        }
+        design.submenu = designMenu
+        menu.addItem(design)
+
+        menu.addItem(.separator())
+
         let settings = NSMenuItem(title: L("menu.settings"),
                                   action: #selector(menuSettings), keyEquivalent: ",")
         settings.target = self
@@ -389,6 +405,13 @@ final class StatusBarController {
         mainItem.menu = menu
         mainItem.button?.performClick(nil)
         mainItem.menu = nil   // restore left-click toggle behaviour afterwards
+    }
+
+    @objc private func menuPickStyle(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let style = TileStyle(rawValue: raw) else { return }
+        Preferences.shared.tileStyle = style
+        // Reopen the panel so the new style shows immediately.
+        if TidierBar.shared.isVisible { closeTile(); openTile() }
     }
 
     @objc private func menuToggle()  {
