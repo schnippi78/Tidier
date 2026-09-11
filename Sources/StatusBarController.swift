@@ -138,8 +138,49 @@ final class StatusBarController {
     private func openTile() {
         ensureCollapsed()
         if cachedGroups.isEmpty { refreshCache() }
-        TidierBar.shared.show(groups: cachedGroups, near: toggleScreenRect())
+        TidierBar.shared.show(groups: cachedGroups,
+                              near: toggleScreenRect(),
+                              onActivate: { [weak self] in self?.activateItem($0) })
         tileOpen = true
+    }
+
+    /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style):
+    /// the item is currently pushed off-screen, so briefly reveal the bar, synthesize
+    /// a click at the item's true position, then tidy back up. Needs Accessibility
+    /// (to post the click) — the tile shows a grant button otherwise.
+    private func activateItem(_ item: BarItem) {
+        closeTile()
+        let wasCollapsed = !expanded
+        if wasCollapsed { expanded = true; applyLayout() }
+        // Let the menu bar finish re-laying-out the revealed items before clicking.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { [weak self] in
+            guard let self = self else { return }
+            self.clickMenuBarItem(windowID: item.info.id,
+                                  name: item.info.name,
+                                  owner: item.info.owner)
+            if wasCollapsed {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                    self?.ensureCollapsed()
+                }
+            }
+        }
+    }
+
+    /// Re-scan for the item's CURRENT on-screen position (window ids are stable while
+    /// they live; fall back to name/owner) and post a left click there.
+    private func clickMenuBarItem(windowID: Int, name: String, owner: String) {
+        let items = MenuBarScanner.scan()
+        let target = items.first { $0.id == windowID }
+            ?? items.first { !name.isEmpty && $0.name == name }
+            ?? items.first { $0.owner == owner && owner != "Tidier" }
+        guard let t = target else { return }
+        // CGWindow bounds share CGEvent's top-left global coordinate space.
+        let p = CGPoint(x: t.centerX, y: t.centerY)
+        let src = CGEventSource(stateID: .combinedSessionState)
+        CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: p, mouseButton: .left)?
+            .post(tap: .cghidEventTap)
+        CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: p, mouseButton: .left)?
+            .post(tap: .cghidEventTap)
     }
 
     private func closeTile() {
