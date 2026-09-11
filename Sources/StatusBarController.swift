@@ -174,8 +174,22 @@ final class StatusBarController {
         if cachedGroups.isEmpty { cachedGroups = TidierBar.makeGroups(from: hiddenCandidates()) }
         TidierBar.shared.show(groups: cachedGroups,
                               near: toggleScreenRect(),
-                              onActivate: { [weak self] in self?.activateItem($0) })
+                              onActivate: { [weak self] in self?.activateItem($0) },
+                              onStat: { [weak self] in self?.activateStat($0) })
         tileOpen = true
+    }
+
+    /// The System rings aren't real menu bar items — open the matching system app
+    /// instead: CPU/RAM → Activity Monitor, battery → Battery settings.
+    private func activateStat(_ stat: Stat) {
+        closeTile()
+        if stat.key == "sys.batt" {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension") {
+                NSWorkspace.shared.open(url)
+            }
+        } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.ActivityMonitor") {
+            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+        }
     }
 
     /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style).

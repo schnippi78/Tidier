@@ -72,13 +72,16 @@ final class TidierBar: NSObject, NSWindowDelegate {
 
     private override init() { super.init() }
 
-    func show(groups: [BarGroup], near rect: NSRect, onActivate: @escaping (BarItem) -> Void) {
+    func show(groups: [BarGroup], near rect: NSRect,
+              onActivate: @escaping (BarItem) -> Void,
+              onStat: @escaping (Stat) -> Void) {
         SystemStats.shared.start()   // live CPU/RAM/battery for the dashboard rings
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
                                  hasAccessibility: PermissionManager.hasAccessibility,
                                  style: Preferences.shared.tileStyle,
-                                 onActivate: onActivate)
+                                 onActivate: onActivate,
+                                 onStat: onStat)
             .environment(\.layoutDirection, LanguageManager.shared.isRTL ? .rightToLeft : .leftToRight)
         let hosting = NSHostingView(rootView: root)
         hosting.layout()
@@ -163,7 +166,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
             if isApple { apple.append(item) } else { third.append(item) }
         }
         var groups: [BarGroup] = []
-        if !third.isEmpty { groups.append(BarGroup(title: L("bar.thirdParty"), items: third)) }
+        if !third.isEmpty { groups.append(BarGroup(title: "Apps", items: third)) }
         if !apple.isEmpty { groups.append(BarGroup(title: L("bar.apple"), items: apple)) }
         return groups
     }
@@ -279,6 +282,7 @@ struct TidierBarView: View {
     let hasAccessibility: Bool
     let style: TileStyle
     let onActivate: (BarItem) -> Void
+    let onStat: (Stat) -> Void
 
     @ObservedObject private var model = TileModel.shared
     @ObservedObject private var stats = SystemStats.shared
@@ -297,7 +301,7 @@ struct TidierBarView: View {
             section(title: "System") {
                 TileFlow(spacing: 8, lineSpacing: 8) {
                     ForEach(statItems) { stat in
-                        PanelTileView(content: .stat(stat), style: style, onActivate: {})
+                        PanelTileView(content: .stat(stat), style: style, onActivate: { onStat(stat) })
                     }
                 }
             }
