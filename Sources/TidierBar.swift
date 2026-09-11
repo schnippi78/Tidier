@@ -409,20 +409,30 @@ private struct TileView: View {
     }
 
     private var infoTile: some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 6) {
             if let img = item.image {
                 Image(nsImage: img).resizable().interpolation(.high).scaledToFit()
-                    .frame(height: 24)
+                    .frame(height: 28)
+                    .shadow(color: .black.opacity(0.25), radius: 0.5, y: 0.5)
             }
             Text(title)
-                .font(.system(size: 10))
+                .font(.system(size: 10, weight: .medium))
                 .lineLimit(1).truncationMode(.tail)
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 14)
-        .frame(height: 52)
-        .frame(minWidth: 62)
-        .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.horizontal, 16)
+        .frame(height: 54)
+        .frame(minWidth: 66)
+        .background(
+            LinearGradient(colors: [accent.opacity(hover.on ? 0.42 : 0.30),
+                                    accent.opacity(hover.on ? 0.20 : 0.12)],
+                           startPoint: .top, endPoint: .bottom),
+            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(.white.opacity(0.08))
+        )
     }
 
     private var squareTile: some View {

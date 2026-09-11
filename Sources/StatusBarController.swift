@@ -160,7 +160,7 @@ final class StatusBarController {
         expanded = true
         revealingAlways = false
         applyLayout()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
             guard let self = self else { return }
             let fresh = TidierBar.makeGroups(from: self.hiddenCandidates())
             if !fresh.isEmpty { self.cachedGroups = fresh }
@@ -216,18 +216,37 @@ final class StatusBarController {
             .post(tap: .cghidEventTap)
     }
 
-    /// After activating an item its menu is open and the bar is revealed. Re-hide on
-    /// the user's next click (the menu will have been used/dismissed by then), with a
-    /// safety timeout so the bar never stays revealed indefinitely.
+    /// After activating an item its menu is open and the bar stays revealed. Keep it
+    /// revealed as long as the user keeps clicking *in the menu bar* (so they can open
+    /// other items' menus too); collapse only when they click below the bar — into an
+    /// app or the desktop — or after a safety timeout.
     private func armRevealCollapse() {
         disarmRevealCollapse()
         revealCollapseMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                    self?.finishReveal()
+                guard let self = self else { return }
+                if self.clickIsInMenuBar() {
+                    self.bumpRevealSafety()          // still using the bar — keep it open
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                        self?.finishReveal()
+                    }
                 }
         }
-        revealSafetyTimer = Timer.scheduledTimer(withTimeInterval: 8, repeats: false) { [weak self] _ in
+        bumpRevealSafety()
+    }
+
+    private func clickIsInMenuBar() -> Bool {
+        let loc = NSEvent.mouseLocation
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(loc) }) ?? NSScreen.main
+        else { return false }
+        let menuBarHeight = max(screen.frame.maxY - screen.visibleFrame.maxY, 24)
+        return loc.y >= screen.frame.maxY - menuBarHeight
+    }
+
+    private func bumpRevealSafety() {
+        revealSafetyTimer?.invalidate()
+        revealSafetyTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
             self?.finishReveal()
         }
     }
