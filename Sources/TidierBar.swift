@@ -299,9 +299,9 @@ struct TidierBarView: View {
     private var netStat: Stat { Stat(key: "sys.net", label: "Netzwerk", value: 0, accent: .blue) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 11) {
             section(title: "System") {
-                TileFlow(spacing: 8, lineSpacing: 8) {
+                TileFlow(spacing: 7, lineSpacing: 7) {
                     ForEach(statItems) { stat in
                         PanelTileView(content: .stat(stat), style: style, onActivate: { onStat(stat) })
                     }
@@ -312,7 +312,7 @@ struct TidierBarView: View {
             ForEach(groups) { group in
                 let ordered = model.ordered(group.items)
                 section(title: group.title) {
-                    TileFlow(spacing: 8, lineSpacing: 8) {
+                    TileFlow(spacing: 7, lineSpacing: 7) {
                         ForEach(ordered) { item in
                             PanelTileView(content: .item(item), style: style, onActivate: { onActivate(item) })
                                 .onDrag { NSItemProvider(object: item.key as NSString) }
@@ -342,20 +342,20 @@ struct TidierBarView: View {
                 .buttonStyle(.borderless)
             }
         }
-        .padding(16)
-        .frame(width: 380, alignment: .leading)
-        .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 22)))
-        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.white.opacity(0.08)))
+        .padding(13)
+        .frame(width: 336, alignment: .leading)
+        .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 20)))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.08)))
     }
 
     @ViewBuilder private func section<C: View>(title: String, @ViewBuilder _ content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title.uppercased())
-                .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                .font(.system(size: 10, weight: .semibold)).tracking(0.4).foregroundStyle(.secondary)
             content()
-                .padding(style == .strip ? 7 : (style == .grid ? 8 : 10))
+                .padding(style == .strip ? 6 : (style == .grid ? 7 : 8))
                 .background(Color.primary.opacity(0.05),
-                            in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            in: RoundedRectangle(cornerRadius: 17, style: .continuous))
         }
     }
 }
@@ -478,7 +478,7 @@ private struct PanelTileView: View {
     }
 
     // Shared: white disc + tinted glyph
-    private func badge(_ d: CGFloat = 34) -> some View {
+    private func badge(_ d: CGFloat = 30) -> some View {
         ZStack {
             Circle().fill(Color.white.opacity(0.92)).frame(width: d, height: d)
             tintedGlyph(size: d * 0.56)
@@ -508,29 +508,29 @@ private struct PanelTileView: View {
             Text(monogram).font(.system(size: height * 0.72, weight: .bold, design: .rounded)).foregroundStyle(.primary)
         }
     }
-    private func ring(_ value: Double, d: CGFloat = 40) -> some View {
+    private func ring(_ value: Double, d: CGFloat = 34) -> some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.14), lineWidth: 4)
+            Circle().stroke(Color.white.opacity(0.14), lineWidth: 3.5)
             Circle().trim(from: 0, to: min(max(value / 100, 0), 1))
-                .stroke(accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(accent, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-            Text("\(Int(value.rounded()))").font(.system(size: 11, weight: .bold)).foregroundStyle(.primary)
+            Text("\(Int(value.rounded()))").font(.system(size: 10, weight: .bold)).foregroundStyle(.primary)
         }.frame(width: d, height: d)
     }
 
     // MARK: C — dashboard
     @ViewBuilder private var dashboardTile: some View {
         if let v = statValue {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ring(v)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(titleText).font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary)
-                    Text("\(Int(v.rounded())) %").font(.system(size: 14, weight: .semibold))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(titleText).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                    Text("\(Int(v.rounded())) %").font(.system(size: 13, weight: .semibold))
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 10).frame(width: 155, height: 54, alignment: .leading)
-            .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .padding(.horizontal, 9).frame(width: 138, height: 46, alignment: .leading)
+            .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         } else if isValueGlyph {
             valueGlyphTile(gradient: true)
         } else if isIconOnly {
@@ -548,32 +548,32 @@ private struct PanelTileView: View {
     }
 
     private var capsuleRow: some View {
-        HStack(spacing: 9) {
+        HStack(spacing: 8) {
             badge()
-            VStack(alignment: .leading, spacing: 1) {
-                Text(titleText).font(.system(size: 12.5, weight: .semibold))
+            VStack(alignment: .leading, spacing: 0) {
+                Text(titleText).font(.system(size: 11.5, weight: .semibold))
                     .lineLimit(1).truncationMode(.tail)
                 if let sub = subtitleText {
-                    Text(sub).font(.system(size: 10.5)).foregroundStyle(.secondary)
+                    Text(sub).font(.system(size: 10)).foregroundStyle(.secondary)
                         .lineLimit(1).truncationMode(.tail)
                 }
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 9)
-        .frame(width: net != nil ? 318 : 155, height: 52, alignment: .leading)  // network spans full width for its ↓/↑ rates
-        .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.horizontal, 8)
+        .frame(width: net != nil ? 283 : 138, height: 46, alignment: .leading)  // network spans full width for its ↓/↑ rates
+        .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     private func valueGlyphTile(gradient: Bool) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             if let img = itemImage {
-                Image(nsImage: img).resizable().interpolation(.high).scaledToFit().frame(height: 28)
+                Image(nsImage: img).resizable().interpolation(.high).scaledToFit().frame(height: 24)
             }
-            Text(titleText).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+            Text(titleText).font(.system(size: 9.5, weight: .medium)).foregroundStyle(.secondary)
                 .lineLimit(1).truncationMode(.tail)
         }
-        .padding(.horizontal, 16).frame(height: 54).frame(minWidth: 66)
+        .padding(.horizontal, 13).frame(height: 46).frame(minWidth: 58)
         .background(valueTileBackground(gradient: gradient),
                     in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
@@ -588,8 +588,8 @@ private struct PanelTileView: View {
     }
 
     private var squareBadgeTile: some View {
-        badge().frame(width: 52, height: 52)
-            .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        badge().frame(width: 46, height: 46)
+            .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
     // MARK: B — grid
@@ -604,9 +604,9 @@ private struct PanelTileView: View {
                 .font(.system(size: 8.5)).foregroundStyle(.secondary)
                 .lineLimit(1).truncationMode(.tail).frame(maxWidth: 58)
         }
-        .frame(minWidth: 60, minHeight: 60)
-        .padding(.horizontal, isValueGlyph ? 10 : 0)
-        .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .frame(minWidth: 52, minHeight: 52)
+        .padding(.horizontal, isValueGlyph ? 9 : 0)
+        .background(tileFill, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 
     // MARK: D — strip

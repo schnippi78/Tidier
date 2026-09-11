@@ -179,17 +179,39 @@ final class StatusBarController {
         tileOpen = true
     }
 
-    /// The System rings aren't real menu bar items — open the matching system app
-    /// instead: CPU/RAM → Activity Monitor, battery → Battery settings.
+    /// The System rings aren't real menu bar items — open the matching system app,
+    /// and jump straight to the relevant Activity Monitor tab (⌘1 CPU · ⌘2 Speicher ·
+    /// ⌘4 Festplatte · ⌘5 Netzwerk). Battery → Battery settings.
     private func activateStat(_ stat: Stat) {
         closeTile()
         if stat.key == "sys.batt" {
             if let url = URL(string: "x-apple.systempreferences:com.apple.Battery-Settings.extension") {
                 NSWorkspace.shared.open(url)
             }
-        } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.ActivityMonitor") {
-            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+            return
         }
+        let tab: String? = ["sys.cpu": "1", "sys.ram": "2", "sys.disk": "4", "sys.net": "5"][stat.key]
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.ActivityMonitor")
+        else { return }
+        let cfg = NSWorkspace.OpenConfiguration()
+        cfg.activates = true
+        NSWorkspace.shared.openApplication(at: url, configuration: cfg) { [weak self] _, _ in
+            guard let tab = tab else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self?.selectActivityTab(tab) }
+        }
+    }
+
+    /// Post ⌘<digit> to the (now frontmost) Activity Monitor to pick its tab.
+    private func selectActivityTab(_ digit: String) {
+        let codes: [String: CGKeyCode] = ["1": 18, "2": 19, "3": 20, "4": 21, "5": 23]
+        guard let code = codes[digit] else { return }
+        let src = CGEventSource(stateID: .combinedSessionState)
+        let down = CGEvent(keyboardEventSource: src, virtualKey: code, keyDown: true)
+        down?.flags = .maskCommand
+        let up = CGEvent(keyboardEventSource: src, virtualKey: code, keyDown: false)
+        up?.flags = .maskCommand
+        down?.post(tap: .cghidEventTap)
+        up?.post(tap: .cghidEventTap)
     }
 
     /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style).
