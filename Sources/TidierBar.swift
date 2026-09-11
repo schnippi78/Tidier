@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
-import CoreImage
 
 struct BarItem: Identifiable {
     let info: MenuBarItemInfo
@@ -186,23 +185,9 @@ final class TidierBar: NSObject, NSWindowDelegate {
     /// tile render an SF Symbol (Apple items) or a monogram.
     private static func icon(for info: MenuBarItemInfo, resolved: ResolvedItem?, isApple: Bool) -> NSImage? {
         if PermissionManager.hasScreenRecording, let cap = ItemCapture.image(forWindow: info.id) {
-            return desaturated(cap)
+            return cap
         }
         return nil
-    }
-
-    /// Strip colour from a captured glyph so an item in a coloured active state (e.g.
-    /// Control Center's audio pill) doesn't clash with the otherwise-monochrome tiles.
-    /// Luminance is preserved, so white text/icons stay crisp; only the hue is dropped.
-    private static let ciContext = CIContext(options: nil)
-    private static func desaturated(_ image: NSImage) -> NSImage {
-        guard let tiff = image.tiffRepresentation, let ci = CIImage(data: tiff),
-              let filter = CIFilter(name: "CIColorControls") else { return image }
-        filter.setValue(ci, forKey: kCIInputImageKey)
-        filter.setValue(0.0, forKey: kCIInputSaturationKey)
-        guard let out = filter.outputImage,
-              let cg = ciContext.createCGImage(out, from: out.extent) else { return image }
-        return NSImage(cgImage: cg, size: image.size)
     }
 
     /// SF Symbol for a system item, matched from its title (localized-tolerant).
@@ -301,7 +286,8 @@ struct TidierBarView: View {
                     Text(group.title.uppercased())
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    TileFlow(spacing: 10, lineSpacing: 12) {
+                    // Grouped rounded container, like a Control Center module.
+                    TileFlow(spacing: 8, lineSpacing: 8) {
                         ForEach(ordered) { item in
                             TileView(item: item, onActivate: { onActivate(item) })
                                 .onDrag { NSItemProvider(object: item.key as NSString) }
@@ -318,6 +304,9 @@ struct TidierBarView: View {
                                 }
                         }
                     }
+                    .padding(10)
+                    .background(Color.primary.opacity(0.05),
+                                in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
             }
             if !hasScreenRecording {
@@ -341,9 +330,9 @@ struct TidierBarView: View {
             }
         }
         .padding(16)
-        .frame(width: 360, alignment: .leading)
-        .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 18)))
-        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.white.opacity(0.08)))
+        .frame(width: 380, alignment: .leading)
+        .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 22)))
+        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(.white.opacity(0.08)))
     }
 }
 
@@ -351,50 +340,41 @@ struct TidierBarView: View {
 /// so hover is kept in a tiny ObservableObject).
 private final class TileHover: ObservableObject { @Published var on = false }
 
-/// A single Control-Center-style tile: rounded translucent square, the real menu
-/// bar glyph centered, an optional caption below. Clicking activates the real item.
+/// A Control-Center-style tile. Three shapes depending on the item:
+/// • capsule — icon-like items (WLAN, Bluetooth, Nextcloud): a coloured round badge
+///   with the tinted glyph, plus a title and (from the item's AX state) a subtitle.
+/// • info    — items whose glyph carries a live value (iStat %, weather °C, battery):
+///   the real coloured glyph shown prominently with the name beneath.
+/// • square  — icon-only items with no name.
 private struct TileView: View {
     let item: BarItem
     let onActivate: () -> Void
 
     @ObservedObject private var hover = TileHover()
 
-    private let boxHeight: CGFloat = 46
-    private let iconHeight: CGFloat = 26
-    private let hPadding: CGFloat = 20
-
-    /// A captured glyph keeps its real aspect ratio (so "SSD 40% CPU 12%" stays a
-    /// wide pill); symbol/monogram fallbacks are square.
-    private var iconWidth: CGFloat {
-        guard let img = item.image, img.size.height > 0 else { return iconHeight }
-        let w = iconHeight * (img.size.width / img.size.height)
-        return min(max(w, iconHeight), 148)
+    /// A glyph much wider than tall is a value display (iStat "MEM 15%", weather).
+    private var isWideGlyph: Bool {
+        guard let img = item.image, img.size.height > 0 else { return false }
+        return img.size.width / img.size.height > 1.7
     }
-    private var boxWidth: CGFloat { max(iconWidth + hPadding, boxHeight) }
+    private var title: String {
+        String(item.label.split(separator: ",", maxSplits: 1).first.map(String.init)?
+            .trimmingCharacters(in: .whitespaces) ?? item.label)
+    }
+    private var subtitle: String? {
+        let parts = item.label.split(separator: ",", maxSplits: 1)
+        guard parts.count > 1 else { return nil }
+        return parts[1].trimmingCharacters(in: .whitespaces)
+    }
 
     var body: some View {
         Button(action: onActivate) {
-            VStack(spacing: 6) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 15, style: .continuous)
-                        .fill(Color.primary.opacity(hover.on ? 0.20 : 0.12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                                .strokeBorder(.white.opacity(hover.on ? 0.18 : 0.08))
-                        )
-                        .frame(width: boxWidth, height: boxHeight)
-                    glyph
-                }
-                .scaleEffect(hover.on ? 1.06 : 1.0)
-                if !item.label.isEmpty {
-                    Text(item.label)
-                        .font(.system(size: 10))
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: boxWidth + 8)
-                }
+            Group {
+                if item.label.isEmpty { squareTile }
+                else if isWideGlyph { infoTile }
+                else { capsuleTile }
             }
+            .scaleEffect(hover.on ? 1.03 : 1.0)
         }
         .buttonStyle(.plain)
         .animation(.easeOut(duration: 0.12), value: hover.on)
@@ -404,26 +384,88 @@ private struct TileView: View {
         }
     }
 
-    @ViewBuilder private var glyph: some View {
-        if let img = item.image {
-            // The real bar glyph, 1:1 as it looks in the menu bar.
-            Image(nsImage: img)
-                .resizable()
-                .interpolation(.high)
-                .scaledToFit()
-                .frame(width: iconWidth, height: iconHeight)
-        } else if let sym = item.symbolName {
-            Image(systemName: sym)
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(.primary)
-        } else {
-            Text(monogram)
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundStyle(.primary)
+    // MARK: shapes
+
+    private var capsuleTile: some View {
+        HStack(spacing: 10) {
+            badge
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1).truncationMode(.tail)
+                    .foregroundStyle(.primary)
+                if let sub = subtitle {
+                    Text(sub)
+                        .font(.system(size: 11))
+                        .lineLimit(1).truncationMode(.tail)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 9)
+        .frame(width: 154, height: 52, alignment: .leading)
+        .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var infoTile: some View {
+        VStack(spacing: 5) {
+            if let img = item.image {
+                Image(nsImage: img).resizable().interpolation(.high).scaledToFit()
+                    .frame(height: 24)
+            }
+            Text(title)
+                .font(.system(size: 10))
+                .lineLimit(1).truncationMode(.tail)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 52)
+        .frame(minWidth: 62)
+        .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var squareTile: some View {
+        badge
+            .frame(width: 52, height: 52)
+            .background(tileFill, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// A round, filled icon badge with the glyph tinted in the item's accent colour —
+    /// the Control Center look (white-ish disc + coloured symbol).
+    private var badge: some View {
+        ZStack {
+            Circle().fill(Color.white.opacity(0.92)).frame(width: 34, height: 34)
+            if let img = item.image {
+                Image(nsImage: img)
+                    .resizable().renderingMode(.template).interpolation(.high).scaledToFit()
+                    .frame(width: 19, height: 19)
+                    .foregroundStyle(accent)
+            } else if let sym = item.symbolName {
+                Image(systemName: sym).font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(accent)
+            } else {
+                Text(String(item.label.first ?? item.info.owner.first ?? "•").uppercased())
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(accent)
+            }
         }
     }
 
-    private var monogram: String {
-        String(item.label.first ?? item.info.owner.first ?? "•").uppercased()
+    private var tileFill: Color { Color.primary.opacity(hover.on ? 0.16 : 0.10) }
+
+    /// Control-Center-ish accent per item, matched from its name.
+    private var accent: Color {
+        let s = item.label.lowercased()
+        func has(_ n: [String]) -> Bool { n.contains { s.contains($0) } }
+        if has(["wlan", "wi-fi", "wifi", "airport", "airdrop"]) { return .blue }
+        if has(["bluetooth"]) { return .blue }
+        if has(["batterie", "battery", "akku"]) { return .green }
+        if has(["wetter", "weather"]) { return .cyan }
+        if has(["fokus", "focus", "nicht stören"]) { return .indigo }
+        if has(["ton", "sound", "lautstärke", "volume", "audio", "musik", "music", "läuft"]) { return .pink }
+        if has(["spotlight", "suche", "search"]) { return .gray }
+        if has(["istat", "cpu", "mem", "ssd", "disk", "netz"]) { return .orange }
+        return .blue
     }
 }
