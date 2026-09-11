@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (el). Hand-authored. */
+
+"app.tagline" = "Πάρτε τον έλεγχο της γραμμής μενού.";
+"menu.show" = "Εμφάνιση κρυφών στοιχείων";
+"menu.hide" = "Απόκρυψη στοιχείων";
+"menu.alwaysHidden" = "Εμφάνιση πάντα κρυφών στοιχείων";
+"menu.settings" = "Ρυθμίσεις…";
+"menu.about" = "Σχετικά με το Tidier";
+"menu.quit" = "Τερματισμός Tidier";
+"tab.general" = "Γενικά";
+"tab.menubar" = "Γραμμή μενού";
+"tab.language" = "Γλώσσα";
+"tab.about" = "Πληροφορίες";
+"general.launchAtLogin" = "Άνοιγμα κατά τη σύνδεση";
+"general.enableAlwaysHidden" = "Ενεργοποίηση ενότητας πάντα κρυφών";
+"general.autoRehide" = "Αυτόματη εκ νέου απόκρυψη στοιχείων";
+"general.rehideAfter" = "Απόκρυψη ξανά μετά από";
+"general.seconds" = "%d δευτερόλεπτα";
+"general.revealOnHover" = "Εμφάνιση με το πέρασμα του δείκτη";
+"menubar.help" = "Κρατήστε το ⌘ και σύρετε τα εικονίδια της γραμμής μενού αριστερά από τον διαχωριστή του Tidier για να τα αποκρύψετε.";
+"menubar.helpAlways" = "Σύρετε τα εικονίδια πέρα από τον αχνό διαχωριστή για να τα κρύβετε πάντα.";
+"language.pick" = "Γλώσσα εφαρμογής";
+"language.system" = "Προεπιλογή συστήματος";
+"language.note" = "Ορισμένες αλλαγές εφαρμόζονται πλήρως μόνο μετά την επανεκκίνηση του Tidier.";
+"language.restart" = "Επανεκκίνηση Tidier";
+"about.version" = "Έκδοση %@";
+"about.madeBy" = "Ένας ελεύθερος, ανοιχτός διαχειριστής γραμμής μενού.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

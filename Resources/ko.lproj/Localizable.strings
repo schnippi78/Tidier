@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (ko). Hand-authored. */
+
+"app.tagline" = "메뉴 막대를 마음대로 관리하세요.";
+"menu.show" = "가려진 항목 보기";
+"menu.hide" = "항목 가리기";
+"menu.alwaysHidden" = "항상 가려진 항목 보기";
+"menu.settings" = "설정…";
+"menu.about" = "Tidier 정보";
+"menu.quit" = "Tidier 종료";
+"tab.general" = "일반";
+"tab.menubar" = "메뉴 막대";
+"tab.language" = "언어";
+"tab.about" = "정보";
+"general.launchAtLogin" = "로그인 시 열기";
+"general.enableAlwaysHidden" = "항상 가림 섹션 사용";
+"general.autoRehide" = "항목 자동으로 다시 가리기";
+"general.rehideAfter" = "다시 가리기까지";
+"general.seconds" = "%d초";
+"general.revealOnHover" = "포인터를 올리면 표시";
+"menubar.help" = "⌘를 누른 채 메뉴 막대 아이콘을 Tidier 구분자 왼쪽으로 드래그하면 가려집니다.";
+"menubar.helpAlways" = "아이콘을 흐린 구분자 너머로 드래그하면 항상 가려집니다.";
+"language.pick" = "앱 언어";
+"language.system" = "시스템 기본값";
+"language.note" = "일부 변경 사항은 Tidier를 다시 실행해야 완전히 적용됩니다.";
+"language.restart" = "Tidier 다시 실행";
+"about.version" = "버전 %@";
+"about.madeBy" = "자유롭고 개방적인 메뉴 막대 관리자.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

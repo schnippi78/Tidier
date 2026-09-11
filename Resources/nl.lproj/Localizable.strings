@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (nl). Hand-authored. */
+
+"app.tagline" = "Neem de controle over je menubalk.";
+"menu.show" = "Verborgen onderdelen tonen";
+"menu.hide" = "Onderdelen verbergen";
+"menu.alwaysHidden" = "Altijd verborgen onderdelen tonen";
+"menu.settings" = "Instellingen…";
+"menu.about" = "Over Tidier";
+"menu.quit" = "Tidier stoppen";
+"tab.general" = "Algemeen";
+"tab.menubar" = "Menubalk";
+"tab.language" = "Taal";
+"tab.about" = "Info";
+"general.launchAtLogin" = "Openen bij inloggen";
+"general.enableAlwaysHidden" = "Sectie ‘altijd verborgen’ inschakelen";
+"general.autoRehide" = "Onderdelen automatisch weer verbergen";
+"general.rehideAfter" = "Weer verbergen na";
+"general.seconds" = "%d seconden";
+"general.revealOnHover" = "Tonen bij aanwijzen";
+"menubar.help" = "Houd ⌘ ingedrukt en sleep je menubalksymbolen naar links van de Tidier-scheiding om ze te verbergen.";
+"menubar.helpAlways" = "Sleep symbolen voorbij de gedimde scheiding om ze altijd te verbergen.";
+"language.pick" = "App-taal";
+"language.system" = "Systeemstandaard";
+"language.note" = "Sommige wijzigingen worden pas na een herstart van Tidier volledig toegepast.";
+"language.restart" = "Tidier herstarten";
+"about.version" = "Versie %@";
+"about.madeBy" = "Een vrije, open menubalkbeheerder.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

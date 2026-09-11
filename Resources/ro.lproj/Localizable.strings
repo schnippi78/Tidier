@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (ro). Hand-authored. */
+
+"app.tagline" = "Preia controlul barei de meniu.";
+"menu.show" = "Afișează elementele ascunse";
+"menu.hide" = "Ascunde elementele";
+"menu.alwaysHidden" = "Afișează elementele mereu ascunse";
+"menu.settings" = "Configurări…";
+"menu.about" = "Despre Tidier";
+"menu.quit" = "Închide Tidier";
+"tab.general" = "General";
+"tab.menubar" = "Bara de meniu";
+"tab.language" = "Limbă";
+"tab.about" = "Despre";
+"general.launchAtLogin" = "Deschide la autentificare";
+"general.enableAlwaysHidden" = "Activează secțiunea mereu ascunsă";
+"general.autoRehide" = "Ascunde elementele automat din nou";
+"general.rehideAfter" = "Ascunde din nou după";
+"general.seconds" = "%d secunde";
+"general.revealOnHover" = "Afișează la trecerea cursorului";
+"menubar.help" = "Ține apăsat ⌘ și trage pictogramele din bara de meniu în stânga separatorului Tidier pentru a le ascunde.";
+"menubar.helpAlways" = "Trage pictogramele dincolo de separatorul estompat pentru a le ascunde permanent.";
+"language.pick" = "Limba aplicației";
+"language.system" = "Implicit de sistem";
+"language.note" = "Unele modificări au efect complet doar după repornirea Tidier.";
+"language.restart" = "Repornește Tidier";
+"about.version" = "Versiunea %@";
+"about.madeBy" = "Un administrator de bară de meniu liber și deschis.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

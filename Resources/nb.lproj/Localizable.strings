@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (nb). Hand-authored. */
+
+"app.tagline" = "Ta kontroll over menylinjen.";
+"menu.show" = "Vis skjulte objekter";
+"menu.hide" = "Skjul objekter";
+"menu.alwaysHidden" = "Vis alltid skjulte objekter";
+"menu.settings" = "Innstillinger…";
+"menu.about" = "Om Tidier";
+"menu.quit" = "Avslutt Tidier";
+"tab.general" = "Generelt";
+"tab.menubar" = "Menylinje";
+"tab.language" = "Språk";
+"tab.about" = "Om";
+"general.launchAtLogin" = "Åpne ved pålogging";
+"general.enableAlwaysHidden" = "Slå på seksjonen alltid skjult";
+"general.autoRehide" = "Skjul objekter automatisk igjen";
+"general.rehideAfter" = "Skjul igjen etter";
+"general.seconds" = "%d sekunder";
+"general.revealOnHover" = "Vis når pekeren holdes over";
+"menubar.help" = "Hold inne ⌘ og dra menylinjesymbolene til venstre for Tidier-skilletegnet for å skjule dem.";
+"menubar.helpAlways" = "Dra symboler forbi det nedtonede skilletegnet for å skjule dem permanent.";
+"language.pick" = "App-språk";
+"language.system" = "Systemstandard";
+"language.note" = "Enkelte endringer får full effekt først etter at Tidier startes på nytt.";
+"language.restart" = "Start Tidier på nytt";
+"about.version" = "Versjon %@";
+"about.madeBy" = "En fri og åpen menylinjebehandler.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (ja). Hand-authored. */
+
+"app.tagline" = "メニューバーを自在にコントロール。";
+"menu.show" = "隠れた項目を表示";
+"menu.hide" = "項目を隠す";
+"menu.alwaysHidden" = "常に隠す項目を表示";
+"menu.settings" = "設定…";
+"menu.about" = "Tidier について";
+"menu.quit" = "Tidier を終了";
+"tab.general" = "一般";
+"tab.menubar" = "メニューバー";
+"tab.language" = "言語";
+"tab.about" = "情報";
+"general.launchAtLogin" = "ログイン時に開く";
+"general.enableAlwaysHidden" = "「常に隠す」セクションを有効にする";
+"general.autoRehide" = "項目を自動的に再び隠す";
+"general.rehideAfter" = "再び隠すまでの時間";
+"general.seconds" = "%d 秒";
+"general.revealOnHover" = "ポインタを重ねると表示";
+"menubar.help" = "⌘ を押しながらメニューバーのアイコンを Tidier の区切りより左へドラッグすると隠せます。";
+"menubar.helpAlways" = "アイコンを淡色の区切りより先へドラッグすると常に隠れます。";
+"language.pick" = "アプリの言語";
+"language.system" = "システムのデフォルト";
+"language.note" = "一部の変更は Tidier を再起動すると完全に反映されます。";
+"language.restart" = "Tidier を再起動";
+"about.version" = "バージョン %@";
+"about.madeBy" = "自由でオープンなメニューバー管理ツール。";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

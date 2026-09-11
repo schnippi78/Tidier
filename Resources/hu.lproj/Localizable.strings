@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (hu). Hand-authored. */
+
+"app.tagline" = "Vedd kézbe a menüsort.";
+"menu.show" = "Rejtett elemek megjelenítése";
+"menu.hide" = "Elemek elrejtése";
+"menu.alwaysHidden" = "Mindig rejtett elemek megjelenítése";
+"menu.settings" = "Beállítások…";
+"menu.about" = "A Tidier névjegye";
+"menu.quit" = "Tidier bezárása";
+"tab.general" = "Általános";
+"tab.menubar" = "Menüsor";
+"tab.language" = "Nyelv";
+"tab.about" = "Névjegy";
+"general.launchAtLogin" = "Megnyitás bejelentkezéskor";
+"general.enableAlwaysHidden" = "A mindig rejtett szakasz bekapcsolása";
+"general.autoRehide" = "Elemek automatikus újbóli elrejtése";
+"general.rehideAfter" = "Újbóli elrejtés ennyi után";
+"general.seconds" = "%d másodperc";
+"general.revealOnHover" = "Megjelenítés rámutatáskor";
+"menubar.help" = "Tartsd lenyomva a ⌘ billentyűt, és húzd a menüsor ikonjait a Tidier elválasztójától balra az elrejtésükhöz.";
+"menubar.helpAlways" = "Húzd az ikonokat a halványított elválasztón túlra, hogy mindig rejtve legyenek.";
+"language.pick" = "Alkalmazás nyelve";
+"language.system" = "Rendszer alapértelmezése";
+"language.note" = "Egyes módosítások csak a Tidier újraindítása után lépnek teljesen érvénybe.";
+"language.restart" = "Tidier újraindítása";
+"about.version" = "%@ verzió";
+"about.madeBy" = "Szabad, nyílt menüsorkezelő.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

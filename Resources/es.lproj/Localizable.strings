@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (es). Hand-authored. */
+
+"app.tagline" = "Toma el control de tu barra de menús.";
+"menu.show" = "Mostrar elementos ocultos";
+"menu.hide" = "Ocultar elementos";
+"menu.alwaysHidden" = "Mostrar elementos siempre ocultos";
+"menu.settings" = "Ajustes…";
+"menu.about" = "Acerca de Tidier";
+"menu.quit" = "Salir de Tidier";
+"tab.general" = "General";
+"tab.menubar" = "Barra de menús";
+"tab.language" = "Idioma";
+"tab.about" = "Acerca de";
+"general.launchAtLogin" = "Abrir al iniciar sesión";
+"general.enableAlwaysHidden" = "Activar la sección siempre oculta";
+"general.autoRehide" = "Ocultar los elementos automáticamente";
+"general.rehideAfter" = "Ocultar de nuevo tras";
+"general.seconds" = "%d segundos";
+"general.revealOnHover" = "Mostrar al pasar el cursor";
+"menubar.help" = "Mantén ⌘ y arrastra los iconos a la izquierda del separador de Tidier para ocultarlos.";
+"menubar.helpAlways" = "Arrastra los iconos más allá del separador atenuado para ocultarlos siempre.";
+"language.pick" = "Idioma de la app";
+"language.system" = "Predeterminado del sistema";
+"language.note" = "Algunos cambios se aplican por completo tras reiniciar Tidier.";
+"language.restart" = "Reiniciar Tidier";
+"about.version" = "Versión %@";
+"about.madeBy" = "Un gestor de barra de menús libre y abierto.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

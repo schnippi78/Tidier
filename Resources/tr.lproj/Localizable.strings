@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (tr). Hand-authored. */
+
+"app.tagline" = "Menü çubuğunuzun kontrolünü elinize alın.";
+"menu.show" = "Gizli öğeleri göster";
+"menu.hide" = "Öğeleri gizle";
+"menu.alwaysHidden" = "Her zaman gizli öğeleri göster";
+"menu.settings" = "Ayarlar…";
+"menu.about" = "Tidier Hakkında";
+"menu.quit" = "Tidier’dan Çık";
+"tab.general" = "Genel";
+"tab.menubar" = "Menü Çubuğu";
+"tab.language" = "Dil";
+"tab.about" = "Hakkında";
+"general.launchAtLogin" = "Girişte aç";
+"general.enableAlwaysHidden" = "Her zaman gizli bölümünü etkinleştir";
+"general.autoRehide" = "Öğeleri otomatik olarak yeniden gizle";
+"general.rehideAfter" = "Şu süre sonra yeniden gizle";
+"general.seconds" = "%d saniye";
+"general.revealOnHover" = "Üzerine gelince göster";
+"menubar.help" = "⌘ tuşunu basılı tutup menü çubuğu simgelerini gizlemek için Tidier ayıracının soluna sürükleyin.";
+"menubar.helpAlways" = "Simgeleri her zaman gizlemek için soluk ayıracın ötesine sürükleyin.";
+"language.pick" = "Uygulama dili";
+"language.system" = "Sistem varsayılanı";
+"language.note" = "Bazı değişiklikler yalnızca Tidier yeniden başlatıldıktan sonra tam olarak uygulanır.";
+"language.restart" = "Tidier’ı yeniden başlat";
+"about.version" = "Sürüm %@";
+"about.madeBy" = "Özgür ve açık bir menü çubuğu yöneticisi.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

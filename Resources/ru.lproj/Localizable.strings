@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (ru). Hand-authored. */
+
+"app.tagline" = "Возьмите строку меню под контроль.";
+"menu.show" = "Показать скрытые объекты";
+"menu.hide" = "Скрыть объекты";
+"menu.alwaysHidden" = "Показать всегда скрытые объекты";
+"menu.settings" = "Настройки…";
+"menu.about" = "О программе Tidier";
+"menu.quit" = "Завершить Tidier";
+"tab.general" = "Основные";
+"tab.menubar" = "Строка меню";
+"tab.language" = "Язык";
+"tab.about" = "О программе";
+"general.launchAtLogin" = "Открывать при входе";
+"general.enableAlwaysHidden" = "Включить раздел «всегда скрытые»";
+"general.autoRehide" = "Автоматически скрывать объекты снова";
+"general.rehideAfter" = "Скрыть снова через";
+"general.seconds" = "%d с";
+"general.revealOnHover" = "Показывать при наведении";
+"menubar.help" = "Удерживайте ⌘ и перетащите значки строки меню влево от разделителя Tidier, чтобы скрыть их.";
+"menubar.helpAlways" = "Перетащите значки за затемнённый разделитель, чтобы скрыть их навсегда.";
+"language.pick" = "Язык приложения";
+"language.system" = "Системный по умолчанию";
+"language.note" = "Некоторые изменения вступают в силу полностью только после перезапуска Tidier.";
+"language.restart" = "Перезапустить Tidier";
+"about.version" = "Версия %@";
+"about.madeBy" = "Свободный и открытый менеджер строки меню.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

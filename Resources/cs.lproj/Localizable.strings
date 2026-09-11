@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (cs). Hand-authored. */
+
+"app.tagline" = "Převezměte kontrolu nad řádkem nabídek.";
+"menu.show" = "Zobrazit skryté položky";
+"menu.hide" = "Skrýt položky";
+"menu.alwaysHidden" = "Zobrazit vždy skryté položky";
+"menu.settings" = "Nastavení…";
+"menu.about" = "O aplikaci Tidier";
+"menu.quit" = "Ukončit Tidier";
+"tab.general" = "Obecné";
+"tab.menubar" = "Řádek nabídek";
+"tab.language" = "Jazyk";
+"tab.about" = "O aplikaci";
+"general.launchAtLogin" = "Otevřít při přihlášení";
+"general.enableAlwaysHidden" = "Zapnout sekci vždy skryté";
+"general.autoRehide" = "Automaticky znovu skrýt položky";
+"general.rehideAfter" = "Znovu skrýt po";
+"general.seconds" = "%d s";
+"general.revealOnHover" = "Zobrazit po najetí kurzorem";
+"menubar.help" = "Podržte ⌘ a přetáhněte ikony řádku nabídek vlevo od oddělovače Tidier, abyste je skryli.";
+"menubar.helpAlways" = "Přetáhněte ikony za ztlumený oddělovač, aby byly skryté trvale.";
+"language.pick" = "Jazyk aplikace";
+"language.system" = "Výchozí systému";
+"language.note" = "Některé změny se plně projeví až po restartu aplikace Tidier.";
+"language.restart" = "Restartovat Tidier";
+"about.version" = "Verze %@";
+"about.madeBy" = "Svobodný a otevřený správce řádku nabídek.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

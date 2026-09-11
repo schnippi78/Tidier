@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (de). Hand-authored. */
+
+"app.tagline" = "Behalte deine Menüleiste im Griff.";
+"menu.show" = "Ausgeblendete Objekte einblenden";
+"menu.hide" = "Objekte ausblenden";
+"menu.alwaysHidden" = "Immer ausgeblendete Objekte zeigen";
+"menu.settings" = "Einstellungen …";
+"menu.about" = "Über Tidier";
+"menu.quit" = "Tidier beenden";
+"tab.general" = "Allgemein";
+"tab.menubar" = "Menüleiste";
+"tab.language" = "Sprache";
+"tab.about" = "Über";
+"general.launchAtLogin" = "Beim Anmelden starten";
+"general.enableAlwaysHidden" = "Bereich „immer ausgeblendet“ aktivieren";
+"general.autoRehide" = "Objekte automatisch wieder ausblenden";
+"general.rehideAfter" = "Wieder ausblenden nach";
+"general.seconds" = "%d Sekunden";
+"general.revealOnHover" = "Ausgeblendete Objekte beim Überfahren zeigen";
+"menubar.help" = "Halte ⌘ gedrückt und ziehe deine Menüleisten-Symbole links neben den Tidier-Trenner, um sie auszublenden.";
+"menubar.helpAlways" = "Ziehe Symbole hinter den gedimmten Trenner, um sie dauerhaft auszublenden.";
+"language.pick" = "App-Sprache";
+"language.system" = "Systemstandard";
+"language.note" = "Einige Änderungen wirken erst nach einem Neustart von Tidier vollständig.";
+"language.restart" = "Tidier neu starten";
+"about.version" = "Version %@";
+"about.madeBy" = "Ein freier, offener Menüleisten-Manager.";
+"menubar.detected" = "Erkannte Menüleisten-Objekte";
+"menubar.refresh" = "Aktualisieren";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Drittanbieter";
+"bar.empty" = "Keine ausgeblendeten Objekte";
+"bar.grant" = "Bildschirmaufnahme erlauben, um Icons zu zeigen";
+"bar.grantAX" = "Bedienungshilfen erlauben für Namen & Gruppierung";

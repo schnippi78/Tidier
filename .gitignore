@@ -1,0 +1,13 @@
+# Build output
+build/
+
+# Compiled probe binary
+probe/probe
+
+# macOS
+.DS_Store
+
+# Local signing material (never commit keys)
+*.p12
+*.key
+*.crt

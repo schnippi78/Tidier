@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (zh-Hans). Hand-authored. */
+
+"app.tagline" = "掌控你的菜单栏。";
+"menu.show" = "显示隐藏项";
+"menu.hide" = "隐藏项目";
+"menu.alwaysHidden" = "显示始终隐藏项";
+"menu.settings" = "设置…";
+"menu.about" = "关于 Tidier";
+"menu.quit" = "退出 Tidier";
+"tab.general" = "通用";
+"tab.menubar" = "菜单栏";
+"tab.language" = "语言";
+"tab.about" = "关于";
+"general.launchAtLogin" = "登录时打开";
+"general.enableAlwaysHidden" = "启用“始终隐藏”区域";
+"general.autoRehide" = "自动重新隐藏项目";
+"general.rehideAfter" = "重新隐藏延时";
+"general.seconds" = "%d 秒";
+"general.revealOnHover" = "悬停时显示";
+"menubar.help" = "按住 ⌘ 并将菜单栏图标拖到 Tidier 分隔符左侧即可隐藏。";
+"menubar.helpAlways" = "将图标拖到变暗的分隔符之外即可始终隐藏。";
+"language.pick" = "应用语言";
+"language.system" = "系统默认";
+"language.note" = "部分更改需重新启动 Tidier 后才能完全生效。";
+"language.restart" = "重新启动 Tidier";
+"about.version" = "版本 %@";
+"about.madeBy" = "自由、开放的菜单栏管理工具。";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

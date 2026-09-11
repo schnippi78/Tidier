@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (ar). Hand-authored. */
+
+"app.tagline" = "تحكّم في شريط القوائم.";
+"menu.show" = "إظهار العناصر المخفية";
+"menu.hide" = "إخفاء العناصر";
+"menu.alwaysHidden" = "إظهار العناصر المخفية دائمًا";
+"menu.settings" = "الإعدادات…";
+"menu.about" = "عن Tidier";
+"menu.quit" = "إنهاء Tidier";
+"tab.general" = "عام";
+"tab.menubar" = "شريط القوائم";
+"tab.language" = "اللغة";
+"tab.about" = "حول";
+"general.launchAtLogin" = "الفتح عند تسجيل الدخول";
+"general.enableAlwaysHidden" = "تفعيل قسم المخفي دائمًا";
+"general.autoRehide" = "إخفاء العناصر تلقائيًا مرة أخرى";
+"general.rehideAfter" = "إعادة الإخفاء بعد";
+"general.seconds" = "%d ثانية";
+"general.revealOnHover" = "الإظهار عند التمرير فوقه";
+"menubar.help" = "اضغط ⌘ واسحب رموز شريط القوائم إلى يسار فاصل Tidier لإخفائها.";
+"menubar.helpAlways" = "اسحب الرموز إلى ما بعد الفاصل الباهت لإخفائها دائمًا.";
+"language.pick" = "لغة التطبيق";
+"language.system" = "افتراضي النظام";
+"language.note" = "تسري بعض التغييرات بالكامل بعد إعادة تشغيل Tidier.";
+"language.restart" = "إعادة تشغيل Tidier";
+"about.version" = "الإصدار %@";
+"about.madeBy" = "مدير شريط قوائم حر ومفتوح.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

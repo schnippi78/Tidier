@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (id). Hand-authored. */
+
+"app.tagline" = "Kendalikan bilah menu Anda.";
+"menu.show" = "Tampilkan item tersembunyi";
+"menu.hide" = "Sembunyikan item";
+"menu.alwaysHidden" = "Tampilkan item yang selalu tersembunyi";
+"menu.settings" = "Pengaturan…";
+"menu.about" = "Tentang Tidier";
+"menu.quit" = "Keluar dari Tidier";
+"tab.general" = "Umum";
+"tab.menubar" = "Bilah Menu";
+"tab.language" = "Bahasa";
+"tab.about" = "Tentang";
+"general.launchAtLogin" = "Buka saat masuk";
+"general.enableAlwaysHidden" = "Aktifkan bagian selalu tersembunyi";
+"general.autoRehide" = "Sembunyikan lagi item secara otomatis";
+"general.rehideAfter" = "Sembunyikan lagi setelah";
+"general.seconds" = "%d detik";
+"general.revealOnHover" = "Tampilkan saat kursor diarahkan";
+"menubar.help" = "Tahan ⌘ dan seret ikon bilah menu ke kiri pemisah Tidier untuk menyembunyikannya.";
+"menubar.helpAlways" = "Seret ikon melewati pemisah yang redup untuk menyembunyikannya selamanya.";
+"language.pick" = "Bahasa aplikasi";
+"language.system" = "Bawaan sistem";
+"language.note" = "Beberapa perubahan baru berlaku sepenuhnya setelah Tidier dimulai ulang.";
+"language.restart" = "Mulai ulang Tidier";
+"about.version" = "Versi %@";
+"about.madeBy" = "Pengelola bilah menu yang bebas dan terbuka.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (uk). Hand-authored. */
+
+"app.tagline" = "Візьміть рядок меню під контроль.";
+"menu.show" = "Показати приховані об’єкти";
+"menu.hide" = "Приховати об’єкти";
+"menu.alwaysHidden" = "Показати завжди приховані об’єкти";
+"menu.settings" = "Параметри…";
+"menu.about" = "Про програму Tidier";
+"menu.quit" = "Завершити Tidier";
+"tab.general" = "Загальні";
+"tab.menubar" = "Рядок меню";
+"tab.language" = "Мова";
+"tab.about" = "Про програму";
+"general.launchAtLogin" = "Відкривати під час входу";
+"general.enableAlwaysHidden" = "Увімкнути розділ «завжди приховані»";
+"general.autoRehide" = "Автоматично приховувати об’єкти знову";
+"general.rehideAfter" = "Приховати знову через";
+"general.seconds" = "%d с";
+"general.revealOnHover" = "Показувати під час наведення";
+"menubar.help" = "Утримуйте ⌘ і перетягніть піктограми рядка меню ліворуч від роздільника Tidier, щоб приховати їх.";
+"menubar.helpAlways" = "Перетягніть піктограми за приглушений роздільник, щоб приховати їх назавжди.";
+"language.pick" = "Мова застосунку";
+"language.system" = "Системна за замовчуванням";
+"language.note" = "Деякі зміни набувають повної дії лише після перезапуску Tidier.";
+"language.restart" = "Перезапустити Tidier";
+"about.version" = "Версія %@";
+"about.madeBy" = "Вільний і відкритий менеджер рядка меню.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

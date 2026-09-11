@@ -1,0 +1,207 @@
+import SwiftUI
+import AppKit
+
+enum SettingsTab: Hashable { case general, menubar, language, about }
+
+final class SettingsState: ObservableObject {
+    @Published var tab: SettingsTab = .general
+}
+
+/// Hosts the SwiftUI settings UI in a normal window and brings the app forward
+/// (an accessory app has no Dock icon, so we activate to show the window).
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
+    static let shared = SettingsWindowController()
+    private let state = SettingsState()
+
+    private init() {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 420),
+            styleMask: [.titled, .closable, .miniaturizable],
+            backing: .buffered, defer: false)
+        window.title = "Tidier"
+        window.isReleasedWhenClosed = false
+        window.center()
+        super.init(window: window)
+        window.delegate = self
+        rebuildContent()
+        NotificationCenter.default.addObserver(
+            forName: .tidierPrefsChanged, object: nil, queue: .main) { [weak self] _ in
+                self?.rebuildContent()
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func rebuildContent() {
+        let root = SettingsView()
+            .environmentObject(state)
+            .environmentObject(Preferences.shared)
+            .environmentObject(LanguageManager.shared)
+            .environmentObject(ScannerModel.shared)
+            .environment(\.layoutDirection, LanguageManager.shared.isRTL ? .rightToLeft : .leftToRight)
+        window?.contentView = NSHostingView(rootView: root)
+    }
+
+    func show(tab: SettingsTab = .general) {
+        state.tab = tab
+        // Give the window real front-most presence while open, then drop back to
+        // an accessory (menu-bar-only) app once it closes.
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        NSApp.setActivationPolicy(.accessory)
+    }
+}
+
+struct SettingsView: View {
+    @EnvironmentObject var state: SettingsState
+    @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var lang: LanguageManager
+
+    var body: some View {
+        TabView(selection: $state.tab) {
+            GeneralTab().tabItem { Label(L("tab.general"), systemImage: "gearshape") }.tag(SettingsTab.general)
+            MenuBarTab().tabItem { Label(L("tab.menubar"), systemImage: "menubar.rectangle") }.tag(SettingsTab.menubar)
+            LanguageTab().tabItem { Label(L("tab.language"), systemImage: "globe") }.tag(SettingsTab.language)
+            AboutTab().tabItem { Label(L("tab.about"), systemImage: "info.circle") }.tag(SettingsTab.about)
+        }
+        .frame(width: 560, height: 420)
+        .padding(.top, 4)
+    }
+}
+
+private struct GeneralTab: View {
+    @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var lang: LanguageManager
+
+    var body: some View {
+        Form {
+            Toggle(L("general.launchAtLogin"), isOn: Binding(
+                get: { prefs.launchAtLogin }, set: { prefs.launchAtLogin = $0 }))
+
+            Toggle(L("general.enableAlwaysHidden"), isOn: Binding(
+                get: { prefs.enableAlwaysHidden }, set: { prefs.enableAlwaysHidden = $0 }))
+
+            Divider()
+
+            Toggle(L("general.autoRehide"), isOn: Binding(
+                get: { prefs.autoRehide }, set: { prefs.autoRehide = $0 }))
+
+            HStack {
+                Text(L("general.rehideAfter"))
+                Stepper(value: Binding(get: { prefs.rehideInterval },
+                                       set: { prefs.rehideInterval = $0 }),
+                        in: 1...120) {
+                    Text(L("general.seconds", prefs.rehideInterval))
+                }
+            }
+            .disabled(!prefs.autoRehide)
+
+            Toggle(L("general.revealOnHover"), isOn: Binding(
+                get: { prefs.revealOnHover }, set: { prefs.revealOnHover = $0 }))
+        }
+        .formStyle(.grouped)
+    }
+}
+
+private struct MenuBarTab: View {
+    @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var lang: LanguageManager
+    @EnvironmentObject var scanner: ScannerModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(L("menubar.help"), systemImage: "hand.draw")
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack {
+                Text(L("menubar.detected")).font(.headline)
+                Spacer()
+                Button {
+                    scanner.refresh()
+                } label: {
+                    Label(L("menubar.refresh"), systemImage: "arrow.clockwise")
+                }
+            }
+
+            List(scanner.items) { item in
+                HStack(spacing: 8) {
+                    Image(systemName: item.isSystem ? "gearshape.2" : "app.dashed")
+                        .foregroundStyle(item.isSystem ? .secondary : .primary)
+                    Text(item.displayName)
+                    Spacer()
+                    Text("x \(Int(item.x)) · \(Int(item.width))pt")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(minHeight: 200)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear { scanner.refresh() }
+    }
+}
+
+private struct LanguageTab: View {
+    @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var lang: LanguageManager
+
+    var body: some View {
+        Form {
+            Picker(L("language.pick"), selection: Binding(
+                get: { prefs.appLanguage },
+                set: { newValue in LanguageManager.shared.apply(newValue) })) {
+                Text(L("language.system")).tag("")
+                Divider()
+                ForEach(Languages.all) { l in
+                    Text(l.autonym).tag(l.code)
+                }
+            }
+            .pickerStyle(.menu)
+
+            Text(L("language.note"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+            Button(L("language.restart")) { relaunch() }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func relaunch() {
+        guard let path = Bundle.main.bundlePath as String? else { return }
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        task.arguments = ["-n", path]
+        try? task.run()
+        NSApp.terminate(nil)
+    }
+}
+
+private struct AboutTab: View {
+    @EnvironmentObject var lang: LanguageManager
+
+    private var version: String {
+        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.1.0"
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 44, weight: .light))
+                .foregroundStyle(.tint)
+            Text("Tidier").font(.largeTitle.bold())
+            Text(L("app.tagline")).foregroundStyle(.secondary)
+            Text(L("about.version", version)).font(.footnote).foregroundStyle(.secondary)
+            Text(L("about.madeBy")).font(.footnote).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+}

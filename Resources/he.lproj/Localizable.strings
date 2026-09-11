@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (he). Hand-authored. */
+
+"app.tagline" = "קח שליטה על שורת התפריטים.";
+"menu.show" = "הצג פריטים מוסתרים";
+"menu.hide" = "הסתר פריטים";
+"menu.alwaysHidden" = "הצג פריטים מוסתרים תמיד";
+"menu.settings" = "הגדרות…";
+"menu.about" = "אודות Tidier";
+"menu.quit" = "צא מ‑Tidier";
+"tab.general" = "כללי";
+"tab.menubar" = "שורת התפריטים";
+"tab.language" = "שפה";
+"tab.about" = "אודות";
+"general.launchAtLogin" = "פתח בעת ההתחברות";
+"general.enableAlwaysHidden" = "הפעל את המקטע מוסתר תמיד";
+"general.autoRehide" = "הסתר פריטים אוטומטית שוב";
+"general.rehideAfter" = "הסתר שוב לאחר";
+"general.seconds" = "%d שניות";
+"general.revealOnHover" = "הצג בעת מעבר הסמן";
+"menubar.help" = "החזק ⌘ וגרור את סמלי שורת התפריטים לשמאל המפריד של Tidier כדי להסתירם.";
+"menubar.helpAlways" = "גרור סמלים אל מעבר למפריד העמום כדי להסתירם תמיד.";
+"language.pick" = "שפת האפליקציה";
+"language.system" = "ברירת המחדל של המערכת";
+"language.note" = "חלק מהשינויים ייכנסו לתוקף מלא רק לאחר הפעלה מחדש של Tidier.";
+"language.restart" = "הפעל מחדש את Tidier";
+"about.version" = "גרסה %@";
+"about.madeBy" = "מנהל שורת תפריטים חופשי ופתוח.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

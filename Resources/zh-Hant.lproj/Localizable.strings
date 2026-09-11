@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (zh-Hant). Hand-authored. */
+
+"app.tagline" = "掌控你的選單列。";
+"menu.show" = "顯示隱藏項目";
+"menu.hide" = "隱藏項目";
+"menu.alwaysHidden" = "顯示永遠隱藏項目";
+"menu.settings" = "設定…";
+"menu.about" = "關於 Tidier";
+"menu.quit" = "結束 Tidier";
+"tab.general" = "一般";
+"tab.menubar" = "選單列";
+"tab.language" = "語言";
+"tab.about" = "關於";
+"general.launchAtLogin" = "登入時開啟";
+"general.enableAlwaysHidden" = "啟用「永遠隱藏」區域";
+"general.autoRehide" = "自動重新隱藏項目";
+"general.rehideAfter" = "重新隱藏延遲";
+"general.seconds" = "%d 秒";
+"general.revealOnHover" = "指標懸停時顯示";
+"menubar.help" = "按住 ⌘ 並將選單列圖像拖到 Tidier 分隔符號左側即可隱藏。";
+"menubar.helpAlways" = "將圖像拖到變暗的分隔符號之外即可永遠隱藏。";
+"language.pick" = "App 語言";
+"language.system" = "系統預設";
+"language.note" = "部分變更需重新啟動 Tidier 後才會完全生效。";
+"language.restart" = "重新啟動 Tidier";
+"about.version" = "版本 %@";
+"about.madeBy" = "自由、開放的選單列管理工具。";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";

@@ -1,0 +1,34 @@
+/* Tidier — Localizable.strings (fi). Hand-authored. */
+
+"app.tagline" = "Ota valikkopalkki hallintaasi.";
+"menu.show" = "Näytä piilotetut kohteet";
+"menu.hide" = "Piilota kohteet";
+"menu.alwaysHidden" = "Näytä aina piilotetut kohteet";
+"menu.settings" = "Asetukset…";
+"menu.about" = "Tietoja: Tidier";
+"menu.quit" = "Lopeta Tidier";
+"tab.general" = "Yleiset";
+"tab.menubar" = "Valikkopalkki";
+"tab.language" = "Kieli";
+"tab.about" = "Tietoja";
+"general.launchAtLogin" = "Avaa kirjautumisen yhteydessä";
+"general.enableAlwaysHidden" = "Ota käyttöön aina piilotettu -osio";
+"general.autoRehide" = "Piilota kohteet automaattisesti uudelleen";
+"general.rehideAfter" = "Piilota uudelleen viiveellä";
+"general.seconds" = "%d sekuntia";
+"general.revealOnHover" = "Näytä osoittimen kohdistuksella";
+"menubar.help" = "Pidä ⌘ pohjassa ja vedä valikkopalkin kuvakkeet Tidier-erottimen vasemmalle puolelle piilottaaksesi ne.";
+"menubar.helpAlways" = "Vedä kuvakkeet himmennetyn erottimen ohi piilottaaksesi ne pysyvästi.";
+"language.pick" = "Sovelluksen kieli";
+"language.system" = "Järjestelmän oletus";
+"language.note" = "Jotkin muutokset tulevat täysin voimaan vasta, kun Tidier käynnistetään uudelleen.";
+"language.restart" = "Käynnistä Tidier uudelleen";
+"about.version" = "Versio %@";
+"about.madeBy" = "Vapaa ja avoin valikkopalkin hallinta.";
+"menubar.detected" = "Detected menu bar items";
+"menubar.refresh" = "Refresh";
+"bar.apple" = "Apple & System";
+"bar.thirdParty" = "Third-party apps";
+"bar.empty" = "No hidden items";
+"bar.grant" = "Allow Screen Recording to show icons";
+"bar.grantAX" = "Allow Accessibility for names & grouping";
