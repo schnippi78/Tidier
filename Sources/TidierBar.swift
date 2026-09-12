@@ -183,38 +183,46 @@ final class TidierBar: NSObject, NSWindowDelegate {
     /// Split into Apple/System vs third-party using real AX identity when available,
     /// falling back to the CGWindow name heuristic. Tidier's own control items drop out.
     static func makeGroups(from items: [MenuBarItemInfo]) -> [BarGroup] {
-        var apple: [BarItem] = []
-        var third: [BarItem] = []
-        for info in items {
-            if info.owner == "Tidier" || info.name.hasPrefix("Tidier.") { continue }
-            // iStat's CPU/RAM/battery are shown natively as dashboard rings, so drop
-            // its (unreliably captured) menu bar items from the mirrored list.
-            if info.name.hasPrefix("com.bjango.istatmenus.") { continue }
-            let resolved = AXResolver.resolve(at: info.centerX, y: info.centerY)
-            if resolved?.bundleId == "de.csho.Tidier" { continue }
+        group(items.compactMap { makeItem(from: $0) })
+    }
 
-            let isApple: Bool = {
-                if let b = resolved?.bundleId { return b == "com.apple.controlcenter" || b.hasPrefix("com.apple.") }
-                return info.isSystem
-            }()
-            let label = label(for: info, resolved: resolved, isApple: isApple)
-            // Battery + weather are shown natively (ring / weather tile) — drop the
-            // mirrored system items so nothing appears twice.
-            let low = label.lowercased()
-            if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { continue }
-            if isApple && (low.contains("wetter") || low.contains("weather")) { continue }
-            let item = BarItem(info: info,
-                               image: icon(for: info, resolved: resolved, isApple: isApple),
-                               symbolName: isApple ? symbol(for: label, resolved: resolved) : nil,
-                               label: label,
-                               isApple: isApple,
-                               key: stableKey(info: info, resolved: resolved, label: label))
-            if isApple { apple.append(item) } else { third.append(item) }
-        }
+    /// Group a set of already-built items into Apps / Apple & System sections.
+    static func group(_ items: [BarItem]) -> [BarGroup] {
         var groups: [BarGroup] = []
+        let third = items.filter { !$0.isApple }
+        let apple = items.filter { $0.isApple }
         if !third.isEmpty { groups.append(BarGroup(title: "Apps", items: third)) }
         if !apple.isEmpty { groups.append(BarGroup(title: L("bar.apple"), items: apple)) }
         return groups
+    }
+
+    /// Resolve + capture one on-screen item into a BarItem. Returns nil for items we
+    /// deliberately suppress (Tidier's own, iStat, native battery/weather). The item
+    /// MUST be on-screen at `info.center` for the AX resolve + image capture to work.
+    static func makeItem(from info: MenuBarItemInfo) -> BarItem? {
+        if info.owner == "Tidier" || info.name.hasPrefix("Tidier.") { return nil }
+        if info.name.hasPrefix("com.bjango.istatmenus.") { return nil }
+        // Fixed system chrome that belongs in the bar, not the panel:
+        if info.name == "Clock" || info.name == "BentoBox-0" { return nil }
+        let resolved = AXResolver.resolve(at: info.centerX, y: info.centerY)
+        if resolved?.bundleId == "de.csho.Tidier" { return nil }
+        // The screen-recording indicator only appears because *we* are capturing.
+        if let t = resolved?.title?.lowercased(),
+           t.contains("bildschirmaufnahme") || t.contains("screen recording") || t.contains("recording") { return nil }
+        let isApple: Bool = {
+            if let b = resolved?.bundleId { return b == "com.apple.controlcenter" || b.hasPrefix("com.apple.") }
+            return info.isSystem
+        }()
+        let label = label(for: info, resolved: resolved, isApple: isApple)
+        let low = label.lowercased()
+        if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { return nil }
+        if isApple && (low.contains("wetter") || low.contains("weather")) { return nil }
+        return BarItem(info: info,
+                       image: icon(for: info, resolved: resolved, isApple: isApple),
+                       symbolName: isApple ? symbol(for: label, resolved: resolved) : nil,
+                       label: label,
+                       isApple: isApple,
+                       key: stableKey(info: info, resolved: resolved, label: label))
     }
 
     /// Stable across relaunches (window ids are not): bundle id + title, else the

@@ -51,6 +51,9 @@ final class StatusBarController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
             self?.refreshCache()
             self?.collapseToResting()
+            // Then do the full move-capture pass (reaches overflow items) while no panel
+            // is open — the reliable moment. Menu bar briefly shuffles once at startup.
+            self?.rebuildFullCache()
         }
     }
 
@@ -155,24 +158,12 @@ final class StatusBarController {
     }
 
     private func openTile() {
-        // macOS can't snapshot a hidden (off-screen) status item, so to show the tiles
-        // with *live* glyph values (iStat %, weather °C) we reveal the bar for a beat,
-        // re-capture + re-resolve every item while it's on-screen, then collapse and
-        // present the panel. Falls back to the last snapshot if capture yields nothing.
-        expanded = true
-        revealingAlways = true
-        applyLayout()
-        shrinkOwnItems()   // free our own width so the maximum number of items fits on-screen
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            let fresh = TidierBar.makeGroups(from: self.hiddenCandidates())
-            if !fresh.isEmpty { self.cachedGroups = fresh; ScannerModel.shared.detected = fresh.flatMap { $0.items } }
-            self.restoreOwnItems()
-            self.expanded = false
-            self.revealingAlways = false
-            self.applyLayout()
-            self.presentTile()
-        }
+        // Show the cache immediately (fast). The full capture — which briefly moves the
+        // menu bar items around to reach overflow icons — runs once, lazily, and then
+        // refreshes the open panel, so the first open isn't blocked and login has no
+        // shuffle.
+        ensureCollapsed()
+        presentTile()
     }
 
     /// During a capture reveal, collapse Tidier's own toggle + separators to a sliver
@@ -185,6 +176,42 @@ final class StatusBarController {
     }
     private func restoreOwnItems() {
         mainItem.length = normalLength
+    }
+
+    private var buildingCache = false
+    private var didFullBuild = false
+
+    /// Build the FULL item cache (incl. overflow items) by revealing + shrinking, then
+    /// moving each off-screen item onto a visible stage to capture it (CaptureEngine),
+    /// restoring order afterwards. Runs the move/capture pass off the main thread; the
+    /// menu bar briefly shuffles. Updates the panel live if it's open.
+    func rebuildFullCache() {
+        guard !buildingCache else { return }
+        buildingCache = true
+        expanded = true
+        revealingAlways = true
+        applyLayout()
+        shrinkOwnItems()
+        let threshold = mainItem.button?.window?.frame.minX ?? 1200
+        DispatchQueue.global().async { [weak self] in
+            usleep(350_000)
+            let y = CaptureEngine.scanAll().first(where: { $0.x >= 0 })?.info.centerY ?? 12
+            let items = CaptureEngine.captureAll(stageX: threshold - 40, menuBarY: y, thresholdX: threshold)
+            let groups = TidierBar.group(items)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.buildingCache = false
+                self.restoreOwnItems()
+                self.expanded = false
+                self.revealingAlways = false
+                self.applyLayout()
+                if !groups.isEmpty {
+                    self.cachedGroups = groups
+                    ScannerModel.shared.detected = items
+                    if self.tileOpen { self.presentTile() }   // refresh the open panel
+                }
+            }
+        }
     }
 
     private func presentTile() {
@@ -320,23 +347,8 @@ final class StatusBarController {
     /// Re-detect the real hidden items for the Settings list: reveal briefly (so they
     /// are on-screen and identifiable), capture, publish, then restore.
     func refreshDetected() {
-        let wasExpanded = expanded
-        let wasAlways = revealingAlways
-        expanded = true
-        revealingAlways = true
-        applyLayout()
-        shrinkOwnItems()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            guard let self = self else { return }
-            let groups = TidierBar.makeGroups(from: self.hiddenCandidates())
-            ScannerModel.shared.detected = groups.flatMap { $0.items }
-            self.restoreOwnItems()
-            if !self.arranging {
-                self.expanded = wasExpanded
-                self.revealingAlways = wasAlways
-                self.applyLayout()
-            }
-        }
+        didFullBuild = true
+        rebuildFullCache()   // full move-capture pass, updates ScannerModel.detected + cache
     }
 
     private func collapseToResting() {
