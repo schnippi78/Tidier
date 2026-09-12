@@ -179,9 +179,8 @@ final class StatusBarController {
         tileOpen = true
     }
 
-    /// The System rings aren't real menu bar items — open the matching system app,
-    /// and jump straight to the relevant Activity Monitor tab (⌘1 CPU · ⌘2 Speicher ·
-    /// ⌘4 Festplatte · ⌘5 Netzwerk). Battery → Battery settings.
+    /// The System rings aren't real menu bar items — open the matching system app:
+    /// CPU/RAM/Disk/Network → Activity Monitor, battery → Battery settings.
     private func activateStat(_ stat: Stat) {
         closeTile()
         if stat.key == "sys.batt" {
@@ -190,43 +189,11 @@ final class StatusBarController {
             }
             return
         }
-        let tab: String? = ["sys.cpu": "1", "sys.ram": "2", "sys.disk": "4", "sys.net": "5"][stat.key]
-        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.ActivityMonitor")
-        else { return }
-        let cfg = NSWorkspace.OpenConfiguration()
-        cfg.activates = true
-        NSWorkspace.shared.openApplication(at: url, configuration: cfg) { [weak self] _, _ in
-            guard let tab = tab else { return }
-            self?.waitForActivityMonitor(then: tab, attempts: 20)
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.ActivityMonitor") {
+            let cfg = NSWorkspace.OpenConfiguration()
+            cfg.activates = true
+            NSWorkspace.shared.openApplication(at: url, configuration: cfg)
         }
-    }
-
-    /// Cold-launching Activity Monitor can take a second — wait until it's actually
-    /// frontmost before posting the tab shortcut, otherwise ⌘1 lands in the wrong app.
-    private func waitForActivityMonitor(then tab: String, attempts: Int) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, attempts > 0 else { return }
-            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.ActivityMonitor" {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.selectActivityTab(tab) }
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    self.waitForActivityMonitor(then: tab, attempts: attempts - 1)
-                }
-            }
-        }
-    }
-
-    /// Post ⌘<digit> to the (now frontmost) Activity Monitor to pick its tab.
-    private func selectActivityTab(_ digit: String) {
-        let codes: [String: CGKeyCode] = ["1": 18, "2": 19, "3": 20, "4": 21, "5": 23]
-        guard let code = codes[digit] else { return }
-        let src = CGEventSource(stateID: .combinedSessionState)
-        let down = CGEvent(keyboardEventSource: src, virtualKey: code, keyDown: true)
-        down?.flags = .maskCommand
-        let up = CGEvent(keyboardEventSource: src, virtualKey: code, keyDown: false)
-        up?.flags = .maskCommand
-        down?.post(tap: .cghidEventTap)
-        up?.post(tap: .cghidEventTap)
     }
 
     /// Clicking a tile activates the real menu bar item behind it (Ice-Bar style).

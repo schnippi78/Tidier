@@ -82,14 +82,17 @@ final class SystemStats: ObservableObject {
     }
 
     private func readDisk() {
-        var st = statfs()
-        guard statfs("/", &st) == 0 else { return }
-        let total = Double(st.f_blocks) * Double(st.f_bsize)
-        let free  = Double(st.f_bavail) * Double(st.f_bsize)
-        guard total > 0 else { return }
-        disk = (total - free) / total * 100
-        diskTotalGB = total / 1e9
-        diskUsedGB = (total - free) / 1e9
+        // Finder-consistent: "available for important usage" counts APFS purgeable
+        // space as free, so we don't overstate usage the way raw statfs does.
+        let url = URL(fileURLWithPath: "/")
+        guard let v = try? url.resourceValues(forKeys: [.volumeTotalCapacityKey,
+                                                        .volumeAvailableCapacityForImportantUsageKey]),
+              let total = v.volumeTotalCapacity,
+              let avail = v.volumeAvailableCapacityForImportantUsage, total > 0 else { return }
+        let t = Double(total), free = Double(avail)
+        disk = (t - free) / t * 100
+        diskTotalGB = t / 1e9
+        diskUsedGB = (t - free) / 1e9
     }
 
     /// Throughput = byte delta over the sample interval, summed over en* interfaces.
