@@ -160,16 +160,31 @@ final class StatusBarController {
         // re-capture + re-resolve every item while it's on-screen, then collapse and
         // present the panel. Falls back to the last snapshot if capture yields nothing.
         expanded = true
-        revealingAlways = false
+        revealingAlways = true
         applyLayout()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+        shrinkOwnItems()   // free our own width so the maximum number of items fits on-screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self = self else { return }
             let fresh = TidierBar.makeGroups(from: self.hiddenCandidates())
             if !fresh.isEmpty { self.cachedGroups = fresh; ScannerModel.shared.detected = fresh.flatMap { $0.items } }
+            self.restoreOwnItems()
             self.expanded = false
+            self.revealingAlways = false
             self.applyLayout()
             self.presentTile()
         }
+    }
+
+    /// During a capture reveal, collapse Tidier's own toggle + separators to a sliver
+    /// so the user's items shift right into that freed space — squeezing one or two
+    /// more past the notch so they can be captured.
+    private func shrinkOwnItems() {
+        mainItem.length = 1
+        hiddenSep.length = 1
+        alwaysSep?.length = 1
+    }
+    private func restoreOwnItems() {
+        mainItem.length = normalLength
     }
 
     private func presentTile() {
@@ -311,10 +326,12 @@ final class StatusBarController {
         expanded = true
         revealingAlways = true
         applyLayout()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+        shrinkOwnItems()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             guard let self = self else { return }
             let groups = TidierBar.makeGroups(from: self.hiddenCandidates())
             ScannerModel.shared.detected = groups.flatMap { $0.items }
+            self.restoreOwnItems()
             if !self.arranging {
                 self.expanded = wasExpanded
                 self.revealingAlways = wasAlways
@@ -381,6 +398,7 @@ final class StatusBarController {
         revealingAlways = true
         rehideTimer?.invalidate()
         applyLayout()
+        mainItem.length = 1   // free the toggle's width so more items are reachable (marker stays visible)
         ArrangeHUD.shared.onDone = { [weak self] in self?.exitArrangeMode() }
         ArrangeHUD.shared.show(near: toggleScreenRect())
     }
@@ -389,6 +407,7 @@ final class StatusBarController {
         guard arranging else { return }
         arranging = false
         ArrangeHUD.shared.hide()
+        mainItem.length = normalLength
         expanded = false
         revealingAlways = false
         applyLayout()
