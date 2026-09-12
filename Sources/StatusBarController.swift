@@ -222,28 +222,26 @@ final class StatusBarController {
     private func activateItem(_ item: BarItem) {
         closeTile()
         expanded = true
-        revealingAlways = false
+        revealingAlways = true
         applyLayout()
-        // Let the menu bar finish re-laying-out the revealed items before clicking.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+        shrinkOwnItems()   // same layout as capture, so the item (e.g. WireGuard) is on-screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
             guard let self = self else { return }
-            // Leave the cursor at the item so its just-opened menu is right under the
-            // pointer, ready to use (the click warped it there — we keep it).
-            self.clickMenuBarItem(windowID: item.info.id, name: item.info.name, owner: item.info.owner)
+            // Re-resolve the currently on-screen items and click the one with the SAME
+            // stable identity (key). Matching by window id / name is unreliable — a
+            // stale id falls through to the first "Item-0" and hits the wrong app.
+            let all = TidierBar.makeGroups(from: self.hiddenCandidates()).flatMap { $0.items }
+            if let t = all.first(where: { $0.key == item.key }) {
+                self.postClick(atX: t.info.centerX, y: t.info.centerY)
+            }
             self.armRevealCollapse()
         }
     }
 
-    /// Re-scan for the item's CURRENT on-screen position (window ids are stable while
-    /// they live; fall back to name/owner) and post a left click there.
-    private func clickMenuBarItem(windowID: Int, name: String, owner: String) {
-        let items = MenuBarScanner.scan()
-        let target = items.first { $0.id == windowID }
-            ?? items.first { !name.isEmpty && $0.name == name }
-            ?? items.first { $0.owner == owner && owner != "Tidier" }
-        guard let t = target else { return }
-        // CGWindow bounds share CGEvent's top-left global coordinate space.
-        let p = CGPoint(x: t.centerX, y: t.centerY)
+    /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left
+    /// global coordinate space, so item centers map directly.
+    private func postClick(atX x: CGFloat, y: CGFloat) {
+        let p = CGPoint(x: x, y: y)
         let src = CGEventSource(stateID: .combinedSessionState)
         CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: p, mouseButton: .left)?
             .post(tap: .cghidEventTap)
@@ -293,6 +291,7 @@ final class StatusBarController {
 
     private func finishReveal() {
         disarmRevealCollapse()
+        restoreOwnItems()   // activation shrank the toggle; bring it back
         ensureCollapsed()
     }
 
