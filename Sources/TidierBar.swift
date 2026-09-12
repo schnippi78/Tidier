@@ -351,14 +351,11 @@ struct TidierBarView: View {
             }
         } else {
             let rows = packRows(contents)
-            VStack(spacing: 7) {
+            VStack(spacing: 8) {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                    HStack(spacing: 7) {
+                    HStack(spacing: 8) {
                         ForEach(Array(row.enumerated()), id: \.offset) { _, c in
                             tileCell(c, itemKeys: itemKeys).frame(maxWidth: .infinity)
-                        }
-                        if row.count == 1 && !isFullWidth(row[0]) {
-                            Color.clear.frame(maxWidth: .infinity, minHeight: 1)
                         }
                     }
                 }
