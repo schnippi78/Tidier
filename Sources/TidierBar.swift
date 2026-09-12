@@ -76,6 +76,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
               onActivate: @escaping (BarItem) -> Void,
               onStat: @escaping (Stat) -> Void) {
         SystemStats.shared.start()   // live CPU/RAM/battery for the dashboard rings
+        WeatherService.shared.refreshIfStale()
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
                                  hasAccessibility: PermissionManager.hasAccessibility,
@@ -153,10 +154,11 @@ final class TidierBar: NSObject, NSWindowDelegate {
                 return info.isSystem
             }()
             let label = label(for: info, resolved: resolved, isApple: isApple)
-            // Battery is shown natively as a dashboard ring — drop the mirrored
-            // system battery item so it doesn't appear twice.
+            // Battery + weather are shown natively (ring / weather tile) — drop the
+            // mirrored system items so nothing appears twice.
             let low = label.lowercased()
             if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { continue }
+            if isApple && (low.contains("wetter") || low.contains("weather")) { continue }
             let item = BarItem(info: info,
                                image: icon(for: info, resolved: resolved, isApple: isApple),
                                symbolName: isApple ? symbol(for: label, resolved: resolved) : nil,
@@ -286,6 +288,7 @@ struct TidierBarView: View {
 
     @ObservedObject private var model = TileModel.shared
     @ObservedObject private var stats = SystemStats.shared
+    @ObservedObject private var weather = WeatherService.shared
 
     private var statItems: [Stat] {
         var s: [Stat] = [
@@ -300,6 +303,7 @@ struct TidierBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
+            if let t = weather.temp { weatherHeader(t) }
             section(title: "System") {
                 TileFlow(spacing: 7, lineSpacing: 7) {
                     ForEach(statItems) { stat in
@@ -346,6 +350,47 @@ struct TidierBarView: View {
         .frame(width: 336, alignment: .leading)
         .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 20)))
         .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.08)))
+    }
+
+    /// Weather widget-style header (city · big temp · condition · H/T), tap opens
+    /// the Weather app.
+    private func weatherHeader(_ t: Double) -> some View {
+        let d = WeatherService.describe(weather.code)
+        return Button {
+            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.weather") {
+                NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+            }
+        } label: {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 3) {
+                        Text(weather.city ?? "Wetter").font(.system(size: 12.5, weight: .semibold))
+                        Image(systemName: "location.fill").font(.system(size: 8)).foregroundStyle(.secondary)
+                    }
+                    Text("\(Int(t.rounded()))°").font(.system(size: 30, weight: .medium))
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 1) {
+                    Image(systemName: d.symbol).font(.system(size: 19))
+                        .symbolRenderingMode(.multicolor)
+                    Text(d.text).font(.system(size: 11)).foregroundStyle(.secondary)
+                    if let hi = weather.high, let lo = weather.low {
+                        Text("H: \(Int(hi.rounded()))°  T: \(Int(lo.rounded()))°")
+                            .font(.system(size: 10)).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 13).padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .background(
+                LinearGradient(colors: [Color(red: 0.20, green: 0.40, blue: 0.70),
+                                        Color(red: 0.10, green: 0.22, blue: 0.42)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { inside in if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() } }
     }
 
     @ViewBuilder private func section<C: View>(title: String, @ViewBuilder _ content: () -> C) -> some View {

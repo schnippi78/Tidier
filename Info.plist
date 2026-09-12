@@ -30,6 +30,8 @@
 	<string>Tidier — a free, open menu bar manager.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Tidier zeigt in der Kachel das Wetter für deinen aktuellen Standort.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>

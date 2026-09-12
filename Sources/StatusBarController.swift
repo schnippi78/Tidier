@@ -197,7 +197,22 @@ final class StatusBarController {
         cfg.activates = true
         NSWorkspace.shared.openApplication(at: url, configuration: cfg) { [weak self] _, _ in
             guard let tab = tab else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self?.selectActivityTab(tab) }
+            self?.waitForActivityMonitor(then: tab, attempts: 20)
+        }
+    }
+
+    /// Cold-launching Activity Monitor can take a second — wait until it's actually
+    /// frontmost before posting the tab shortcut, otherwise ⌘1 lands in the wrong app.
+    private func waitForActivityMonitor(then tab: String, attempts: Int) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, attempts > 0 else { return }
+            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.ActivityMonitor" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.selectActivityTab(tab) }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    self.waitForActivityMonitor(then: tab, attempts: attempts - 1)
+                }
+            }
         }
     }
 
