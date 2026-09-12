@@ -33,6 +33,7 @@ final class StatusBarController {
     /// re-hide it once the user is done (next click, or a safety timeout).
     private var revealCollapseMonitor: Any?
     private var revealSafetyTimer: Timer?
+    private var arranging = false   // Arrange mode: bar fully revealed, separator marked
 
     init() {
         StatusBarController.shared = self
@@ -131,6 +132,7 @@ final class StatusBarController {
     // MARK: - Interaction
 
     @objc private func mainClicked() {
+        if arranging { return }   // while arranging, the HUD's "Fertig" is the exit
         if let e = NSApp.currentEvent,
            e.type == .rightMouseUp || e.modifierFlags.contains(.control) {
             showMenu()
@@ -334,16 +336,48 @@ final class StatusBarController {
     }
 
     private func applyLayout() {
-        hiddenSep.length = expanded ? sepLength : collapsedLength
-        alwaysSep?.length = revealingAlways ? sepLength : collapsedLength
+        hiddenSep.length = (expanded || arranging) ? sepLength : collapsedLength
+        alwaysSep?.length = (revealingAlways || arranging) ? sepLength : collapsedLength
         mainItem.button?.image = symbol(expanded ? "chevron.right" : "chevron.left")
+        // Mark the hidden-separator clearly while arranging: it is the "hidden ↔ visible"
+        // boundary the user drags items across.
+        if let b = hiddenSep.button {
+            b.image = symbol(arranging ? "arrow.left.and.right" : "line.diagonal")
+            b.image?.isTemplate = true
+        }
+    }
+
+    // MARK: - Arrange mode
+
+    /// Reveal everything and mark the separator so the user can ⌘-drag which icons
+    /// stay always-visible (right of the marker) vs. hidden (left). macOS 26 blocks
+    /// programmatic reordering, so this guides the one-time manual arrangement.
+    func enterArrangeMode() {
+        guard !arranging else { return }
+        closeTile()
+        arranging = true
+        expanded = true
+        revealingAlways = true
+        rehideTimer?.invalidate()
+        applyLayout()
+        ArrangeHUD.shared.onDone = { [weak self] in self?.exitArrangeMode() }
+        ArrangeHUD.shared.show(near: toggleScreenRect())
+    }
+
+    func exitArrangeMode() {
+        guard arranging else { return }
+        arranging = false
+        ArrangeHUD.shared.hide()
+        expanded = false
+        revealingAlways = false
+        applyLayout()
     }
 
     // MARK: - Auto re-hide
 
     private func scheduleRehideIfNeeded() {
         rehideTimer?.invalidate()
-        guard expanded, Preferences.shared.autoRehide else { return }
+        guard !arranging, expanded, Preferences.shared.autoRehide else { return }
         let interval = TimeInterval(Preferences.shared.rehideInterval)
         rehideTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
             self?.ensureCollapsed()
@@ -361,7 +395,7 @@ final class StatusBarController {
     }
 
     private func handleHover() {
-        guard Preferences.shared.revealOnHover, !tileOpen else { return }
+        guard Preferences.shared.revealOnHover, !tileOpen, !arranging else { return }
         let loc = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(loc) }) ?? NSScreen.main else { return }
         let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
@@ -379,6 +413,11 @@ final class StatusBarController {
                                 action: #selector(menuToggle), keyEquivalent: "")
         toggle.target = self
         menu.addItem(toggle)
+
+        let arrange = NSMenuItem(title: "Menüleiste anordnen…",
+                                 action: #selector(menuArrange), keyEquivalent: "")
+        arrange.target = self
+        menu.addItem(arrange)
 
         if alwaysSep != nil {
             let a = NSMenuItem(title: L("menu.alwaysHidden"),
@@ -430,6 +469,10 @@ final class StatusBarController {
         Preferences.shared.tileStyle = style
         // Reopen the panel so the new style shows immediately.
         if TidierBar.shared.isVisible { closeTile(); openTile() }
+    }
+
+    @objc private func menuArrange() {
+        if arranging { exitArrangeMode() } else { enterArrangeMode() }
     }
 
     @objc private func menuToggle()  {
