@@ -87,12 +87,26 @@ final class TidierBar: NSObject, NSWindowDelegate {
         let hosting = NSHostingView(rootView: root)
         hosting.layout()
         let size = hosting.fittingSize
-        let width: CGFloat = max(320, min(420, size.width))
+        let width: CGFloat = max(280, min(420, size.width))
         let height: CGFloat = max(120, size.height)
 
         let p = panel ?? makePanel()
         panel = p
-        p.contentView = hosting
+        // The blur material is the CONTAINER so it always fills the whole panel (no
+        // dark strips where a SwiftUI background wouldn't reach), rounded + hairline.
+        let container = NSVisualEffectView(frame: NSRect(x: 0, y: 0, width: width, height: height))
+        container.material = .hudWindow
+        container.blendingMode = .behindWindow
+        container.state = .active
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 20
+        container.layer?.masksToBounds = true
+        container.layer?.borderWidth = 1
+        container.layer?.borderColor = NSColor.white.withAlphaComponent(0.08).cgColor
+        hosting.frame = container.bounds
+        hosting.autoresizingMask = [.width, .height]
+        container.addSubview(hosting)
+        p.contentView = container
         p.setContentSize(NSSize(width: width, height: height))
 
         // Anchor below the toggle, clamped to the screen.
@@ -346,10 +360,9 @@ struct TidierBarView: View {
                 .buttonStyle(.borderless)
             }
         }
-        .padding(13)
-        .frame(width: 336, alignment: .leading)
-        .background(VisualEffectView().clipShape(RoundedRectangle(cornerRadius: 20)))
-        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.white.opacity(0.08)))
+        .padding(12)
+        .frame(width: 308, alignment: .leading)
+        // Background + rounded border come from the panel's NSVisualEffectView container.
     }
 
     /// Weather widget-style header (city · big temp · condition · H/T), tap opens
@@ -574,7 +587,7 @@ private struct PanelTileView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 9).frame(width: 138, height: 46, alignment: .leading)
+            .padding(.horizontal, 9).frame(width: 128, height: 46, alignment: .leading)
             .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         } else if isValueGlyph {
             valueGlyphTile(gradient: true)
@@ -606,7 +619,7 @@ private struct PanelTileView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
-        .frame(width: net != nil ? 283 : 138, height: 46, alignment: .leading)  // network spans full width for its ↓/↑ rates
+        .frame(width: net != nil ? 262 : 128, height: 46, alignment: .leading)  // network spans full width for its ↓/↑ rates
         .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
