@@ -1,0 +1,10 @@
+Tidier — macOS menu bar manager
+Copyright (C) 2026 Christian Schniering
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 3, as published by the Free
+Software Foundation. See the LICENSE file.
+
+Portions of the menu bar item reposition technique in Sources/MoveEngine.swift
+are adapted from Ice (https://github.com/jordanbaird/Ice) by Jordan Baird,
+licensed under GPL-3.0.
