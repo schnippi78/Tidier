@@ -15,7 +15,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     private init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 560, height: 420),
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 480),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered, defer: false)
         window.title = "Tidier"
@@ -69,7 +69,7 @@ struct SettingsView: View {
             LanguageTab().tabItem { Label(L("tab.language"), systemImage: "globe") }.tag(SettingsTab.language)
             AboutTab().tabItem { Label(L("tab.about"), systemImage: "info.circle") }.tag(SettingsTab.about)
         }
-        .frame(width: 560, height: 420)
+        .frame(width: 560, height: 480)
         .padding(.top, 4)
     }
 }
@@ -114,6 +114,17 @@ private struct MenuBarTab: View {
     @EnvironmentObject var scanner: ScannerModel
 
     var body: some View {
+        ScrollView {
+            content.padding(20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .onAppear {
+            scanner.refresh()
+            if scanner.detected.isEmpty { StatusBarController.shared?.refreshDetected() }
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label(L("menubar.help"), systemImage: "hand.draw")
                 .font(.callout)
@@ -176,24 +187,22 @@ private struct MenuBarTab: View {
                     .font(.callout).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
-                List(scanner.detected) { item in
-                    HStack(spacing: 10) {
-                        detectedIcon(item)
-                            .frame(width: 22, height: 18)
-                        Text(item.label.isEmpty ? item.info.owner : item.label)
-                        Spacer()
-                        Text(item.isApple ? "System" : "App")
-                            .font(.caption).foregroundStyle(.secondary)
+                VStack(spacing: 0) {
+                    ForEach(Array(scanner.detected.enumerated()), id: \.offset) { i, item in
+                        HStack(spacing: 10) {
+                            detectedIcon(item).frame(width: 22, height: 18)
+                            Text(item.label.isEmpty ? item.info.owner : item.label)
+                            Spacer()
+                            Text(item.isApple ? "System" : "App")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 7)
+                        if i < scanner.detected.count - 1 { Divider() }
                     }
                 }
-                .frame(minHeight: 160)
+                .padding(.horizontal, 10)
+                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
             }
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .onAppear {
-            scanner.refresh()
-            if scanner.detected.isEmpty { StatusBarController.shared?.refreshDetected() }
         }
     }
 

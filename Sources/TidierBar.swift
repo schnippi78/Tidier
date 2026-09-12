@@ -63,6 +63,10 @@ final class TileModel: ObservableObject {
 final class TidierBar: NSObject, NSWindowDelegate {
     static let shared = TidierBar()
     private var panel: NSPanel?
+    private var container: NSVisualEffectView?
+    private var host: NSView?
+    private var anchor: NSRect = .zero
+    private static let panelWidth: CGFloat = 308
 
     /// Called when the tile closes itself (outside click / app switch) so the
     /// controller can reset its open/closed state.
@@ -84,11 +88,12 @@ final class TidierBar: NSObject, NSWindowDelegate {
                                  onActivate: onActivate,
                                  onStat: onStat)
             .environment(\.layoutDirection, LanguageManager.shared.isRTL ? .rightToLeft : .leftToRight)
+        let width = Self.panelWidth
+        anchor = rect
         let hosting = NSHostingView(rootView: root)
-        hosting.layout()
-        let size = hosting.fittingSize
-        let width: CGFloat = max(280, min(420, size.width))
-        let height: CGFloat = max(120, size.height)
+        hosting.setFrameSize(NSSize(width: width, height: 200))
+        hosting.layoutSubtreeIfNeeded()
+        let height = max(120, ceil(hosting.fittingSize.height))
 
         let p = panel ?? makePanel()
         panel = p
@@ -107,18 +112,43 @@ final class TidierBar: NSObject, NSWindowDelegate {
         hosting.autoresizingMask = [.width, .height]
         container.addSubview(hosting)
         p.contentView = container
+        self.container = container
+        self.host = hosting
         p.setContentSize(NSSize(width: width, height: height))
-
-        // Anchor below the toggle, clamped to the screen.
-        if let screen = NSScreen.screens.first(where: { $0.frame.intersects(rect) }) ?? NSScreen.main {
-            let x = min(max(screen.frame.minX + 8, rect.maxX - width), screen.frame.maxX - width - 8)
-            let y = rect.minY - height - 6
-            p.setFrameOrigin(NSPoint(x: x, y: y))
-        }
+        positionPanel(height: height)
         // Key (so buttons & drag-reorder receive events) but non-activating, so it
         // behaves like Control Center: losing key focus (a click anywhere else,
         // including the toggle) dismisses it via windowDidResignKey.
         p.makeKeyAndOrderFront(nil)
+        // Content can grow after opening (weather loads, stats settle) — re-fit so the
+        // bottom never clips and top/bottom padding stay equal.
+        for delay in [0.4, 1.3] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in self?.resizeToFit() }
+        }
+    }
+
+    /// Re-measure the content and grow/shrink the panel to match (async content like
+    /// weather loading in after the panel is already open).
+    private func resizeToFit() {
+        guard let p = panel, let container = container, let host = host else { return }
+        host.layoutSubtreeIfNeeded()
+        let w = Self.panelWidth
+        let h = max(120, ceil(host.fittingSize.height))
+        guard abs(p.frame.height - h) > 0.5 else { return }
+        container.setFrameSize(NSSize(width: w, height: h))
+        host.frame = container.bounds
+        p.setContentSize(NSSize(width: w, height: h))
+        positionPanel(height: h)
+    }
+
+    private func positionPanel(height h: CGFloat) {
+        guard let p = panel else { return }
+        let w = Self.panelWidth
+        if let screen = NSScreen.screens.first(where: { $0.frame.intersects(anchor) }) ?? NSScreen.main {
+            let x = min(max(screen.frame.minX + 8, anchor.maxX - w), screen.frame.maxX - w - 8)
+            let y = anchor.minY - h - 6
+            p.setFrameOrigin(NSPoint(x: x, y: y))
+        }
     }
 
     func hide() {
