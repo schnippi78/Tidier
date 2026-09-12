@@ -165,7 +165,7 @@ final class StatusBarController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
             guard let self = self else { return }
             let fresh = TidierBar.makeGroups(from: self.hiddenCandidates())
-            if !fresh.isEmpty { self.cachedGroups = fresh }
+            if !fresh.isEmpty { self.cachedGroups = fresh; ScannerModel.shared.detected = fresh.flatMap { $0.items } }
             self.expanded = false
             self.applyLayout()
             self.presentTile()
@@ -300,6 +300,27 @@ final class StatusBarController {
     private func refreshCache() {
         guard expanded else { return }
         cachedGroups = TidierBar.makeGroups(from: hiddenCandidates())
+        ScannerModel.shared.detected = cachedGroups.flatMap { $0.items }
+    }
+
+    /// Re-detect the real hidden items for the Settings list: reveal briefly (so they
+    /// are on-screen and identifiable), capture, publish, then restore.
+    func refreshDetected() {
+        let wasExpanded = expanded
+        let wasAlways = revealingAlways
+        expanded = true
+        revealingAlways = true
+        applyLayout()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            guard let self = self else { return }
+            let groups = TidierBar.makeGroups(from: self.hiddenCandidates())
+            ScannerModel.shared.detected = groups.flatMap { $0.items }
+            if !self.arranging {
+                self.expanded = wasExpanded
+                self.revealingAlways = wasAlways
+                self.applyLayout()
+            }
+        }
     }
 
     private func collapseToResting() {

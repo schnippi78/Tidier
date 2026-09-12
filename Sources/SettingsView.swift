@@ -165,28 +165,46 @@ private struct MenuBarTab: View {
                 Text(L("menubar.detected")).font(.headline)
                 Spacer()
                 Button {
-                    scanner.refresh()
+                    StatusBarController.shared?.refreshDetected()
                 } label: {
                     Label(L("menubar.refresh"), systemImage: "arrow.clockwise")
                 }
             }
 
-            List(scanner.items) { item in
-                HStack(spacing: 8) {
-                    Image(systemName: item.isSystem ? "gearshape.2" : "app.dashed")
-                        .foregroundStyle(item.isSystem ? .secondary : .primary)
-                    Text(item.displayName)
-                    Spacer()
-                    Text("x \(Int(item.x)) · \(Int(item.width))pt")
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+            if scanner.detected.isEmpty {
+                Text("Keine ausgeblendeten Objekte erkannt. Tipp: »Aktualisieren« klappt die Leiste kurz auf, um sie zu erfassen.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                List(scanner.detected) { item in
+                    HStack(spacing: 10) {
+                        detectedIcon(item)
+                            .frame(width: 22, height: 18)
+                        Text(item.label.isEmpty ? item.info.owner : item.label)
+                        Spacer()
+                        Text(item.isApple ? "System" : "App")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
+                .frame(minHeight: 160)
             }
-            .frame(minHeight: 200)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onAppear { scanner.refresh() }
+        .onAppear {
+            scanner.refresh()
+            if scanner.detected.isEmpty { StatusBarController.shared?.refreshDetected() }
+        }
+    }
+
+    @ViewBuilder private func detectedIcon(_ item: BarItem) -> some View {
+        if let img = item.image {
+            Image(nsImage: img).resizable().scaledToFit()
+        } else if let sym = item.symbolName {
+            Image(systemName: sym).foregroundStyle(.secondary)
+        } else {
+            Image(systemName: item.isApple ? "gearshape.2" : "app.dashed").foregroundStyle(.secondary)
+        }
     }
 }
 

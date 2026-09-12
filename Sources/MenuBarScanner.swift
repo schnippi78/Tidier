@@ -6,6 +6,9 @@ import Combine
 final class ScannerModel: ObservableObject {
     static let shared = ScannerModel()
     @Published var items: [MenuBarItemInfo] = []
+    /// The real, identified hidden items (name + icon), populated by the controller
+    /// from the same detection the panel uses — unlike the raw on-screen `scan()`.
+    @Published var detected: [BarItem] = []
     func refresh() { items = MenuBarScanner.scan() }
 }
 
