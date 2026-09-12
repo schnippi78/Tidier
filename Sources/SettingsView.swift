@@ -154,7 +154,7 @@ private struct MenuBarTab: View {
                         Label("Kontrollzentrum-Einstellungen öffnen…", systemImage: "switch.2")
                     }
                     .controlSize(.large)
-                    Text("Dort bei „WLAN" und „Bluetooth" jeweils auf „Nicht in der Menüleiste anzeigen" stellen.")
+                    Text("Dort bei WLAN und Bluetooth jeweils auf »Nicht in der Menüleiste anzeigen« stellen.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
