@@ -119,6 +119,27 @@ private struct MenuBarTab: View {
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
 
+            // Arrange: reveal the bar + mark the separator so the user ⌘-drags which
+            // icons stay visible. macOS 26 blocks programmatic reordering, so this is
+            // the supported path.
+            GroupBox {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Icons anordnen").font(.headline)
+                    Text("macOS erlaubt Programmen kein automatisches Umsortieren der Menüleiste. Tidier klappt sie auf und markiert den Trenner — ziehe dann mit **⌘** die Icons, die immer sichtbar bleiben sollen, rechts neben die Markierung. Alles links davon wandert in die Kachel.")
+                        .font(.callout).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button {
+                        SettingsWindowController.shared.window?.close()
+                        StatusBarController.shared?.enterArrangeMode()
+                    } label: {
+                        Label("Menüleiste anordnen…", systemImage: "arrow.left.and.right")
+                    }
+                    .controlSize(.large)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(6)
+            }
+
             HStack {
                 Text(L("menubar.detected")).font(.headline)
                 Spacer()
@@ -191,15 +212,25 @@ private struct AboutTab: View {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.1.0"
     }
 
+    private var appIcon: NSImage {
+        NSImage(contentsOf: Bundle.main.url(forResource: "AppIcon", withExtension: "icns") ?? URL(fileURLWithPath: "/"))
+            ?? NSApp.applicationIconImage
+    }
+
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 44, weight: .light))
-                .foregroundStyle(.tint)
+            Image(nsImage: appIcon)
+                .resizable().frame(width: 84, height: 84)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             Text("Tidier").font(.largeTitle.bold())
             Text(L("app.tagline")).foregroundStyle(.secondary)
             Text(L("about.version", version)).font(.footnote).foregroundStyle(.secondary)
-            Text(L("about.madeBy")).font(.footnote).foregroundStyle(.secondary)
+
+            Spacer().frame(height: 6)
+            Text("Christian Schniering").font(.callout.weight(.medium))
+            Link("csho.de", destination: URL(string: "https://csho.de")!)
+                .font(.callout)
+            Text("© 2026 Christian Schniering").font(.footnote).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()

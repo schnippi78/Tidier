@@ -23,6 +23,7 @@ swiftc Sources/*.swift \
 cp Info.plist "$CONTENTS/Info.plist"
 printf 'APPL????' > "$CONTENTS/PkgInfo"
 cp -R Resources/*.lproj "$CONTENTS/Resources/"
+[ -f Resources/AppIcon.icns ] && cp Resources/AppIcon.icns "$CONTENTS/Resources/"
 
 # Stable self-signed identity so TCC permissions (Accessibility, Screen Recording)
 # survive rebuilds. Falls back to ad-hoc if the identity isn't present.
