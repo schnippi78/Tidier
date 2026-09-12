@@ -315,36 +315,85 @@ struct TidierBarView: View {
     }
     private var netStat: Stat { Stat(key: "sys.net", label: "Netzwerk", value: 0, accent: .blue) }
 
+    private func systemContents() -> [TileContent] {
+        statItems.map { TileContent.stat($0) } + [TileContent.net(down: stats.netDown, up: stats.netUp)]
+    }
+
+    private func isFullWidth(_ c: TileContent) -> Bool {
+        if case .net = c { return true }
+        return false
+    }
+
+    /// Pack tiles into rows: full-width tiles get their own row, the rest fill two
+    /// equal columns — so every tile's left/right margins are symmetric.
+    private func packRows(_ cs: [TileContent]) -> [[TileContent]] {
+        var rows: [[TileContent]] = []
+        var cur: [TileContent] = []
+        for c in cs {
+            if isFullWidth(c) {
+                if !cur.isEmpty { rows.append(cur); cur = [] }
+                rows.append([c])
+            } else {
+                cur.append(c)
+                if cur.count == 2 { rows.append(cur); cur = [] }
+            }
+        }
+        if !cur.isEmpty { rows.append(cur) }
+        return rows
+    }
+
+    @ViewBuilder private func tileArea(_ contents: [TileContent], itemKeys: [String]) -> some View {
+        if style == .grid || style == .strip {
+            TileFlow(spacing: 7, lineSpacing: 7) {
+                ForEach(Array(contents.enumerated()), id: \.offset) { _, c in
+                    tileCell(c, itemKeys: itemKeys)
+                }
+            }
+        } else {
+            let rows = packRows(contents)
+            VStack(spacing: 7) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: 7) {
+                        ForEach(Array(row.enumerated()), id: \.offset) { _, c in
+                            tileCell(c, itemKeys: itemKeys).frame(maxWidth: .infinity)
+                        }
+                        if row.count == 1 && !isFullWidth(row[0]) {
+                            Color.clear.frame(maxWidth: .infinity, minHeight: 1)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func tileCell(_ c: TileContent, itemKeys: [String]) -> some View {
+        switch c {
+        case .stat(let s):
+            PanelTileView(content: .stat(s), style: style, onActivate: { onStat(s) })
+        case .net:
+            PanelTileView(content: c, style: style, onActivate: { onStat(netStat) })
+        case .item(let item):
+            PanelTileView(content: .item(item), style: style, onActivate: { onActivate(item) })
+                .onDrag { NSItemProvider(object: item.key as NSString) }
+                .onDrop(of: [.plainText], isTargeted: nil) { providers in
+                    guard let p = providers.first else { return false }
+                    p.loadObject(ofClass: NSString.self) { obj, _ in
+                        guard let s = obj as? String else { return }
+                        DispatchQueue.main.async { model.move(dragged: s, before: item.key, within: itemKeys) }
+                    }
+                    return true
+                }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             if let t = weather.temp { weatherHeader(t) }
-            section(title: "System") {
-                TileFlow(spacing: 7, lineSpacing: 7) {
-                    ForEach(statItems) { stat in
-                        PanelTileView(content: .stat(stat), style: style, onActivate: { onStat(stat) })
-                    }
-                    PanelTileView(content: .net(down: stats.netDown, up: stats.netUp),
-                                  style: style, onActivate: { onStat(netStat) })
-                }
-            }
+            section(title: "System") { tileArea(systemContents(), itemKeys: []) }
             ForEach(groups) { group in
                 let ordered = model.ordered(group.items)
                 section(title: group.title) {
-                    TileFlow(spacing: 7, lineSpacing: 7) {
-                        ForEach(ordered) { item in
-                            PanelTileView(content: .item(item), style: style, onActivate: { onActivate(item) })
-                                .onDrag { NSItemProvider(object: item.key as NSString) }
-                                .onDrop(of: [.plainText], isTargeted: nil) { providers in
-                                    guard let p = providers.first else { return false }
-                                    let keys = ordered.map { $0.key }
-                                    p.loadObject(ofClass: NSString.self) { obj, _ in
-                                        guard let s = obj as? String else { return }
-                                        DispatchQueue.main.async { model.move(dragged: s, before: item.key, within: keys) }
-                                    }
-                                    return true
-                                }
-                        }
-                    }
+                    tileArea(ordered.map { TileContent.item($0) }, itemKeys: ordered.map { $0.key })
                 }
             }
             if !hasScreenRecording {
@@ -587,7 +636,7 @@ private struct PanelTileView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 9).frame(width: 128, height: 46, alignment: .leading)
+            .padding(.horizontal, 10).frame(maxWidth: .infinity, alignment: .leading).frame(height: 46)
             .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         } else if isValueGlyph {
             valueGlyphTile(gradient: true)
@@ -618,8 +667,8 @@ private struct PanelTileView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 8)
-        .frame(width: net != nil ? 262 : 128, height: 46, alignment: .leading)  // network spans full width for its ↓/↑ rates
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, alignment: .leading).frame(height: 46)  // fills its column (or the whole row for network)
         .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
@@ -631,7 +680,7 @@ private struct PanelTileView: View {
             Text(titleText).font(.system(size: 9.5, weight: .medium)).foregroundStyle(.secondary)
                 .lineLimit(1).truncationMode(.tail)
         }
-        .padding(.horizontal, 13).frame(height: 46).frame(minWidth: 58)
+        .padding(.horizontal, 13).frame(maxWidth: .infinity).frame(height: 46)
         .background(valueTileBackground(gradient: gradient),
                     in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
@@ -646,7 +695,7 @@ private struct PanelTileView: View {
     }
 
     private var squareBadgeTile: some View {
-        badge().frame(width: 46, height: 46)
+        badge().frame(maxWidth: .infinity).frame(height: 46)
             .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 

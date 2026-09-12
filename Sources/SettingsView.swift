@@ -140,6 +140,27 @@ private struct MenuBarTab: View {
                 .padding(6)
             }
 
+            GroupBox {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Platz schaffen").font(.headline)
+                    Text("WLAN und Bluetooth belegen je ein eigenes Menüleisten-Icon, obwohl sie auch im Kontrollzentrum liegen. Blende sie in der Leiste aus, um Platz für wichtige Icons (z. B. WireGuard) zu gewinnen — erreichbar bleiben sie über das Kontrollzentrum.")
+                        .font(.callout).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.ControlCenter-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    } label: {
+                        Label("Kontrollzentrum-Einstellungen öffnen…", systemImage: "switch.2")
+                    }
+                    .controlSize(.large)
+                    Text("Dort bei „WLAN" und „Bluetooth" jeweils auf „Nicht in der Menüleiste anzeigen" stellen.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(6)
+            }
+
             HStack {
                 Text(L("menubar.detected")).font(.headline)
                 Spacer()
