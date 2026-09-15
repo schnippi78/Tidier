@@ -92,7 +92,48 @@ final class StatusBarController {
         let sig = barSignature()
         guard sig != lastBarSignature else { return }
         lastBarSignature = sig
-        rebuildFullCache()   // set changed → refresh (updates cache, Settings list, open panel)
+        incrementalRefresh()
+    }
+
+    /// Update the cache for a changed bar WITHOUT the visible shuffle wherever possible:
+    /// known items are reused from the existing cache (never moved again), removed items
+    /// just drop out, and newly-appeared *on-screen* items are captured in place — all
+    /// invisible. Only if a brand-new item is obscured (under the notch / off-screen) do
+    /// we fall back to the full move-capture pass, which is the one case that shuffles.
+    private func incrementalRefresh() {
+        let raws = CaptureEngine.scanAll()
+        // Pool of previously-captured tiles, keyed by coarse identity (owner|name).
+        var pool: [String: [BarItem]] = [:]
+        for it in ScannerModel.shared.detected {
+            pool["\(it.info.owner)|\(it.info.name)", default: []].append(it)
+        }
+        var result: [BarItem] = []
+        var newObscured = false
+        for r in raws {
+            if r.name == "Clock" || r.name == "BentoBox-0" { continue }
+            let k = "\(r.owner)|\(r.name)"
+            if var bucket = pool[k], !bucket.isEmpty {
+                result.append(bucket.removeFirst())   // reuse cached image, no capture/move
+                pool[k] = bucket
+                continue
+            }
+            // Genuinely new item.
+            if ItemCapture.image(forWindow: Int(r.id)) != nil {
+                if let built = TidierBar.makeItem(from: r.info) { result.append(built) }   // in place, invisible
+            } else {
+                newObscured = true   // needs staging → fall back below
+                break
+            }
+        }
+        if newObscured {
+            rebuildFullCache()   // rare: a new hidden item → one full pass (visible)
+            return
+        }
+        // Invisible path: publish the merged set.
+        let groups = TidierBar.group(result)
+        cachedGroups = groups
+        ScannerModel.shared.detected = result
+        if tileOpen { presentTile() }
     }
 
     // MARK: - Build
