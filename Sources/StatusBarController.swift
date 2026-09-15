@@ -109,56 +109,14 @@ final class StatusBarController {
     }
 
     private func checkForBarChanges() {
-        guard !buildingCache, !arranging, !expanded else { return }
+        guard !buildingCache, !arranging, !expanded, !tileOpen else { return }
         let sig = barSignature()
         guard sig != lastBarSignature else { return }
         lastBarSignature = sig
-        incrementalRefresh()
-    }
-
-    /// Invisible cache update — no moving, no capturing of obscured items.
-    private func incrementalRefresh() {
-        let raws = CaptureEngine.scanAll()
-        // Pool of previously-captured tiles, keyed by coarse identity (owner|name).
-        var pool: [String: [BarItem]] = [:]
-        for it in ScannerModel.shared.detected {
-            pool["\(it.info.owner)|\(it.info.name)", default: []].append(it)
-        }
-        var result: [BarItem] = []
-        for r in raws {
-            if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
-            if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
-            if r.name == "Clock" || r.name == "BentoBox-0" { continue }
-            let k = "\(r.owner)|\(r.name)"
-            if var bucket = pool[k], !bucket.isEmpty {
-                result.append(bucket.removeFirst())   // reuse cached glyph, no capture/move
-                pool[k] = bucket
-                continue
-            }
-            // Genuinely new item.
-            if ItemCapture.image(forWindow: Int(r.id)) != nil, let built = TidierBar.makeItem(from: r.info) {
-                result.append(built)                  // on-screen → captured in place, invisible
-            } else if let fallback = fallbackItem(for: r) {
-                result.append(fallback)               // obscured → stand-in tile, NO move
-            }
-        }
-        let groups = TidierBar.group(result)
-        cachedGroups = groups
-        ScannerModel.shared.detected = result
-        if tileOpen { presentTile() }
-    }
-
-    /// Stand-in tile for a new, currently-obscured item — ONLY for a genuine third-party
-    /// status item ("Item-0"). Never fabricate one for Control Center / Apple modules:
-    /// those resolve properly when on-screen (→ Apple & System with an SF symbol), and a
-    /// generic icon here would be a dead, unclickable duplicate (the »Kontrollzentrum« bug).
-    private func fallbackItem(for r: CaptureEngine.Raw) -> BarItem? {
-        guard r.name == "Item-0" else { return nil }
-        let owner = r.owner
-        if owner == "Control Center" || owner == "Kontrollzentrum" || owner.hasPrefix("com.apple.") { return nil }
-        let icon = NSRunningApplication(processIdentifier: r.pid)?.icon
-        return BarItem(info: r.info, image: icon, symbolName: icon == nil ? "app.dashed" : nil,
-                       label: owner, isApple: false, key: "o:" + owner + "#" + owner)
+        // An app added/removed its status item → re-capture via the reveal (non-destructive).
+        // We can't identify items without resolving them on-screen, so a full reveal-capture
+        // is the correct update; it only runs on real launch/quit, and never moves items.
+        rebuildFullCache()
     }
 
     // MARK: - Build
@@ -287,9 +245,9 @@ final class StatusBarController {
 
     /// Build the item cache WITHOUT moving anything (moving corrupts the user's menu bar
     /// arrangement). Reveal + shrink so items slide on-screen via the separator trick
-    /// (non-destructive — item positions are untouched), capture every on-screen item's
-    /// real glyph, and give any still-obscured overflow item an app-icon stand-in tile.
-    /// Then collapse. This is the only cache build; nothing here reorders the bar.
+    /// (non-destructive — item positions are untouched), then resolve + capture each
+    /// on-screen item via AXResolver (the only reliable identity — CGWindow owner is always
+    /// "Control Center"). Then collapse. This is the only cache build; it never reorders.
     func rebuildFullCache() {
         guard !buildingCache else { return }
         buildingCache = true
@@ -299,20 +257,15 @@ final class StatusBarController {
         shrinkOwnItems()
         DispatchQueue.global().async { [weak self] in
             usleep(350_000)
-            let raws = CaptureEngine.scanAll()
             var items: [BarItem] = []
             var seen = Set<String>()
-            for r in raws {
-                if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
-                if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
-                if r.name == "Clock" || r.name == "BentoBox-0" { continue }
-                let built: BarItem?
-                if ItemCapture.image(forWindow: Int(r.id)) != nil {
-                    built = TidierBar.makeItem(from: r.info)        // on-screen → real glyph
-                } else {
-                    built = self?.fallbackItem(for: r)              // overflow → app-icon stand-in
-                }
-                if let b = built, seen.insert(b.key).inserted { items.append(b) }
+            for r in CaptureEngine.scanAll() {
+                // Only on-screen items can be resolved/captured; obscured overflow is skipped
+                // (it can't be identified reliably without moving, which we no longer do).
+                guard ItemCapture.image(forWindow: Int(r.id)) != nil,
+                      let b = TidierBar.makeItem(from: r.info),
+                      seen.insert(b.key).inserted else { continue }
+                items.append(b)
             }
             let groups = TidierBar.group(items)
             DispatchQueue.main.async {
@@ -378,40 +331,17 @@ final class StatusBarController {
         }
     }
 
-    /// Click the real menu bar item a tile stands for — WITHOUT ever moving items around
-    /// (moving corrupts the user's arrangement). We reveal, then locate the LIVE window by
-    /// the tile's app (owner) and click it in place if it is on-screen. Items too deep in
-    /// the overflow to be shown can't be clicked this way — see openViaAppFallback.
+    /// Click the real menu bar item a tile stands for. macOS reports EVERY status item's
+    /// CGWindow owner as "Control Center", so identity can only come from AXResolver — which
+    /// needs the item on-screen. We revealed the bar in activateItem; now re-resolve the
+    /// on-screen items, match the one with the SAME stable key, and click it in place. No
+    /// moving, and no owner guessing (that would hit the first Item-0 = the wrong app).
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
-        let raws = CaptureEngine.scanAll()
-        guard let r = bestMatch(for: item, in: raws) else { return }
-        let barY = raws.first(where: { $0.x >= 0 })?.info.centerY ?? item.info.centerY
-        let restoreCursor = CGEvent(source: nil)?.location
-        if ItemCapture.image(forWindow: Int(r.id)) != nil {
-            postClick(atX: r.x + r.w / 2, y: barY)          // on-screen → click in place
-            if let c = restoreCursor { CGWarpMouseCursorPosition(c) }
-        } else {
-            openViaAppFallback(owner: r.owner, pid: r.pid)  // obscured → activate the app, no move
-        }
-    }
-
-    /// Last resort for an item too deep in the overflow to reveal on-screen: bring its
-    /// owning app forward. Better than clicking a wrong neighbor and never moving items.
-    private func openViaAppFallback(owner: String, pid: pid_t) {
-        DispatchQueue.main.async {
-            NSRunningApplication(processIdentifier: pid)?.activate(options: [.activateAllWindows])
-        }
-    }
-
-    /// Match a panel tile to a live scan entry. Owner (the app) is the strongest signal —
-    /// Nextcloud/Claude/WireGuard are distinct owners; only Control Center groups many.
-    private func bestMatch(for item: BarItem, in raws: [CaptureEngine.Raw]) -> CaptureEngine.Raw? {
-        let sameOwner = raws.filter { $0.owner == item.info.owner }
-        if sameOwner.count == 1 { return sameOwner.first }
-        if !sameOwner.isEmpty {
-            return sameOwner.first { $0.name == item.info.name } ?? sameOwner.first
-        }
-        return raws.first { $0.id == UInt32(item.info.id) }
+        let all = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
+        guard let t = all.first(where: { $0.key == item.key }) else { return }
+        let cursor = CGEvent(source: nil)?.location
+        postClick(atX: t.info.centerX, y: t.info.centerY)
+        if let c = cursor { CGWarpMouseCursorPosition(c) }
     }
 
     /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left
