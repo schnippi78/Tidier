@@ -41,9 +41,6 @@ final class StatusBarController {
     /// visible bar shuffle happens only when something really changed, never on a blind timer.
     private var watchTimer: Timer?
     private var lastBarSignature = ""
-    /// When a click had to stage an obscured item on-screen, this moves it back to its
-    /// original spot once the user is done (run on collapse, so the menu isn't disturbed).
-    private var pendingRestore: (() -> Void)?
 
     init() {
         StatusBarController.shared = self
@@ -288,10 +285,11 @@ final class StatusBarController {
     private var buildingCache = false
     private var didFullBuild = false
 
-    /// Build the FULL item cache (incl. overflow items) by revealing + shrinking, then
-    /// moving each off-screen item onto a visible stage to capture it (CaptureEngine),
-    /// restoring order afterwards. Runs the move/capture pass off the main thread; the
-    /// menu bar briefly shuffles. Updates the panel live if it's open.
+    /// Build the item cache WITHOUT moving anything (moving corrupts the user's menu bar
+    /// arrangement). Reveal + shrink so items slide on-screen via the separator trick
+    /// (non-destructive — item positions are untouched), capture every on-screen item's
+    /// real glyph, and give any still-obscured overflow item an app-icon stand-in tile.
+    /// Then collapse. This is the only cache build; nothing here reorders the bar.
     func rebuildFullCache() {
         guard !buildingCache else { return }
         buildingCache = true
@@ -299,11 +297,23 @@ final class StatusBarController {
         revealingAlways = true
         applyLayout()
         shrinkOwnItems()
-        let threshold = mainItem.button?.window?.frame.minX ?? 1200
         DispatchQueue.global().async { [weak self] in
             usleep(350_000)
-            let y = CaptureEngine.scanAll().first(where: { $0.x >= 0 })?.info.centerY ?? 12
-            let items = CaptureEngine.captureAll(stageX: threshold - 40, menuBarY: y, thresholdX: threshold)
+            let raws = CaptureEngine.scanAll()
+            var items: [BarItem] = []
+            var seen = Set<String>()
+            for r in raws {
+                if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
+                if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
+                if r.name == "Clock" || r.name == "BentoBox-0" { continue }
+                let built: BarItem?
+                if ItemCapture.image(forWindow: Int(r.id)) != nil {
+                    built = TidierBar.makeItem(from: r.info)        // on-screen → real glyph
+                } else {
+                    built = self?.fallbackItem(for: r)              // overflow → app-icon stand-in
+                }
+                if let b = built, seen.insert(b.key).inserted { items.append(b) }
+            }
             let groups = TidierBar.group(items)
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -312,9 +322,10 @@ final class StatusBarController {
                 self.expanded = false
                 self.revealingAlways = false
                 self.applyLayout()
-                if !groups.isEmpty {
+                if !items.isEmpty {
                     self.cachedGroups = groups
                     ScannerModel.shared.detected = items
+                    self.lastBarSignature = self.barSignature()
                     if self.tileOpen { self.presentTile() }   // refresh the open panel
                 }
             }
@@ -367,40 +378,28 @@ final class StatusBarController {
         }
     }
 
-    /// Click the real menu bar item a tile stands for. We locate the LIVE window by the
-    /// tile's app (owner) — reliable even when the tile came from a move-capture and its
-    /// re-resolved key would differ. If that window is on-screen we click it in place; if
-    /// it's still obscured (more overflow items than fit), we stage it on-screen via
-    /// MoveEngine, click there, and queue its move-back. This is why clicking Nextcloud no
-    /// longer lands on Claude/WireGuard: we click the item, not a stale coordinate.
+    /// Click the real menu bar item a tile stands for — WITHOUT ever moving items around
+    /// (moving corrupts the user's arrangement). We reveal, then locate the LIVE window by
+    /// the tile's app (owner) and click it in place if it is on-screen. Items too deep in
+    /// the overflow to be shown can't be clicked this way — see openViaAppFallback.
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
         let raws = CaptureEngine.scanAll()
         guard let r = bestMatch(for: item, in: raws) else { return }
         let barY = raws.first(where: { $0.x >= 0 })?.info.centerY ?? item.info.centerY
         let restoreCursor = CGEvent(source: nil)?.location
-        defer { if let c = restoreCursor { CGWarpMouseCursorPosition(c) } }
-
         if ItemCapture.image(forWindow: Int(r.id)) != nil {
             postClick(atX: r.x + r.w / 2, y: barY)          // on-screen → click in place
-            return
+            if let c = restoreCursor { CGWarpMouseCursorPosition(c) }
+        } else {
+            openViaAppFallback(owner: r.owner, pid: r.pid)  // obscured → activate the app, no move
         }
-        // Obscured → stage, click, and remember how to put it back.
-        let stageX = threshold - 40
-        let rightNeighborID = raws.first { $0.x > r.x && $0.id != r.id }?.id
-        let w = r.w, id = r.id, pid = r.pid
-        MoveEngine.move(windowID: id, pid: pid, toX: stageX, menuBarY: barY)
-        usleep(320_000)
-        if let staged = CaptureEngine.scanAll().first(where: { $0.id == id }) {
-            postClick(atX: staged.x + staged.w / 2, y: staged.y + staged.h / 2)
-        }
-        pendingRestore = {
-            let now = CaptureEngine.scanAll()
-            if let rnID = rightNeighborID, let rn = now.first(where: { $0.id == rnID }) {
-                MoveEngine.move(windowID: id, pid: pid, toX: rn.x - w - 1, menuBarY: barY)
-            } else {
-                MoveEngine.move(windowID: id, pid: pid, toX: threshold - w - 1, menuBarY: barY)
-            }
-            usleep(250_000)
+    }
+
+    /// Last resort for an item too deep in the overflow to reveal on-screen: bring its
+    /// owning app forward. Better than clicking a wrong neighbor and never moving items.
+    private func openViaAppFallback(owner: String, pid: pid_t) {
+        DispatchQueue.main.async {
+            NSRunningApplication(processIdentifier: pid)?.activate(options: [.activateAllWindows])
         }
     }
 
@@ -468,21 +467,8 @@ final class StatusBarController {
 
     private func finishReveal() {
         disarmRevealCollapse()
-        if let restore = pendingRestore {
-            pendingRestore = nil
-            // Move the staged item back while the bar is still revealed (positions valid),
-            // then collapse. Off the main thread because MoveEngine blocks (usleep).
-            DispatchQueue.global().async { [weak self] in
-                restore()
-                DispatchQueue.main.async {
-                    self?.restoreOwnItems()
-                    self?.ensureCollapsed()
-                }
-            }
-        } else {
-            restoreOwnItems()   // activation shrank the toggle; bring it back
-            ensureCollapsed()
-        }
+        restoreOwnItems()   // activation shrank the toggle; bring it back
+        ensureCollapsed()
     }
 
     private func closeTile() {
