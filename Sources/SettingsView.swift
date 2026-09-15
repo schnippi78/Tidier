@@ -172,18 +172,16 @@ private struct MenuBarTab: View {
                 .padding(6)
             }
 
-            HStack {
+            HStack(spacing: 6) {
                 Text(L("menubar.detected")).font(.headline)
                 Spacer()
-                Button {
-                    StatusBarController.shared?.refreshDetected()
-                } label: {
-                    Label(L("menubar.refresh"), systemImage: "arrow.clockwise")
-                }
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.caption).foregroundStyle(.secondary)
+                Text("Automatisch aktuell").font(.caption).foregroundStyle(.secondary)
             }
 
             if scanner.detected.isEmpty {
-                Text("Keine ausgeblendeten Objekte erkannt. Tipp: »Aktualisieren« klappt die Leiste kurz auf, um sie zu erfassen.")
+                Text("Noch keine Objekte erfasst — die Liste aktualisiert sich automatisch im Hintergrund, sobald Tidier die Leiste eingelesen hat.")
                     .font(.callout).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {

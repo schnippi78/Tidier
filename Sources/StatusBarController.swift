@@ -35,6 +35,13 @@ final class StatusBarController {
     private var revealSafetyTimer: Timer?
     private var arranging = false   // Arrange mode: bar fully revealed, separator marked
 
+    /// Background auto-refresh: a cheap `scanAll()` poll (just reads the window list,
+    /// invisible) watches the *set* of menu bar items. Only when it changes (an app
+    /// added/removed its item) do we run the expensive move-capture rebuild — so the
+    /// visible bar shuffle happens only when something really changed, never on a blind timer.
+    private var watchTimer: Timer?
+    private var lastBarSignature = ""
+
     init() {
         StatusBarController.shared = self
         buildItems()
@@ -54,7 +61,38 @@ final class StatusBarController {
             // Then do the full move-capture pass (reaches overflow items) while no panel
             // is open — the reliable moment. Menu bar briefly shuffles once at startup.
             self?.rebuildFullCache()
+            // From now on, keep the cache current automatically in the background.
+            self?.startAutoRefresh()
         }
+    }
+
+    // MARK: - Background auto-refresh
+
+    /// Signature of the current menu bar layout, cheap and invisible (no captures, no
+    /// moving). Owner+name multiset detects when an app adds/removes its status item.
+    private func barSignature() -> String {
+        CaptureEngine.scanAll().map { "\($0.owner)|\($0.name)" }.sorted().joined(separator: ",")
+    }
+
+    /// Poll the (invisible) window list periodically; rebuild the full cache only when
+    /// the set of items actually changed. Replaces the old manual »Aktualisieren« button.
+    private func startAutoRefresh() {
+        lastBarSignature = barSignature()
+        watchTimer?.invalidate()
+        let t = Timer(timeInterval: 4.0, repeats: true) { [weak self] _ in
+            self?.checkForBarChanges()
+        }
+        RunLoop.main.add(t, forMode: .common)
+        watchTimer = t
+    }
+
+    private func checkForBarChanges() {
+        // Don't disturb the bar while it's mid-rebuild, being arranged, or revealed.
+        guard !buildingCache, !arranging, !expanded else { return }
+        let sig = barSignature()
+        guard sig != lastBarSignature else { return }
+        lastBarSignature = sig
+        rebuildFullCache()   // set changed → refresh (updates cache, Settings list, open panel)
     }
 
     // MARK: - Build
