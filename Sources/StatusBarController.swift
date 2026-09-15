@@ -148,13 +148,17 @@ final class StatusBarController {
         if tileOpen { presentTile() }
     }
 
-    /// Stand-in tile for a new, currently-obscured third-party item: the owning app's
-    /// icon + name, fully clickable. Real menu-bar glyph is captured on the next full pass.
+    /// Stand-in tile for a new, currently-obscured item — ONLY for a genuine third-party
+    /// status item ("Item-0"). Never fabricate one for Control Center / Apple modules:
+    /// those resolve properly when on-screen (→ Apple & System with an SF symbol), and a
+    /// generic icon here would be a dead, unclickable duplicate (the »Kontrollzentrum« bug).
     private func fallbackItem(for r: CaptureEngine.Raw) -> BarItem? {
+        guard r.name == "Item-0" else { return nil }
+        let owner = r.owner
+        if owner == "Control Center" || owner == "Kontrollzentrum" || owner.hasPrefix("com.apple.") { return nil }
         let icon = NSRunningApplication(processIdentifier: r.pid)?.icon
-        let label = r.owner
         return BarItem(info: r.info, image: icon, symbolName: icon == nil ? "app.dashed" : nil,
-                       label: label, isApple: false, key: "o:" + r.owner + "#" + label)
+                       label: owner, isApple: false, key: "o:" + owner + "#" + owner)
     }
 
     // MARK: - Build
@@ -358,7 +362,11 @@ final class StatusBarController {
             // stable identity (key). Matching by window id / name is unreliable — a
             // stale id falls through to the first "Item-0" and hits the wrong app.
             let all = TidierBar.makeGroups(from: self.hiddenCandidates()).flatMap { $0.items }
-            if let t = all.first(where: { $0.key == item.key }) {
+            // Prefer the exact stable identity; a stand-in tile (key "o:owner#owner")
+            // won't match the real resolved key, so fall back to the same owner.
+            let target = all.first { $0.key == item.key }
+                ?? all.first { $0.info.owner == item.info.owner }
+            if let t = target {
                 self.postClick(atX: t.info.centerX, y: t.info.centerY)
             }
             self.armRevealCollapse()
