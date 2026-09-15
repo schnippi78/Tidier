@@ -41,6 +41,9 @@ final class StatusBarController {
     /// visible bar shuffle happens only when something really changed, never on a blind timer.
     private var watchTimer: Timer?
     private var lastBarSignature = ""
+    /// When a click had to stage an obscured item on-screen, this moves it back to its
+    /// original spot once the user is done (run on collapse, so the menu isn't disturbed).
+    private var pendingRestore: (() -> Void)?
 
     init() {
         StatusBarController.shared = self
@@ -355,22 +358,61 @@ final class StatusBarController {
         expanded = true
         revealingAlways = true
         applyLayout()
-        shrinkOwnItems()   // same layout as capture, so the item (e.g. WireGuard) is on-screen
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
-            guard let self = self else { return }
-            // Re-resolve the currently on-screen items and click the one with the SAME
-            // stable identity (key). Matching by window id / name is unreliable — a
-            // stale id falls through to the first "Item-0" and hits the wrong app.
-            let all = TidierBar.makeGroups(from: self.hiddenCandidates()).flatMap { $0.items }
-            // Prefer the exact stable identity; a stand-in tile (key "o:owner#owner")
-            // won't match the real resolved key, so fall back to the same owner.
-            let target = all.first { $0.key == item.key }
-                ?? all.first { $0.info.owner == item.info.owner }
-            if let t = target {
-                self.postClick(atX: t.info.centerX, y: t.info.centerY)
-            }
-            self.armRevealCollapse()
+        shrinkOwnItems()   // reveal + shrink so as many items as possible are on-screen
+        let threshold = mainItem.button?.window?.frame.minX ?? 1200
+        armRevealCollapse()
+        DispatchQueue.global().async { [weak self] in
+            usleep(300_000)
+            self?.clickHiddenItem(matching: item, threshold: threshold)
         }
+    }
+
+    /// Click the real menu bar item a tile stands for. We locate the LIVE window by the
+    /// tile's app (owner) — reliable even when the tile came from a move-capture and its
+    /// re-resolved key would differ. If that window is on-screen we click it in place; if
+    /// it's still obscured (more overflow items than fit), we stage it on-screen via
+    /// MoveEngine, click there, and queue its move-back. This is why clicking Nextcloud no
+    /// longer lands on Claude/WireGuard: we click the item, not a stale coordinate.
+    private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
+        let raws = CaptureEngine.scanAll()
+        guard let r = bestMatch(for: item, in: raws) else { return }
+        let barY = raws.first(where: { $0.x >= 0 })?.info.centerY ?? item.info.centerY
+        let restoreCursor = CGEvent(source: nil)?.location
+        defer { if let c = restoreCursor { CGWarpMouseCursorPosition(c) } }
+
+        if ItemCapture.image(forWindow: Int(r.id)) != nil {
+            postClick(atX: r.x + r.w / 2, y: barY)          // on-screen → click in place
+            return
+        }
+        // Obscured → stage, click, and remember how to put it back.
+        let stageX = threshold - 40
+        let rightNeighborID = raws.first { $0.x > r.x && $0.id != r.id }?.id
+        let w = r.w, id = r.id, pid = r.pid
+        MoveEngine.move(windowID: id, pid: pid, toX: stageX, menuBarY: barY)
+        usleep(320_000)
+        if let staged = CaptureEngine.scanAll().first(where: { $0.id == id }) {
+            postClick(atX: staged.x + staged.w / 2, y: staged.y + staged.h / 2)
+        }
+        pendingRestore = {
+            let now = CaptureEngine.scanAll()
+            if let rnID = rightNeighborID, let rn = now.first(where: { $0.id == rnID }) {
+                MoveEngine.move(windowID: id, pid: pid, toX: rn.x - w - 1, menuBarY: barY)
+            } else {
+                MoveEngine.move(windowID: id, pid: pid, toX: threshold - w - 1, menuBarY: barY)
+            }
+            usleep(250_000)
+        }
+    }
+
+    /// Match a panel tile to a live scan entry. Owner (the app) is the strongest signal —
+    /// Nextcloud/Claude/WireGuard are distinct owners; only Control Center groups many.
+    private func bestMatch(for item: BarItem, in raws: [CaptureEngine.Raw]) -> CaptureEngine.Raw? {
+        let sameOwner = raws.filter { $0.owner == item.info.owner }
+        if sameOwner.count == 1 { return sameOwner.first }
+        if !sameOwner.isEmpty {
+            return sameOwner.first { $0.name == item.info.name } ?? sameOwner.first
+        }
+        return raws.first { $0.id == UInt32(item.info.id) }
     }
 
     /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left
@@ -426,8 +468,21 @@ final class StatusBarController {
 
     private func finishReveal() {
         disarmRevealCollapse()
-        restoreOwnItems()   // activation shrank the toggle; bring it back
-        ensureCollapsed()
+        if let restore = pendingRestore {
+            pendingRestore = nil
+            // Move the staged item back while the bar is still revealed (positions valid),
+            // then collapse. Off the main thread because MoveEngine blocks (usleep).
+            DispatchQueue.global().async { [weak self] in
+                restore()
+                DispatchQueue.main.async {
+                    self?.restoreOwnItems()
+                    self?.ensureCollapsed()
+                }
+            }
+        } else {
+            restoreOwnItems()   // activation shrank the toggle; bring it back
+            ensureCollapsed()
+        }
     }
 
     private func closeTile() {
