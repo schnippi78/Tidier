@@ -27,6 +27,10 @@ enum MoveEngine {
     /// Move the item to screen-x `toX` on the menu bar (`menuBarY`).
     static func move(windowID: UInt32, pid: pid_t, toX: CGFloat, menuBarY: CGFloat) {
         guard let src = CGEventSource(stateID: .combinedSessionState) else { return }
+        // Remember where the real pointer is so we can put it straight back — the
+        // targeted mouseUp below carries a cursor position and would otherwise leave
+        // the pointer sitting in the menu bar.
+        let savedCursor = CGEvent(source: nil)?.location
         if let down = event(.leftMouseDown, flags: .maskCommand, at: CGPoint(x: 20_000, y: 20_000),
                             windowID: windowID, pid: pid, source: src) {
             down.post(tap: .cgSessionEventTap)
@@ -36,6 +40,7 @@ enum MoveEngine {
                           windowID: windowID, pid: pid, source: src) {
             up.post(tap: .cgSessionEventTap)
         }
+        if let saved = savedCursor { CGWarpMouseCursorPosition(saved) }
     }
 
     // MARK: - Verification self-test

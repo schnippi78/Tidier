@@ -66,20 +66,42 @@ final class StatusBarController {
         }
     }
 
-    // MARK: - Background auto-refresh
+    // MARK: - Background auto-refresh (event-driven, ALWAYS invisible)
+    //
+    // The background NEVER moves menu bar items — moving is what caused the "disco" and
+    // the cursor jumping to the bar. Like Ice, we only react to apps launching/quitting
+    // (that's what actually adds/removes an item) and update the cache invisibly: reuse
+    // cached glyphs, drop vanished items, capture newly-appeared *on-screen* items in
+    // place. A brand-new *obscured* item gets a stand-in tile (app icon) instead of a
+    // move; its real glyph is filled in by the one-time startup pass.
 
-    /// Signature of the current menu bar layout, cheap and invisible (no captures, no
-    /// moving). Owner+name multiset detects when an app adds/removes its status item.
+    /// Stable signature: count of real items per owner. Excludes the constantly-renaming
+    /// windows (iStat text, Clock) so their churn never triggers a refresh.
     private func barSignature() -> String {
-        CaptureEngine.scanAll().map { "\($0.owner)|\($0.name)" }.sorted().joined(separator: ",")
+        var counts: [String: Int] = [:]
+        for r in CaptureEngine.scanAll() {
+            if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
+            if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
+            if r.name == "Clock" || r.name == "BentoBox-0" { continue }
+            counts[r.owner, default: 0] += 1
+        }
+        return counts.sorted { $0.key < $1.key }.map { "\($0.key):\($0.value)" }.joined(separator: ",")
     }
 
-    /// Poll the (invisible) window list periodically; rebuild the full cache only when
-    /// the set of items actually changed. Replaces the old manual »Aktualisieren« button.
+    /// React to app launch/quit (debounced). No polling timer that moves anything.
     private func startAutoRefresh() {
         lastBarSignature = barSignature()
+        let wsc = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didLaunchApplicationNotification,
+                     NSWorkspace.didTerminateApplicationNotification] {
+            wsc.addObserver(self, selector: #selector(appsChanged), name: name, object: nil)
+        }
+    }
+
+    @objc private func appsChanged() {
+        // Debounce bursts of launch/quit notifications into a single check.
         watchTimer?.invalidate()
-        let t = Timer(timeInterval: 4.0, repeats: true) { [weak self] _ in
+        let t = Timer(timeInterval: 1.5, repeats: false) { [weak self] _ in
             self?.checkForBarChanges()
         }
         RunLoop.main.add(t, forMode: .common)
@@ -87,7 +109,6 @@ final class StatusBarController {
     }
 
     private func checkForBarChanges() {
-        // Don't disturb the bar while it's mid-rebuild, being arranged, or revealed.
         guard !buildingCache, !arranging, !expanded else { return }
         let sig = barSignature()
         guard sig != lastBarSignature else { return }
@@ -95,11 +116,7 @@ final class StatusBarController {
         incrementalRefresh()
     }
 
-    /// Update the cache for a changed bar WITHOUT the visible shuffle wherever possible:
-    /// known items are reused from the existing cache (never moved again), removed items
-    /// just drop out, and newly-appeared *on-screen* items are captured in place — all
-    /// invisible. Only if a brand-new item is obscured (under the notch / off-screen) do
-    /// we fall back to the full move-capture pass, which is the one case that shuffles.
+    /// Invisible cache update — no moving, no capturing of obscured items.
     private func incrementalRefresh() {
         let raws = CaptureEngine.scanAll()
         // Pool of previously-captured tiles, keyed by coarse identity (owner|name).
@@ -108,32 +125,36 @@ final class StatusBarController {
             pool["\(it.info.owner)|\(it.info.name)", default: []].append(it)
         }
         var result: [BarItem] = []
-        var newObscured = false
         for r in raws {
+            if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
+            if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
             if r.name == "Clock" || r.name == "BentoBox-0" { continue }
             let k = "\(r.owner)|\(r.name)"
             if var bucket = pool[k], !bucket.isEmpty {
-                result.append(bucket.removeFirst())   // reuse cached image, no capture/move
+                result.append(bucket.removeFirst())   // reuse cached glyph, no capture/move
                 pool[k] = bucket
                 continue
             }
             // Genuinely new item.
-            if ItemCapture.image(forWindow: Int(r.id)) != nil {
-                if let built = TidierBar.makeItem(from: r.info) { result.append(built) }   // in place, invisible
-            } else {
-                newObscured = true   // needs staging → fall back below
-                break
+            if ItemCapture.image(forWindow: Int(r.id)) != nil, let built = TidierBar.makeItem(from: r.info) {
+                result.append(built)                  // on-screen → captured in place, invisible
+            } else if let fallback = fallbackItem(for: r) {
+                result.append(fallback)               // obscured → stand-in tile, NO move
             }
         }
-        if newObscured {
-            rebuildFullCache()   // rare: a new hidden item → one full pass (visible)
-            return
-        }
-        // Invisible path: publish the merged set.
         let groups = TidierBar.group(result)
         cachedGroups = groups
         ScannerModel.shared.detected = result
         if tileOpen { presentTile() }
+    }
+
+    /// Stand-in tile for a new, currently-obscured third-party item: the owning app's
+    /// icon + name, fully clickable. Real menu-bar glyph is captured on the next full pass.
+    private func fallbackItem(for r: CaptureEngine.Raw) -> BarItem? {
+        let icon = NSRunningApplication(processIdentifier: r.pid)?.icon
+        let label = r.owner
+        return BarItem(info: r.info, image: icon, symbolName: icon == nil ? "app.dashed" : nil,
+                       label: label, isApple: false, key: "o:" + r.owner + "#" + label)
     }
 
     // MARK: - Build
