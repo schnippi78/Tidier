@@ -339,8 +339,9 @@ final class StatusBarController {
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
         let all = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
         guard let t = all.first(where: { $0.key == item.key }) else { return }
-        // Prefer the accessibility press (reliable for Control Center modules); fall back
-        // to a synthetic click if the element doesn't expose a working press action.
+        // Prefer the accessibility press (reliable, and it keeps the item's menu open until
+        // the user clicks elsewhere); fall back to a synthetic click only if the element
+        // exposes no working press action at all.
         if !AXResolver.press(at: t.info.centerX, y: t.info.centerY) {
             postClick(atX: t.info.centerX, y: t.info.centerY)
         }

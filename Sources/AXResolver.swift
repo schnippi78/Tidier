@@ -49,14 +49,17 @@ enum AXResolver {
               var current = el else { return false }
         // Different status items expose different activation actions: Control Center
         // modules use AXPress, many third-party menu items use AXShowMenu, some AXOpen.
-        // Try each element's own action list (best signal) walking up a few parents.
         let preferred = ["AXPress", "AXShowMenu", "AXOpen", "AXPick"]
         for _ in 0..<6 {
             var namesRef: CFArray?
             if AXUIElementCopyActionNames(current, &namesRef) == .success,
                let names = namesRef as? [String] {
                 for action in preferred where names.contains(action) {
-                    if AXUIElementPerformAction(current, action as CFString) == .success { return true }
+                    let err = AXUIElementPerformAction(current, action as CFString)
+                    // .success = done. .cannotComplete means the action opened a MODAL menu
+                    // (the app is now blocked tracking it) — it IS open, so treat as handled;
+                    // a synthetic-click fallback would just toggle it shut again.
+                    if err == .success || err == .cannotComplete { return true }
                 }
             }
             var parentRef: CFTypeRef?
