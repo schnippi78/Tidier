@@ -339,12 +339,29 @@ final class StatusBarController {
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
         let all = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
         guard let t = all.first(where: { $0.key == item.key }) else { return }
+        // A few items report AXPress "success" but do nothing (e.g. Gemini's launcher) —
+        // for those a synthetic click is what actually activates them.
+        if let b = bundleId(fromKey: t.key), Self.clickPreferBundles.contains(b) {
+            postClick(atX: t.info.centerX, y: t.info.centerY)
+            return
+        }
         // Prefer the accessibility press (reliable, and it keeps the item's menu open until
         // the user clicks elsewhere); fall back to a synthetic click only if the element
         // exposes no working press action at all.
         if !AXResolver.press(at: t.info.centerX, y: t.info.centerY) {
             postClick(atX: t.info.centerX, y: t.info.centerY)
         }
+    }
+
+    /// Bundles whose status item ignores AXPress → activate them with a synthetic click.
+    private static let clickPreferBundles: Set<String> = ["com.google.GeminiMacOS.launcher"]
+
+    /// Extract the bundle id embedded in a "b:<bundle>#…" stable key.
+    private func bundleId(fromKey key: String) -> String? {
+        guard key.hasPrefix("b:") else { return nil }
+        let rest = key.dropFirst(2)
+        if let hash = rest.firstIndex(of: "#") { return String(rest[..<hash]) }
+        return String(rest)
     }
 
     /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left

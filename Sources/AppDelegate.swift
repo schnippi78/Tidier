@@ -4,6 +4,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusBar: StatusBarController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Single instance: if another Tidier is already running, hand off to it (show its
+        // settings) and quit this one — so the menu bar never gets duplicate toggles.
+        let me = NSRunningApplication.current
+        let others = NSWorkspace.shared.runningApplications.filter {
+            $0.bundleIdentifier == me.bundleIdentifier && $0.processIdentifier != me.processIdentifier
+        }
+        if !others.isEmpty {
+            others.first?.activate(options: [])
+            NSApp.terminate(nil)
+            return
+        }
+
         Preferences.registerDefaults()
         LanguageManager.shared.applyStored()
         statusBar = StatusBarController()

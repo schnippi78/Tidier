@@ -132,17 +132,23 @@ final class TidierBar: NSObject, NSWindowDelegate {
     }
 
     /// Re-measure the content and grow/shrink the panel to match (async content like
-    /// weather loading in after the panel is already open).
+    /// weather loading in after the panel is already open). Animated + top-anchored so it
+    /// glides open smoothly instead of snapping ("pelzig").
     private func resizeToFit() {
         guard let p = panel, let container = container, let host = host else { return }
         host.layoutSubtreeIfNeeded()
         let w = Self.panelWidth
         let h = max(120, ceil(host.fittingSize.height))
         guard abs(p.frame.height - h) > 0.5 else { return }
+        let top = p.frame.maxY                       // keep the top edge fixed under the bar
+        let newFrame = NSRect(x: p.frame.minX, y: top - h, width: w, height: h)
         container.setFrameSize(NSSize(width: w, height: h))
         host.frame = container.bounds
-        p.setContentSize(NSSize(width: w, height: h))
-        positionPanel(height: h)
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.14
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            p.animator().setFrame(newFrame, display: true)
+        }
     }
 
     private func positionPanel(height h: CGFloat) {
