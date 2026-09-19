@@ -33,3 +33,4 @@
 "bar.grant" = "Allow Screen Recording to show icons";
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "시스템 타일 표시 (CPU, RAM…)";
+"general.showWeather" = "날씨 표시";

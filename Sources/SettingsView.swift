@@ -108,6 +108,9 @@ private struct GeneralTab: View {
 
             Toggle(L("general.showSystemTiles"), isOn: Binding(
                 get: { prefs.showSystemTiles }, set: { prefs.showSystemTiles = $0 }))
+
+            Toggle(L("general.showWeather"), isOn: Binding(
+                get: { prefs.showWeather }, set: { prefs.showWeather = $0 }))
         }
         .formStyle(.grouped)
     }

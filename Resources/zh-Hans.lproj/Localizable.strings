@@ -33,3 +33,4 @@
 "bar.grant" = "Allow Screen Recording to show icons";
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "显示系统磁贴（CPU、内存…）";
+"general.showWeather" = "显示天气";

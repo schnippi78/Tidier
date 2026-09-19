@@ -339,18 +339,25 @@ final class StatusBarController {
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
         let all = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
         guard let t = all.first(where: { $0.key == item.key }) else { return }
-        let cursor = CGEvent(source: nil)?.location
-        postClick(atX: t.info.centerX, y: t.info.centerY)
-        if let c = cursor { CGWarpMouseCursorPosition(c) }
+        // Prefer the accessibility press (reliable for Control Center modules); fall back
+        // to a synthetic click if the element doesn't expose a working press action.
+        if !AXResolver.press(at: t.info.centerX, y: t.info.centerY) {
+            postClick(atX: t.info.centerX, y: t.info.centerY)
+        }
     }
 
     /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left
-    /// global coordinate space, so item centers map directly.
+    /// global coordinate space, so item centers map directly. We warp the real cursor onto
+    /// the item first (some items hit-test the cursor) and LEAVE it there — warping it back
+    /// immediately dismisses a menu/popover that just opened (Telegram et al. close instantly).
     private func postClick(atX x: CGFloat, y: CGFloat) {
         let p = CGPoint(x: x, y: y)
         let src = CGEventSource(stateID: .combinedSessionState)
+        CGWarpMouseCursorPosition(p)
+        usleep(30_000)
         CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: p, mouseButton: .left)?
             .post(tap: .cghidEventTap)
+        usleep(60_000)
         CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: p, mouseButton: .left)?
             .post(tap: .cghidEventTap)
     }

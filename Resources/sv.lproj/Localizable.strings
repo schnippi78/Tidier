@@ -33,3 +33,4 @@
 "bar.grant" = "Allow Screen Recording to show icons";
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Visa systembrickor (CPU, RAM…)";
+"general.showWeather" = "Visa väder";

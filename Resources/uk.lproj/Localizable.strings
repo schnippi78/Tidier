@@ -33,3 +33,4 @@
 "bar.grant" = "Allow Screen Recording to show icons";
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Показувати системні плитки (CPU, RAM…)";
+"general.showWeather" = "Показувати погоду";

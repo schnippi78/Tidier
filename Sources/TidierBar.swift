@@ -84,7 +84,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
         } else {
             SystemStats.shared.stop()
         }
-        WeatherService.shared.refreshIfStale()
+        if Preferences.shared.showWeather { WeatherService.shared.refreshIfStale() }
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
                                  hasAccessibility: PermissionManager.hasAccessibility,
@@ -232,8 +232,16 @@ final class TidierBar: NSObject, NSWindowDelegate {
     /// Stable across relaunches (window ids are not): bundle id + title, else the
     /// CGWindow name, else owner + label.
     private static func stableKey(info: MenuBarItemInfo, resolved: ResolvedItem?, label: String) -> String {
+        // A specific window name (WiFi/Bluetooth/Battery/NowPlaying/…) is stable across
+        // refreshes. The AX *title* is NOT — WiFi/Bluetooth carry live connection text
+        // ("WLAN, verbunden, …"), so keying by title makes the tile's identity change
+        // between cache-build and click → the match misses and the click does nothing.
+        // Prefer the stable name; fall back to bundle+title only for generic "Item-0".
+        if !info.name.isEmpty && info.name != "Item-0" {
+            if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + info.name }
+            return "n:" + info.name
+        }
         if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + (resolved?.title ?? label) }
-        if !info.name.isEmpty && info.name != "Item-0" { return "n:" + info.name }
         return "o:" + info.owner + "#" + label
     }
 
@@ -427,7 +435,7 @@ struct TidierBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
-            if let t = weather.temp { weatherHeader(t) }
+            if Preferences.shared.showWeather, let t = weather.temp { weatherHeader(t) }
             if Preferences.shared.showSystemTiles {
                 section(title: "System") { tileArea(systemContents(), itemKeys: []) }
             }

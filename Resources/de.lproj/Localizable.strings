@@ -33,3 +33,4 @@
 "bar.grant" = "Bildschirmaufnahme erlauben, um Icons zu zeigen";
 "bar.grantAX" = "Bedienungshilfen erlauben für Namen & Gruppierung";
 "general.showSystemTiles" = "Systemkacheln anzeigen (CPU, RAM …)";
+"general.showWeather" = "Wetter anzeigen";
