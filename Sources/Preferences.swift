@@ -30,6 +30,7 @@ enum PrefKey {
     static let revealOnHover      = "revealOnHover"
     static let appLanguage        = "appLanguage"   // "" = follow system
     static let tileStyle          = "tileStyle"
+    static let showSystemTiles    = "showSystemTiles"
 }
 
 /// Thin observable wrapper over UserDefaults so SwiftUI can bind directly and
@@ -47,6 +48,7 @@ final class Preferences: ObservableObject {
             PrefKey.revealOnHover:      false,
             PrefKey.appLanguage:        "",
             PrefKey.tileStyle:          TileStyle.dashboard.rawValue,
+            PrefKey.showSystemTiles:    true,
         ])
     }
 
@@ -82,5 +84,9 @@ final class Preferences: ObservableObject {
     var tileStyle: TileStyle {
         get { TileStyle(rawValue: d.string(forKey: PrefKey.tileStyle) ?? "") ?? .dashboard }
         set { d.set(newValue.rawValue, forKey: PrefKey.tileStyle); changed() }
+    }
+    var showSystemTiles: Bool {
+        get { d.bool(forKey: PrefKey.showSystemTiles) }
+        set { d.set(newValue, forKey: PrefKey.showSystemTiles); changed() }
     }
 }

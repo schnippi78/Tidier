@@ -32,3 +32,4 @@
 "bar.empty" = "Keine ausgeblendeten Objekte";
 "bar.grant" = "Bildschirmaufnahme erlauben, um Icons zu zeigen";
 "bar.grantAX" = "Bedienungshilfen erlauben für Namen & Gruppierung";
+"general.showSystemTiles" = "Systemkacheln anzeigen (CPU, RAM …)";

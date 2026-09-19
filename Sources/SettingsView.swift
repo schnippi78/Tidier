@@ -103,6 +103,11 @@ private struct GeneralTab: View {
 
             Toggle(L("general.revealOnHover"), isOn: Binding(
                 get: { prefs.revealOnHover }, set: { prefs.revealOnHover = $0 }))
+
+            Divider()
+
+            Toggle(L("general.showSystemTiles"), isOn: Binding(
+                get: { prefs.showSystemTiles }, set: { prefs.showSystemTiles = $0 }))
         }
         .formStyle(.grouped)
     }

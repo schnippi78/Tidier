@@ -620,5 +620,6 @@ final class StatusBarController {
         else { removeAlwaysSeparator() }
         setupHover()
         applyLayout()
+        if tileOpen { presentTile() }   // reflect e.g. the system-tiles toggle live
     }
 }

@@ -79,7 +79,11 @@ final class TidierBar: NSObject, NSWindowDelegate {
     func show(groups: [BarGroup], near rect: NSRect,
               onActivate: @escaping (BarItem) -> Void,
               onStat: @escaping (Stat) -> Void) {
-        SystemStats.shared.start()   // live CPU/RAM/battery for the dashboard rings
+        if Preferences.shared.showSystemTiles {
+            SystemStats.shared.start()   // live CPU/RAM/battery for the dashboard rings
+        } else {
+            SystemStats.shared.stop()
+        }
         WeatherService.shared.refreshIfStale()
         let root = TidierBarView(groups: groups,
                                  hasScreenRecording: PermissionManager.hasScreenRecording,
@@ -424,7 +428,9 @@ struct TidierBarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             if let t = weather.temp { weatherHeader(t) }
-            section(title: "System") { tileArea(systemContents(), itemKeys: []) }
+            if Preferences.shared.showSystemTiles {
+                section(title: "System") { tileArea(systemContents(), itemKeys: []) }
+            }
             ForEach(groups) { group in
                 let ordered = model.ordered(group.items)
                 section(title: group.title) {
