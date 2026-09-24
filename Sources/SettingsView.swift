@@ -187,7 +187,7 @@ private struct MenuBarTab: View {
                     .font(.caption).foregroundStyle(.secondary)
                 Text("Automatisch aktuell").font(.caption).foregroundStyle(.secondary)
             }
-            Text("Wähle, welche Objekte im Tidier-Panel erscheinen — wie in den Menüleisten-Einstellungen von macOS.")
+            Text(L("menubar.selectHelp"))
                 .font(.callout).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 

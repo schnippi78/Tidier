@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Afișează dalele de sistem (CPU, RAM…)";
 "general.showWeather" = "Afișează vremea";
+"menubar.selectHelp" = "Alege ce elemente apar în panoul Tidier — ca în setările barei de meniu din macOS.";

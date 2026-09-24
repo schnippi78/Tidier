@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "システムタイルを表示（CPU、RAM…）";
 "general.showWeather" = "天気を表示";
+"menubar.selectHelp" = "Tidier パネルに表示する項目を選択します（macOS のメニューバー設定と同様）。";

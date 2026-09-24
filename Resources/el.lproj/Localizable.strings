@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Εμφάνιση πλακιδίων συστήματος (CPU, RAM…)";
 "general.showWeather" = "Εμφάνιση καιρού";
+"menubar.selectHelp" = "Επίλεξε ποια στοιχεία εμφανίζονται στο πλαίσιο του Tidier — όπως στις ρυθμίσεις γραμμής μενού του macOS.";

@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "顯示系統磚（CPU、記憶體…）";
 "general.showWeather" = "顯示天氣";
+"menubar.selectHelp" = "選擇要在 Tidier 面板中顯示哪些項目——就像 macOS 的選單列設定。";

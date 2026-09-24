@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Показувати системні плитки (CPU, RAM…)";
 "general.showWeather" = "Показувати погоду";
+"menubar.selectHelp" = "Виберіть, які об'єкти показувати на панелі Tidier — як у налаштуваннях рядка меню macOS.";

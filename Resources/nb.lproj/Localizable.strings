@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Vis systemfliser (CPU, RAM…)";
 "general.showWeather" = "Vis vær";
+"menubar.selectHelp" = "Velg hvilke objekter som vises i Tidier-panelet — som i menylinjeinnstillingene i macOS.";

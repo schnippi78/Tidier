@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Mostrar blocos do sistema (CPU, RAM…)";
 "general.showWeather" = "Mostrar o tempo";
+"menubar.selectHelp" = "Escolha quais itens aparecem no painel do Tidier — como nas configurações da barra de menus do macOS.";

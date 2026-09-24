@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Zobrazit systémové dlaždice (CPU, RAM…)";
 "general.showWeather" = "Zobrazit počasí";
+"menubar.selectHelp" = "Vyberte, které položky se zobrazí v panelu Tidier — jako v nastavení řádku nabídek v macOS.";

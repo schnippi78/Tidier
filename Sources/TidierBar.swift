@@ -237,9 +237,16 @@ final class TidierBar: NSObject, NSWindowDelegate {
         var label = label(for: info, resolved: resolved, isApple: isApple)
         let key = stableKey(info: info, resolved: resolved, label: label)
         // AX titles resolve intermittently (a rebuild can briefly return an empty title),
-        // which would blank a tile's label. Remember the last good label per stable key and
-        // reuse it, so e.g. "Emoji & Symbole einblenden" never collapses to an icon-only tile.
-        if label.isEmpty { label = labelCache[key] ?? "" } else { labelCache[key] = label }
+        // which would blank a tile's label. Remember the last good label per stable key —
+        // persisted, so once we've ever seen e.g. "Emoji & Symbole einblenden" it sticks
+        // across restarts and the tile never collapses to a label-less centered icon.
+        if label.isEmpty {
+            label = cachedLabel(key) ?? resolved?.appName.flatMap { a in
+                (a == "Kontrollzentrum" || a == "Control Center") ? nil : a
+            } ?? ""
+        } else {
+            cacheLabel(key, label)
+        }
         let low = label.lowercased()
         if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { return nil }
         if isApple && (low.contains("wetter") || low.contains("weather")) { return nil }
@@ -251,8 +258,18 @@ final class TidierBar: NSObject, NSWindowDelegate {
                        key: key)
     }
 
-    /// Last good display label per stable key — survives intermittent empty AX titles.
-    private static var labelCache: [String: String] = [:]
+    /// Last good display label per stable key — persisted so it survives intermittent
+    /// empty AX titles AND app restarts.
+    private static let labelCacheKey = "tidier.labelCache"
+    private static func cachedLabel(_ key: String) -> String? {
+        (UserDefaults.standard.dictionary(forKey: labelCacheKey) as? [String: String])?[key]
+    }
+    private static func cacheLabel(_ key: String, _ label: String) {
+        var d = (UserDefaults.standard.dictionary(forKey: labelCacheKey) as? [String: String]) ?? [:]
+        guard d[key] != label else { return }
+        d[key] = label
+        UserDefaults.standard.set(d, forKey: labelCacheKey)
+    }
 
     /// Stable across relaunches (window ids are not): bundle id + title, else the
     /// CGWindow name, else owner + label.

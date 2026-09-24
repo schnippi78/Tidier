@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Systeemtegels tonen (CPU, RAM…)";
 "general.showWeather" = "Weer tonen";
+"menubar.selectHelp" = "Kies welke items in het Tidier-paneel verschijnen — net als in de menubalkinstellingen van macOS.";

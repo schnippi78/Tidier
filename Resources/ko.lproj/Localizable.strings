@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "시스템 타일 표시 (CPU, RAM…)";
 "general.showWeather" = "날씨 표시";
+"menubar.selectHelp" = "Tidier 패널에 표시할 항목을 선택하세요 — macOS 메뉴 막대 설정처럼.";

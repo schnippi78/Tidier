@@ -34,3 +34,4 @@
 "bar.grantAX" = "Allow Accessibility for names & grouping";
 "general.showSystemTiles" = "Näytä järjestelmäruudut (CPU, RAM…)";
 "general.showWeather" = "Näytä sää";
+"menubar.selectHelp" = "Valitse, mitkä kohteet näkyvät Tidier-paneelissa – kuten macOS:n valikkopalkin asetuksissa.";
