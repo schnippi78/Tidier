@@ -121,6 +121,15 @@ private struct MenuBarTab: View {
     @EnvironmentObject var lang: LanguageManager
     @EnvironmentObject var scanner: ScannerModel
 
+    private struct SysRow { let key: String; let label: String; let symbol: String }
+    private static let systemRows: [SysRow] = [
+        SysRow(key: "sys.cpu",  label: "CPU",       symbol: "cpu"),
+        SysRow(key: "sys.ram",  label: "RAM",       symbol: "memorychip"),
+        SysRow(key: "sys.disk", label: "Disk",      symbol: "internaldrive"),
+        SysRow(key: "sys.net",  label: "Netzwerk",  symbol: "network"),
+        SysRow(key: "sys.batt", label: "Batterie",  symbol: "battery.100"),
+    ]
+
     var body: some View {
         ScrollView {
             content.padding(20)
@@ -179,6 +188,26 @@ private struct MenuBarTab: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(6)
             }
+
+            Text(L("menubar.systemItems")).font(.headline)
+            VStack(spacing: 0) {
+                ForEach(Array(Self.systemRows.enumerated()), id: \.offset) { i, row in
+                    HStack(spacing: 10) {
+                        Image(systemName: row.symbol).frame(width: 22, height: 18)
+                            .foregroundStyle(.secondary)
+                        Text(row.label)
+                        Spacer()
+                        Toggle("", isOn: Binding(
+                            get: { !prefs.isItemHidden(row.key) },
+                            set: { prefs.setItem(row.key, hidden: !$0) }))
+                            .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+                    }
+                    .padding(.vertical, 7)
+                    if i < Self.systemRows.count - 1 { Divider() }
+                }
+            }
+            .padding(.horizontal, 10)
+            .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
 
             HStack(spacing: 6) {
                 Text(L("menubar.detected")).font(.headline)

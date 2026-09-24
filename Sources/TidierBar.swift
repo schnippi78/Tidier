@@ -247,6 +247,10 @@ final class TidierBar: NSObject, NSWindowDelegate {
         } else {
             cacheLabel(key, label)
         }
+        // No identifiable name after every fallback → it's an internal Control Center module
+        // (Sound / A-V controls / duplicate Now-Playing …). Don't build a nameless,
+        // non-functional tile for it.
+        if label.isEmpty { return nil }
         let low = label.lowercased()
         if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { return nil }
         if isApple && (low.contains("wetter") || low.contains("weather")) { return nil }
@@ -411,7 +415,10 @@ struct TidierBarView: View {
     private var netStat: Stat { Stat(key: "sys.net", label: "Netzwerk", value: 0, accent: .blue) }
 
     private func systemContents() -> [TileContent] {
-        statItems.map { TileContent.stat($0) } + [TileContent.net(down: stats.netDown, up: stats.netUp)]
+        let p = Preferences.shared
+        var out = statItems.filter { !p.isItemHidden($0.key) }.map { TileContent.stat($0) }
+        if !p.isItemHidden("sys.net") { out.append(.net(down: stats.netDown, up: stats.netUp)) }
+        return out
     }
 
     private func isFullWidth(_ c: TileContent) -> Bool {
@@ -481,7 +488,7 @@ struct TidierBarView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             if Preferences.shared.showWeather, let t = weather.temp { weatherHeader(t) }
-            if Preferences.shared.showSystemTiles {
+            if Preferences.shared.showSystemTiles, !systemContents().isEmpty {
                 section(title: "System") { tileArea(systemContents(), itemKeys: []) }
             }
             ForEach(groups) { group in

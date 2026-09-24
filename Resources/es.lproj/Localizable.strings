@@ -38,3 +38,4 @@
 "menubar.place.bar" = "Barra";
 "menubar.place.panel" = "Panel";
 "menubar.place.off" = "No";
+"menubar.systemItems" = "Elementos del sistema";
