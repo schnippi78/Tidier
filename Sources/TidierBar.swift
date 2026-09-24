@@ -123,7 +123,17 @@ final class TidierBar: NSObject, NSWindowDelegate {
         // Key (so buttons & drag-reorder receive events) but non-activating, so it
         // behaves like Control Center: losing key focus (a click anywhere else,
         // including the toggle) dismisses it via windowDidResignKey.
+        let wasVisible = p.isVisible
+        if !wasVisible { p.alphaValue = 0 }
         p.makeKeyAndOrderFront(nil)
+        if !wasVisible {
+            // Smooth fade-in so the panel eases open instead of popping ("pelzig").
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.16
+                ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                p.animator().alphaValue = 1
+            }
+        }
         // Content can grow after opening (weather loads, stats settle) — re-fit so the
         // bottom never clips and top/bottom padding stay equal.
         for delay in [0.4, 1.3] {
@@ -185,6 +195,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
         p.isOpaque = false
         p.backgroundColor = .clear
         p.hasShadow = true
+        p.animationBehavior = .none   // we drive the fade/resize ourselves
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         p.delegate = self
         return p
