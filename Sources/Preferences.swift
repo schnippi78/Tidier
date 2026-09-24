@@ -32,6 +32,7 @@ enum PrefKey {
     static let tileStyle          = "tileStyle"
     static let showSystemTiles    = "showSystemTiles"
     static let showWeather        = "showWeather"
+    static let hiddenItems        = "hiddenItems"   // stable keys the user hid from the panel
 }
 
 /// Thin observable wrapper over UserDefaults so SwiftUI can bind directly and
@@ -94,5 +95,17 @@ final class Preferences: ObservableObject {
     var showWeather: Bool {
         get { d.bool(forKey: PrefKey.showWeather) }
         set { d.set(newValue, forKey: PrefKey.showWeather); changed() }
+    }
+
+    /// Stable item keys the user chose to hide from Tidier's panel (default: show all).
+    var hiddenItemKeys: Set<String> {
+        get { Set(d.stringArray(forKey: PrefKey.hiddenItems) ?? []) }
+        set { d.set(Array(newValue), forKey: PrefKey.hiddenItems); changed() }
+    }
+    func isItemHidden(_ key: String) -> Bool { hiddenItemKeys.contains(key) }
+    func setItem(_ key: String, hidden: Bool) {
+        var s = hiddenItemKeys
+        if hidden { s.insert(key) } else { s.remove(key) }
+        hiddenItemKeys = s
     }
 }

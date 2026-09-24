@@ -234,7 +234,12 @@ final class TidierBar: NSObject, NSWindowDelegate {
             if let b = resolved?.bundleId { return b == "com.apple.controlcenter" || b.hasPrefix("com.apple.") }
             return info.isSystem
         }()
-        let label = label(for: info, resolved: resolved, isApple: isApple)
+        var label = label(for: info, resolved: resolved, isApple: isApple)
+        let key = stableKey(info: info, resolved: resolved, label: label)
+        // AX titles resolve intermittently (a rebuild can briefly return an empty title),
+        // which would blank a tile's label. Remember the last good label per stable key and
+        // reuse it, so e.g. "Emoji & Symbole einblenden" never collapses to an icon-only tile.
+        if label.isEmpty { label = labelCache[key] ?? "" } else { labelCache[key] = label }
         let low = label.lowercased()
         if isApple && (low.contains("batterie") || low.contains("battery") || low.contains("akku")) { return nil }
         if isApple && (low.contains("wetter") || low.contains("weather")) { return nil }
@@ -243,8 +248,11 @@ final class TidierBar: NSObject, NSWindowDelegate {
                        symbolName: isApple ? symbol(for: label, resolved: resolved) : nil,
                        label: label,
                        isApple: isApple,
-                       key: stableKey(info: info, resolved: resolved, label: label))
+                       key: key)
     }
+
+    /// Last good display label per stable key — survives intermittent empty AX titles.
+    private static var labelCache: [String: String] = [:]
 
     /// Stable across relaunches (window ids are not): bundle id + title, else the
     /// CGWindow name, else owner + label.
@@ -258,7 +266,10 @@ final class TidierBar: NSObject, NSWindowDelegate {
             if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + info.name }
             return "n:" + info.name
         }
-        if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + (resolved?.title ?? label) }
+        // Generic "Item-0": key by bundle + name, NOT the title — some titles are dynamic or
+        // resolve empty intermittently, which would flip the tile's identity (breaking the
+        // show/hide selection and drag order). One status item per app is the norm.
+        if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + info.name }
         return "o:" + info.owner + "#" + label
     }
 

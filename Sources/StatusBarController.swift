@@ -267,7 +267,6 @@ final class StatusBarController {
                       seen.insert(b.key).inserted else { continue }
                 items.append(b)
             }
-            let groups = TidierBar.group(items)
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.buildingCache = false
@@ -276,13 +275,20 @@ final class StatusBarController {
                 self.revealingAlways = false
                 self.applyLayout()
                 if !items.isEmpty {
-                    self.cachedGroups = groups
-                    ScannerModel.shared.detected = items
+                    ScannerModel.shared.detected = items      // full list (Settings shows all)
+                    self.applyItemFilter()                    // panel shows only the chosen ones
                     self.lastBarSignature = self.barSignature()
-                    if self.tileOpen { self.presentTile() }   // refresh the open panel
                 }
             }
         }
+    }
+
+    /// Rebuild the panel's groups from the full detected list minus the items the user hid
+    /// in Settings, and refresh the panel if it's open. Cheap — no capture, no moving.
+    func applyItemFilter() {
+        let visible = ScannerModel.shared.detected.filter { !Preferences.shared.isItemHidden($0.key) }
+        cachedGroups = TidierBar.group(visible)
+        if tileOpen { presentTile() }
     }
 
     private func presentTile() {
@@ -645,6 +651,6 @@ final class StatusBarController {
         else { removeAlwaysSeparator() }
         setupHover()
         applyLayout()
-        if tileOpen { presentTile() }   // reflect e.g. the system-tiles toggle live
+        applyItemFilter()   // reflect show/hide selection (also re-presents an open panel)
     }
 }

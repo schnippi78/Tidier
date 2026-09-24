@@ -187,6 +187,9 @@ private struct MenuBarTab: View {
                     .font(.caption).foregroundStyle(.secondary)
                 Text("Automatisch aktuell").font(.caption).foregroundStyle(.secondary)
             }
+            Text("Wähle, welche Objekte im Tidier-Panel erscheinen — wie in den Menüleisten-Einstellungen von macOS.")
+                .font(.callout).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             if scanner.detected.isEmpty {
                 Text("Noch keine Objekte erfasst — die Liste aktualisiert sich automatisch im Hintergrund, sobald Tidier die Leiste eingelesen hat.")
@@ -201,6 +204,12 @@ private struct MenuBarTab: View {
                             Spacer()
                             Text(item.isApple ? "System" : "App")
                                 .font(.caption).foregroundStyle(.secondary)
+                            Toggle("", isOn: Binding(
+                                get: { !prefs.isItemHidden(item.key) },
+                                set: { prefs.setItem(item.key, hidden: !$0) }))
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .controlSize(.mini)
                         }
                         .padding(.vertical, 7)
                         if i < scanner.detected.count - 1 { Divider() }
