@@ -20,6 +20,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         LanguageManager.shared.applyStored()
         statusBar = StatusBarController()
 
+        // Pre-warm the async content so the FIRST panel open is already the right size and
+        // doesn't visibly grow ("pelzig"): weather loads in the background, and a throwaway
+        // stats sample primes the values. Later opens reuse the cached values.
+        if Preferences.shared.showWeather { WeatherService.shared.refreshIfStale() }
+        SystemStats.shared.start()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { SystemStats.shared.stop() }
+
         // The tiles show the *real* menu-bar glyph (iStat text, weather °C, …),
         // which only Screen Recording can capture. Surface the system prompt and
         // register Tidier in the Screen Recording list on first launch so the user
