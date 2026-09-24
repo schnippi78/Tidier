@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Mostrar mosaicos del sistema (CPU, RAM…)";
 "general.showWeather" = "Mostrar el tiempo";
 "menubar.selectHelp" = "Elige qué elementos aparecen en el panel de Tidier, como en los ajustes de la barra de menús de macOS.";
+"menubar.place.bar" = "Barra";
+"menubar.place.panel" = "Panel";
+"menubar.place.off" = "No";

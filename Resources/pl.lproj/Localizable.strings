@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Pokaż kafelki systemowe (CPU, RAM…)";
 "general.showWeather" = "Pokaż pogodę";
 "menubar.selectHelp" = "Wybierz, które elementy pojawią się w panelu Tidier — jak w ustawieniach paska menu w macOS.";
+"menubar.place.bar" = "Pasek";
+"menubar.place.panel" = "Panel";
+"menubar.place.off" = "Nie";

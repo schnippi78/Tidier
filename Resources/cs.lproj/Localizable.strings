@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Zobrazit systémové dlaždice (CPU, RAM…)";
 "general.showWeather" = "Zobrazit počasí";
 "menubar.selectHelp" = "Vyberte, které položky se zobrazí v panelu Tidier — jako v nastavení řádku nabídek v macOS.";
+"menubar.place.bar" = "Panel";
+"menubar.place.panel" = "Tidier";
+"menubar.place.off" = "Ne";

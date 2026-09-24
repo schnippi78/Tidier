@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Rendszercsempék megjelenítése (CPU, RAM…)";
 "general.showWeather" = "Időjárás megjelenítése";
 "menubar.selectHelp" = "Válaszd ki, mely elemek jelenjenek meg a Tidier panelen — mint a macOS menüsor-beállításaiban.";
+"menubar.place.bar" = "Sáv";
+"menubar.place.panel" = "Panel";
+"menubar.place.off" = "Ki";

@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "システムタイルを表示（CPU、RAM…）";
 "general.showWeather" = "天気を表示";
 "menubar.selectHelp" = "Tidier パネルに表示する項目を選択します（macOS のメニューバー設定と同様）。";
+"menubar.place.bar" = "バー";
+"menubar.place.panel" = "パネル";
+"menubar.place.off" = "オフ";

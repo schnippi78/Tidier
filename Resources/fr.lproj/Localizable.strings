@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Afficher les tuiles système (CPU, RAM…)";
 "general.showWeather" = "Afficher la météo";
 "menubar.selectHelp" = "Choisissez les éléments qui apparaissent dans le panneau Tidier — comme dans les réglages de la barre des menus de macOS.";
+"menubar.place.bar" = "Barre";
+"menubar.place.panel" = "Panneau";
+"menubar.place.off" = "Non";

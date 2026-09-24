@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Vis systemfliser (CPU, RAM…)";
 "general.showWeather" = "Vis vær";
 "menubar.selectHelp" = "Velg hvilke objekter som vises i Tidier-panelet — som i menylinjeinnstillingene i macOS.";
+"menubar.place.bar" = "Linje";
+"menubar.place.panel" = "Panel";
+"menubar.place.off" = "Av";

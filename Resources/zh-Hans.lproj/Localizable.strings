@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "显示系统磁贴（CPU、内存…）";
 "general.showWeather" = "显示天气";
 "menubar.selectHelp" = "选择在 Tidier 面板中显示哪些项目——就像 macOS 的菜单栏设置。";
+"menubar.place.bar" = "菜单栏";
+"menubar.place.panel" = "面板";
+"menubar.place.off" = "关";

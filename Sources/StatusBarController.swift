@@ -284,11 +284,56 @@ final class StatusBarController {
     }
 
     /// Rebuild the panel's groups from the full detected list minus the items the user hid
-    /// in Settings, and refresh the panel if it's open. Cheap — no capture, no moving.
+    /// OR pinned to the real bar (pinned = visible in the bar, so not in the panel). Refresh
+    /// the panel if it's open. Cheap — no capture, no moving.
     func applyItemFilter() {
-        let visible = ScannerModel.shared.detected.filter { !Preferences.shared.isItemHidden($0.key) }
+        let p = Preferences.shared
+        let visible = ScannerModel.shared.detected.filter { !p.isItemHidden($0.key) && !p.isPinned($0.key) }
         cachedGroups = TidierBar.group(visible)
         if tileOpen { presentTile() }
+    }
+
+    /// Pin an item into the visible menu bar (right of the hidden separator) or send it back
+    /// to the hidden side — one deliberate, user-triggered move via MoveEngine. Reveals to
+    /// find the live item by its stable key, moves just that one, then collapses.
+    func setItemPinned(_ key: String, pinned: Bool) {
+        guard !buildingCache, !arranging else { return }
+        closeTile()
+        expanded = true
+        revealingAlways = true
+        applyLayout()
+        shrinkOwnItems()
+        let threshold = mainItem.button?.window?.frame.minX ?? 1200
+        let sepX = hiddenSep.button?.window?.frame.minX ?? (threshold - 20)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { [weak self] in
+            guard let self = self else { return }
+            // Find the live window whose resolved key matches (same approach as clicking).
+            var target: CaptureEngine.Raw?
+            let raws = CaptureEngine.scanAll()
+            for r in raws where ItemCapture.image(forWindow: Int(r.id)) != nil {
+                if TidierBar.makeItem(from: r.info)?.key == key { target = r; break }
+            }
+            guard let r = target else { self.collapseAfterMove(); return }
+            let barY = raws.first(where: { $0.x >= 0 })?.info.centerY ?? (r.y + r.h / 2)
+            // Pin → just left of Tidier's toggle (right of the separator = stays visible).
+            // Unpin → left of the separator (hidden when collapsed).
+            let toX = pinned ? (threshold - r.w - 2) : (sepX - r.w - 2)
+            let id = r.id, pid = r.pid
+            DispatchQueue.global().async {
+                MoveEngine.move(windowID: id, pid: pid, toX: toX, menuBarY: barY)
+                usleep(300_000)
+                DispatchQueue.main.async { self.collapseAfterMove() }
+            }
+        }
+    }
+
+    private func collapseAfterMove() {
+        restoreOwnItems()
+        expanded = false
+        revealingAlways = false
+        applyLayout()
+        // Re-read the bar so the Settings list + panel reflect the new placement.
+        rebuildFullCache()
     }
 
     private func presentTile() {

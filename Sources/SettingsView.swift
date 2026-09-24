@@ -201,15 +201,24 @@ private struct MenuBarTab: View {
                         HStack(spacing: 10) {
                             detectedIcon(item).frame(width: 22, height: 18)
                             Text(item.label.isEmpty ? item.info.owner : item.label)
-                            Spacer()
-                            Text(item.isApple ? "System" : "App")
-                                .font(.caption).foregroundStyle(.secondary)
-                            Toggle("", isOn: Binding(
-                                get: { !prefs.isItemHidden(item.key) },
-                                set: { prefs.setItem(item.key, hidden: !$0) }))
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                                .controlSize(.mini)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            Picker("", selection: Binding(
+                                get: { prefs.placement(item.key) },
+                                set: { newValue in
+                                    let old = prefs.placement(item.key)
+                                    prefs.setPlacement(item.key, newValue)
+                                    if (old == .bar) != (newValue == .bar) {
+                                        StatusBarController.shared?.setItemPinned(item.key, pinned: newValue == .bar)
+                                    }
+                                })) {
+                                Text(L("menubar.place.bar")).tag(ItemPlacement.bar)
+                                Text(L("menubar.place.panel")).tag(ItemPlacement.panel)
+                                Text(L("menubar.place.off")).tag(ItemPlacement.off)
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .fixedSize()
                         }
                         .padding(.vertical, 7)
                         if i < scanner.detected.count - 1 { Divider() }

@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Näytä järjestelmäruudut (CPU, RAM…)";
 "general.showWeather" = "Näytä sää";
 "menubar.selectHelp" = "Valitse, mitkä kohteet näkyvät Tidier-paneelissa – kuten macOS:n valikkopalkin asetuksissa.";
+"menubar.place.bar" = "Palkki";
+"menubar.place.panel" = "Paneeli";
+"menubar.place.off" = "Ei";

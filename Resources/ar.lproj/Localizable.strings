@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "إظهار مربعات النظام (المعالج، الذاكرة…)";
 "general.showWeather" = "إظهار الطقس";
 "menubar.selectHelp" = "اختر العناصر التي تظهر في لوحة Tidier — مثل إعدادات شريط القوائم في macOS.";
+"menubar.place.bar" = "الشريط";
+"menubar.place.panel" = "اللوحة";
+"menubar.place.off" = "إيقاف";

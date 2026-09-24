@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Systeemtegels tonen (CPU, RAM…)";
 "general.showWeather" = "Weer tonen";
 "menubar.selectHelp" = "Kies welke items in het Tidier-paneel verschijnen — net als in de menubalkinstellingen van macOS.";
+"menubar.place.bar" = "Balk";
+"menubar.place.panel" = "Paneel";
+"menubar.place.off" = "Uit";

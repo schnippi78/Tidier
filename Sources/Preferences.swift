@@ -33,7 +33,11 @@ enum PrefKey {
     static let showSystemTiles    = "showSystemTiles"
     static let showWeather        = "showWeather"
     static let hiddenItems        = "hiddenItems"   // stable keys the user hid from the panel
+    static let barPinnedItems     = "barPinnedItems" // stable keys pinned to the real menu bar
 }
+
+/// Where a menu bar item lives, as chosen per item in Settings.
+enum ItemPlacement { case bar, panel, off }
 
 /// Thin observable wrapper over UserDefaults so SwiftUI can bind directly and
 /// the rest of the app can react through `.tidierPrefsChanged`.
@@ -107,5 +111,33 @@ final class Preferences: ObservableObject {
         var s = hiddenItemKeys
         if hidden { s.insert(key) } else { s.remove(key) }
         hiddenItemKeys = s
+    }
+
+    /// Stable item keys the user pinned to stay visible in the real menu bar.
+    var barPinnedKeys: Set<String> {
+        get { Set(d.stringArray(forKey: PrefKey.barPinnedItems) ?? []) }
+        set { d.set(Array(newValue), forKey: PrefKey.barPinnedItems); changed() }
+    }
+    func isPinned(_ key: String) -> Bool { barPinnedKeys.contains(key) }
+
+    /// The three-way placement for an item, derived from the two stored sets.
+    func placement(_ key: String) -> ItemPlacement {
+        if isPinned(key) { return .bar }
+        return isItemHidden(key) ? .off : .panel
+    }
+
+    /// Set placement WITHOUT triggering the move — the caller runs the actual pin/unpin.
+    /// Writes both sets, then fires a single change notification.
+    func setPlacement(_ key: String, _ p: ItemPlacement) {
+        var hidden = hiddenItemKeys
+        var pinned = barPinnedKeys
+        switch p {
+        case .bar:   pinned.insert(key); hidden.remove(key)
+        case .panel: pinned.remove(key); hidden.remove(key)
+        case .off:   pinned.remove(key); hidden.insert(key)
+        }
+        d.set(Array(pinned), forKey: PrefKey.barPinnedItems)
+        d.set(Array(hidden), forKey: PrefKey.hiddenItems)
+        changed()
     }
 }

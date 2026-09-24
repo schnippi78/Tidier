@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "הצג אריחי מערכת (מעבד, זיכרון…)";
 "general.showWeather" = "הצג מזג אוויר";
 "menubar.selectHelp" = "בחר אילו פריטים יופיעו בלוח של Tidier — כמו בהגדרות שורת התפריטים של macOS.";
+"menubar.place.bar" = "שורה";
+"menubar.place.panel" = "לוח";
+"menubar.place.off" = "כבוי";

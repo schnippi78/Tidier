@@ -35,3 +35,6 @@
 "general.showSystemTiles" = "Tampilkan ubin sistem (CPU, RAM…)";
 "general.showWeather" = "Tampilkan cuaca";
 "menubar.selectHelp" = "Pilih item mana yang muncul di panel Tidier — seperti pengaturan bilah menu di macOS.";
+"menubar.place.bar" = "Bilah";
+"menubar.place.panel" = "Panel";
+"menubar.place.off" = "Mati";
