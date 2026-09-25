@@ -486,7 +486,14 @@ struct TidierBarView: View {
     }
 
     @ViewBuilder private func tileArea(_ contents: [TileContent], itemKeys: [String]) -> some View {
-        if style == .grid || style == .strip {
+        if style == .strip {
+            // A clean vertical list: one full-width row per item.
+            VStack(spacing: 2) {
+                ForEach(Array(contents.enumerated()), id: \.offset) { _, c in
+                    tileCell(c, itemKeys: itemKeys).frame(maxWidth: .infinity)
+                }
+            }
+        } else if style == .grid {
             TileFlow(spacing: 7, lineSpacing: 7) {
                 ForEach(Array(contents.enumerated()), id: \.offset) { _, c in
                     tileCell(c, itemKeys: itemKeys)
@@ -811,15 +818,19 @@ private struct PanelTileView: View {
         }
         .padding(.horizontal, 10)
         .frame(maxWidth: .infinity, alignment: .leading).frame(height: 46)  // fills its column (or the whole row for network)
-        .background(tinted ? AnyShapeStyle(accent.opacity(hover.on ? 0.28 : 0.18))
+        .background(tinted ? AnyShapeStyle(Self.capsuleBlue.opacity(hover.on ? 0.26 : 0.16))
                            : AnyShapeStyle(tileFill),
                     in: RoundedRectangle(cornerRadius: 23, style: .continuous))
     }
 
-    // Filled accent disc with a white glyph (Control-Center style, for the capsules design).
+    /// One consistent blue for the capsule badges — per-item accents (grey Spotlight,
+    /// green battery, …) read as random/broken once the whole badge is filled.
+    private static let capsuleBlue = Color(red: 0.20, green: 0.52, blue: 0.96)
+
+    // Filled disc with a white glyph (Control-Center style, for the capsules design).
     private func filledBadge(_ d: CGFloat = 30) -> some View {
         ZStack {
-            Circle().fill(accent).frame(width: d, height: d)
+            Circle().fill(Self.capsuleBlue).frame(width: d, height: d)
             Group {
                 if let img = itemImage {
                     Image(nsImage: img).resizable().renderingMode(.template).interpolation(.high)
@@ -878,25 +889,25 @@ private struct PanelTileView: View {
         .background(tileFill, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 
-    // MARK: D — strip — labelled chips that wrap like a folded menu bar
+    // MARK: D — strip — a clean, compact vertical list row (icon · name · value)
     private var stripTile: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 10) {
+            badge(24)
+            Text(titleText).font(.system(size: 12, weight: .medium))
+                .lineLimit(1).truncationMode(.tail)
+            Spacer(minLength: 6)
             if let v = statValue {
-                Image(systemName: symbol ?? "gauge").font(.system(size: 12, weight: .semibold)).foregroundStyle(accent)
-                Text(titleText).font(.system(size: 11, weight: .medium))
-                Text("\(Int(v.rounded()))%").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-            } else if case .net(let d, _) = content {
-                Image(systemName: "network").font(.system(size: 12, weight: .semibold)).foregroundStyle(accent)
-                Text(titleText).font(.system(size: 11, weight: .medium))
-                Text(Self.rate(d)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-            } else {
-                rawGlyph(height: 16, maxWidth: 34)
-                if !titleText.isEmpty {
-                    Text(titleText).font(.system(size: 11, weight: .medium)).lineLimit(1).truncationMode(.tail)
-                }
+                Text("\(Int(v.rounded())) %").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            } else if case .net(let d, let u) = content {
+                Text(String(format: "↓%@ ↑%@", Self.rate(d), Self.rate(u)))
+                    .font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary)
+            } else if let sub = subtitleText {
+                Text(sub).font(.system(size: 10.5)).foregroundStyle(.tertiary)
+                    .lineLimit(1).truncationMode(.tail)
             }
         }
-        .padding(.horizontal, 9).frame(height: 30)
-        .background(hover.on ? Color.primary.opacity(0.12) : Color.primary.opacity(0.06), in: Capsule())
+        .padding(.horizontal, 10).frame(height: 36).frame(maxWidth: .infinity)
+        .background(hover.on ? Color.primary.opacity(0.10) : Color.clear,
+                    in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 }
