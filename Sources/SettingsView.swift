@@ -24,15 +24,23 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         super.init(window: window)
         window.delegate = self
         rebuildContent()
+        // Rebuild the hosting view ONLY when the layout direction (RTL) actually flips —
+        // that environment is baked in at build time. Everything else (toggles, detected
+        // items, live language strings) updates reactively via the EnvironmentObjects, so a
+        // blanket rebuild on every .tidierPrefsChanged was needless and reset the ScrollView.
         NotificationCenter.default.addObserver(
             forName: .tidierPrefsChanged, object: nil, queue: .main) { [weak self] _ in
-                self?.rebuildContent()
+                guard let self = self, LanguageManager.shared.isRTL != self.builtRTL else { return }
+                self.rebuildContent()
         }
     }
+
+    private var builtRTL = false
 
     required init?(coder: NSCoder) { fatalError() }
 
     private func rebuildContent() {
+        builtRTL = LanguageManager.shared.isRTL
         let root = SettingsView()
             .environmentObject(state)
             .environmentObject(Preferences.shared)
