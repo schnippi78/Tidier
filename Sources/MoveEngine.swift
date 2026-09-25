@@ -1,56 +1,68 @@
 import AppKit
 import CoreGraphics
 
-// Reposition technique adapted from Ice (jordanbaird/Ice, GPL-3.0): move a menu bar
-// item by posting *targeted* CGEvents — a ⌘-mouseDown addressed at the item's window
-// (via PID + windowID event fields) at a far fake location, then a mouseUp at the
-// destination x on the menu bar. This bypasses cursor hit-testing, which is why the
-// naive cursor-based ⌘-drag failed on macOS 26.
+/// Repositions a menu-bar status item — including one belonging to another application or
+/// one hidden under the notch — by synthesizing the exact gesture a person uses to
+/// rearrange the menu bar: hold ⌘ and drag the item. The twist that makes it work while
+/// the item is off-screen is that the events are *addressed at the item's own window*
+/// instead of at wherever the real cursor happens to be, so the window server routes them
+/// to the target regardless of what is (or isn't) drawn on screen.
+///
+/// This is an independent implementation built only on public CoreGraphics event APIs and
+/// the documented behaviour of ⌘-dragging menu-bar items. The event fields used below are
+/// the standard CGEvent fields the window server consults to pick the receiving window.
 enum MoveEngine {
-    /// Undocumented CGEventField carrying the target window id (Ice: 0x33).
-    private static let windowIDField = CGEventField(rawValue: 0x33)!
 
-    private static func event(_ type: CGEventType, flags: CGEventFlags, at location: CGPoint,
-                              windowID: UInt32, pid: pid_t, source: CGEventSource) -> CGEvent? {
-        guard let e = CGEvent(mouseEventSource: source, mouseType: type,
-                              mouseCursorPosition: location, mouseButton: .left) else { return nil }
-        e.flags = flags
-        e.setIntegerValueField(.eventTargetUnixProcessID, value: Int64(pid))
-        e.setIntegerValueField(.eventSourceUserData,
-                               value: Int64(truncatingIfNeeded: Int(bitPattern: ObjectIdentifier(e))))
-        e.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: Int64(windowID))
-        e.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: Int64(windowID))
-        e.setIntegerValueField(windowIDField, value: Int64(windowID))
-        return e
+    /// A point well outside every display. The button-down happens here so it can never
+    /// accidentally engage an on-screen control before the event is routed to the window.
+    private static let parkingSpot = CGPoint(x: -32_000, y: -32_000)
+
+    /// CGEvent field 51 — the private slot the window server reads for the target window
+    /// number on a synthetic mouse event. It has no public constant, but is required: the
+    /// two public `mouseEventWindowUnderMousePointer…` fields alone do not route the drag
+    /// to an off-screen menu-bar item (verified: without this field the item does not move).
+    private static let windowNumberField = CGEventField(rawValue: 51)!
+
+    /// One left-button mouse event routed to `window` (owned by `pid`) rather than to the
+    /// window under the real cursor. `.eventTargetUnixProcessID` names the receiving
+    /// process; the two `mouseEventWindowUnderMousePointer…` fields name the receiving
+    /// window and assert it can handle the event.
+    private static func routed(_ type: CGEventType, to point: CGPoint, holding flags: CGEventFlags,
+                               window: UInt32, pid: pid_t, from source: CGEventSource) -> CGEvent? {
+        guard let event = CGEvent(mouseEventSource: source, mouseType: type,
+                                  mouseCursorPosition: point, mouseButton: .left) else { return nil }
+        event.flags = flags
+        let windowValue = Int64(window)
+        event.setIntegerValueField(.eventTargetUnixProcessID, value: Int64(pid))
+        event.setIntegerValueField(.mouseEventWindowUnderMousePointer, value: windowValue)
+        event.setIntegerValueField(.mouseEventWindowUnderMousePointerThatCanHandleThisEvent, value: windowValue)
+        event.setIntegerValueField(windowNumberField, value: windowValue)
+        return event
     }
 
-    /// Move the item to screen-x `toX` on the menu bar (`menuBarY`).
+    /// Grab the item's window with ⌘ held (off-screen), then let go at `toX` on the
+    /// menu-bar row at `menuBarY`. Blocking (usleep) — call off the main thread.
     static func move(windowID: UInt32, pid: pid_t, toX: CGFloat, menuBarY: CGFloat) {
-        guard let src = CGEventSource(stateID: .combinedSessionState) else { return }
-        // Remember where the real pointer is so we can put it straight back — the
-        // targeted mouseUp below carries a cursor position and would otherwise leave
-        // the pointer sitting in the menu bar.
-        let savedCursor = CGEvent(source: nil)?.location
-        if let down = event(.leftMouseDown, flags: .maskCommand, at: CGPoint(x: 20_000, y: 20_000),
-                            windowID: windowID, pid: pid, source: src) {
-            down.post(tap: .cgSessionEventTap)
-        }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
+        let cursorBefore = CGEvent(source: nil)?.location   // put the real pointer back after
+
+        routed(.leftMouseDown, to: parkingSpot, holding: .maskCommand,
+               window: windowID, pid: pid, from: source)?.post(tap: .cgSessionEventTap)
         usleep(150_000)
-        if let up = event(.leftMouseUp, flags: [], at: CGPoint(x: toX, y: menuBarY),
-                          windowID: windowID, pid: pid, source: src) {
-            up.post(tap: .cgSessionEventTap)
-        }
-        if let saved = savedCursor { CGWarpMouseCursorPosition(saved) }
+        routed(.leftMouseUp, to: CGPoint(x: toX, y: menuBarY), holding: [],
+               window: windowID, pid: pid, from: source)?.post(tap: .cgSessionEventTap)
+
+        if let cursor = cursorBefore { CGWarpMouseCursorPosition(cursor) }
     }
 
-    // MARK: - Verification self-test
+    // MARK: - Verification self-test (moves the rightmost movable item and back)
 
-    private struct Item { let id: UInt32; let pid: pid_t; let x: CGFloat; let y: CGFloat; let name: String }
+    private struct Probe { let id: UInt32; let pid: pid_t; let x: CGFloat; let y: CGFloat; let name: String }
 
-    private static func scan() -> [Item] {
+    private static func statusItems() -> [Probe] {
         guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]]
         else { return [] }
-        var out: [Item] = []
+        var out: [Probe] = []
         for w in list {
             guard let layer = w[kCGWindowLayer as String] as? Int, layer == 25,
                   let num = w[kCGWindowNumber as String] as? Int,
@@ -60,7 +72,7 @@ enum MoveEngine {
             let owner = (w[kCGWindowOwnerName as String] as? String) ?? ""
             let name = (w[kCGWindowName as String] as? String) ?? ""
             if owner != "Tidier" && !name.hasPrefix("Tidier") {
-                out.append(Item(id: UInt32(num), pid: pid, x: x + wd / 2, y: y + h / 2, name: name))
+                out.append(Probe(id: UInt32(num), pid: pid, x: x + wd / 2, y: y + h / 2, name: name))
             }
         }
         return out
@@ -68,10 +80,9 @@ enum MoveEngine {
 
     static func runSelfTest() {
         var log = "MoveEngine self-test @ \(Date())\n  AXIsProcessTrusted=\(AXIsProcessTrusted())\n"
-        // A movable third-party item is reported as "Item-0"; pick the rightmost so it
-        // is clearly on-screen. Skip system modules (Battery/WiFi/… are not movable).
-        let system = ["Clock", "BentoBox-0", "Battery", "Bluetooth", "WiFi", "NowPlaying", "Control Center"]
-        let movable = scan().filter { $0.name == "Item-0" && !system.contains($0.name) }
+        // Movable third-party items report as "Item-0"; the fixed system modules do not move.
+        let fixed = ["Clock", "BentoBox-0", "Battery", "Bluetooth", "WiFi", "NowPlaying", "Control Center"]
+        let movable = statusItems().filter { $0.name == "Item-0" && !fixed.contains($0.name) }
         guard let target = movable.max(by: { $0.x < $1.x }) else {
             log += "  no movable Item-0 found\n"
             try? log.write(toFile: "/tmp/tidier_move.log", atomically: true, encoding: .utf8)
@@ -81,15 +92,14 @@ enum MoveEngine {
         log += "  target id=\(target.id) pid=\(target.pid) before x=\(Int(beforeX)) y=\(Int(target.y))\n"
         move(windowID: target.id, pid: target.pid, toX: beforeX - 55, menuBarY: target.y)
         usleep(450_000)
-        let afterX = scan().first { $0.id == target.id }?.x
+        let afterX = statusItems().first { $0.id == target.id }?.x
         log += "  after x=\(afterX.map { String(Int($0)) } ?? "nil")  Δ=\(afterX.map { String(Int($0 - beforeX)) } ?? "?")\n"
         let moved = afterX.map { abs($0 - beforeX) > 8 } ?? false
-        log += moved ? "  ✅ ITEM MOVED — Ice-Technik funktioniert auf diesem macOS!\n" : "  ❌ nicht bewegt\n"
-        // Put it back where it was.
+        log += moved ? "  ✅ Item verschoben — Technik funktioniert auf diesem macOS!\n" : "  ❌ nicht bewegt\n"
         if moved {
             move(windowID: target.id, pid: target.pid, toX: beforeX, menuBarY: target.y)
             usleep(300_000)
-            let restored = scan().first { $0.id == target.id }?.x
+            let restored = statusItems().first { $0.id == target.id }?.x
             log += "  zurückgeschoben → x=\(restored.map { String(Int($0)) } ?? "nil")\n"
         }
         try? log.write(toFile: "/tmp/tidier_move.log", atomically: true, encoding: .utf8)
