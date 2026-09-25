@@ -242,7 +242,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
         // across restarts and the tile never collapses to a label-less centered icon.
         if label.isEmpty {
             label = cachedLabel(key) ?? resolved?.appName.flatMap { a in
-                (a == "Kontrollzentrum" || a == "Control Center") ? nil : a
+                (a == "Kontrollzentrum" || a == "Control Center") ? nil : cleanAppName(a)
             } ?? ""
         } else {
             cacheLabel(key, label)
@@ -303,7 +303,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
         if isApple, let t = resolved?.title, !t.isEmpty { return clean(t) }   // e.g. "Spotlight"
         if let b = resolved?.bundleId, let f = friendlyName(bundle: b) { return f }  // known Apple agents
         if !isApple, let a = resolved?.appName,                                // e.g. "iStat Menus"
-           a != "Kontrollzentrum", a != "Control Center", !a.isEmpty { return a }
+           a != "Kontrollzentrum", a != "Control Center", !a.isEmpty { return cleanAppName(a) }
         if let t = resolved?.title, !t.isEmpty { return clean(t) }
         if !n.isEmpty && n != "Item-0" { return n }
         return ""                                                             // icon-only
@@ -314,6 +314,18 @@ final class TidierBar: NSObject, NSWindowDelegate {
     private static func clean(_ t: String) -> String {
         if let r = t.range(of: ", ") { return String(t[..<r.lowerBound]) }
         return t
+    }
+
+    /// Tidy raw app names for the tile: strip "Helper"/"Agent" suffixes ("ChatGPTHelper"
+    /// → "ChatGPT") and shorten a few long official names ("Google Chrome" → "Chrome").
+    private static func cleanAppName(_ a: String) -> String {
+        if let short = ["Google Chrome": "Chrome", "Microsoft Edge": "Edge"][a] { return short }
+        var s = a
+        for suffix in [" Helper", "Helper", " Agent", "Agent", " (GPU)"] where s.hasSuffix(suffix) {
+            s = String(s.dropLast(suffix.count)); break
+        }
+        let t = s.trimmingCharacters(in: .whitespaces)
+        return t.isEmpty ? a : t
     }
 
     /// Friendly names for Apple agents whose AX title is unhelpful / often empty.
