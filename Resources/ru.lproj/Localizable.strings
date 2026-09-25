@@ -42,3 +42,4 @@
 "sysitem.inputmenu" = "Эмодзи и символы";
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Сейчас играет";
+"about.opensource" = "GPL-3.0 · Открытый код";

@@ -310,7 +310,7 @@ private struct AboutTab: View {
     @EnvironmentObject var lang: LanguageManager
 
     private var version: String {
-        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.1.0"
+        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "1.0.0"
     }
 
     private var appIcon: NSImage {
@@ -319,21 +319,40 @@ private struct AboutTab: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
+            Spacer(minLength: 18)
             Image(nsImage: appIcon)
-                .resizable().frame(width: 84, height: 84)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            Text("Tidier").font(.largeTitle.bold())
-            Text(L("app.tagline")).foregroundStyle(.secondary)
-            Text(L("about.version", version)).font(.footnote).foregroundStyle(.secondary)
+                .resizable().frame(width: 96, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
+                .shadow(color: .black.opacity(0.18), radius: 9, y: 4)
+                .padding(.bottom, 12)
 
-            Spacer().frame(height: 6)
+            Text("Tidier").font(.system(size: 30, weight: .bold))
+            Text(L("app.tagline"))
+                .font(.callout).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 2)
+            Text(L("about.version", version))
+                .font(.caption).foregroundStyle(.tertiary)
+                .padding(.top, 3)
+
+            Divider().frame(width: 160).padding(.vertical, 16)
+
             Text("Christian Schniering").font(.callout.weight(.medium))
             Link("csho.de", destination: URL(string: "https://csho.de")!)
-                .font(.callout)
-            Text("© 2026 Christian Schniering").font(.footnote).foregroundStyle(.secondary)
+                .font(.callout).padding(.top, 1)
+
+            Spacer(minLength: 18)
+
+            VStack(spacing: 3) {
+                Text(L("about.opensource"))
+                    .font(.caption2).foregroundStyle(.secondary)
+                Text("© 2026 Christian Schniering")
+                    .font(.caption2).foregroundStyle(.secondary)
+            }
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(.horizontal)
     }
 }
