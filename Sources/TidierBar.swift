@@ -724,12 +724,15 @@ private struct PanelTileView: View {
 
     // MARK: style dispatch
 
-    @ViewBuilder private var tile: some View {
+    // Type-erased per style: without this the nested generic view type (Button ∘ 4-way
+    // _ConditionalContent ∘ drag/drop/background modifiers) blows the Swift metadata
+    // recursion limit and crashes on re-render (seen with the strip list).
+    private var tile: AnyView {
         switch style {
-        case .dashboard: dashboardTile
-        case .capsules:  capsuleTile
-        case .grid:      gridTile
-        case .strip:     stripTile
+        case .dashboard: return AnyView(dashboardTile)
+        case .capsules:  return AnyView(capsuleTile)
+        case .grid:      return AnyView(gridTile)
+        case .strip:     return AnyView(stripTile)
         }
     }
 
@@ -889,25 +892,54 @@ private struct PanelTileView: View {
         .background(tileFill, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 
-    // MARK: D — strip — a clean, compact vertical list row (icon · name · value)
+    // MARK: D — strip — a clean, compact vertical list row (icon · name · value).
+    // Rendered by a dedicated struct (below) so its view type stays shallow — the inline
+    // opaque type recursed in the Swift metadata resolver and crashed on re-render.
+    private var stripTrailing: String? {
+        if let v = statValue { return "\(Int(v.rounded())) %" }
+        if case .net(let d, let u) = content { return String(format: "↓%@ ↑%@", Self.rate(d), Self.rate(u)) }
+        return subtitleText
+    }
     private var stripTile: some View {
+        StripRow(title: titleText, trailing: stripTrailing, image: itemImage,
+                 symbol: symbol, accent: accent, hovering: hover.on)
+    }
+}
+
+/// Standalone list row for the strip design — a flat, non-nested view type.
+private struct StripRow: View {
+    let title: String
+    let trailing: String?
+    let image: NSImage?
+    let symbol: String?
+    let accent: Color
+    let hovering: Bool
+
+    var body: some View {
         HStack(spacing: 10) {
-            badge(24)
-            Text(titleText).font(.system(size: 12, weight: .medium))
-                .lineLimit(1).truncationMode(.tail)
+            ZStack {
+                Circle().fill(Color.white.opacity(0.92)).frame(width: 24, height: 24)
+                glyph.frame(width: 14, height: 14).foregroundStyle(accent)
+            }
+            Text(title).font(.system(size: 12, weight: .medium)).lineLimit(1).truncationMode(.tail)
             Spacer(minLength: 6)
-            if let v = statValue {
-                Text("\(Int(v.rounded())) %").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-            } else if case .net(let d, let u) = content {
-                Text(String(format: "↓%@ ↑%@", Self.rate(d), Self.rate(u)))
-                    .font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary)
-            } else if let sub = subtitleText {
-                Text(sub).font(.system(size: 10.5)).foregroundStyle(.tertiary)
+            if let t = trailing {
+                Text(t).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.tail)
             }
         }
         .padding(.horizontal, 10).frame(height: 36).frame(maxWidth: .infinity)
-        .background(hover.on ? Color.primary.opacity(0.10) : Color.clear,
+        .background(hovering ? Color.primary.opacity(0.10) : Color.clear,
                     in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+
+    @ViewBuilder private var glyph: some View {
+        if let image {
+            Image(nsImage: image).resizable().renderingMode(.template).interpolation(.high).scaledToFit()
+        } else if let symbol {
+            Image(systemName: symbol).font(.system(size: 12, weight: .semibold))
+        } else {
+            Text(String(title.first ?? "•").uppercased()).font(.system(size: 11, weight: .bold, design: .rounded))
+        }
     }
 }
