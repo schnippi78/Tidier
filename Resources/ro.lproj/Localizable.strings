@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Se redă acum";
 "about.opensource" = "GPL-3.0 · Sursă deschisă";
+
+"menubar.arrange.title" = "Aranjează pictogramele";
+"menubar.arrange.button" = "Aranjează bara de meniu…";
+"menubar.arrange.desc" = "macOS nu permite aplicațiilor să rearanjeze automat bara de meniu. Tidier o desfășoară și marchează separatorul — apoi trage cu **⌘** pictogramele pe care vrei să le păstrezi vizibile în dreapta marcajului. Tot ce e la stânga trece în panou.";
+"menubar.space.title" = "Fă loc";
+"menubar.space.button" = "Deschide setările Centrului de control…";
+"menubar.space.desc" = "Wi-Fi și Bluetooth ocupă fiecare propria pictogramă în bara de meniu, deși se află și în Centrul de control. Ascunde-le din bară pentru a face loc pictogramelor importante (ex. WireGuard) — rămân accesibile din Centrul de control.";
+"menubar.space.hint" = "Acolo, setează Wi-Fi și Bluetooth pe »Nu afișa în bara de meniu«.";
+"menubar.autoupdated" = "Actualizat automat";
+"menubar.empty" = "Încă niciun element detectat — lista se actualizează automat în fundal de îndată ce Tidier a citit bara de meniu.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disc";
+"sysitem.network" = "Rețea";
+"sysitem.battery" = "Baterie";

@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "قيد التشغيل";
 "about.opensource" = "GPL-3.0 · مفتوح المصدر";
+
+"menubar.arrange.title" = "ترتيب الأيقونات";
+"menubar.arrange.button" = "ترتيب شريط القوائم…";
+"menubar.arrange.desc" = "لا يسمح macOS للتطبيقات بإعادة ترتيب شريط القوائم تلقائيًا. يفتحه Tidier ويحدّد الفاصل — ثم اسحب باستخدام **⌘** الأيقونات التي تريد إبقاءها ظاهرة إلى يمين العلامة. كل ما على اليسار ينتقل إلى اللوحة.";
+"menubar.space.title" = "توفير مساحة";
+"menubar.space.button" = "فتح إعدادات مركز التحكم…";
+"menubar.space.desc" = "يشغل كل من Wi-Fi وBluetooth أيقونة خاصة به في شريط القوائم رغم وجودهما أيضًا في مركز التحكم. أخفِهما من الشريط لتوفير مساحة للأيقونات المهمة (مثل WireGuard) — ويظلان متاحين عبر مركز التحكم.";
+"menubar.space.hint" = "هناك، اضبط Wi-Fi وBluetooth على »عدم الإظهار في شريط القوائم«.";
+"menubar.autoupdated" = "محدَّث تلقائيًا";
+"menubar.empty" = "لم يتم رصد أي عناصر بعد — تُحدَّث القائمة تلقائيًا في الخلفية بمجرد أن يقرأ Tidier شريط القوائم.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "القرص";
+"sysitem.network" = "الشبكة";
+"sysitem.battery" = "البطارية";

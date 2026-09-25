@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Sedang diputar";
 "about.opensource" = "GPL-3.0 · Sumber terbuka";
+
+"menubar.arrange.title" = "Atur ikon";
+"menubar.arrange.button" = "Atur bilah menu…";
+"menubar.arrange.desc" = "macOS tidak mengizinkan aplikasi menata ulang bilah menu secara otomatis. Tidier membukanya dan menandai pemisah — lalu seret dengan **⌘** ikon yang ingin tetap terlihat ke kanan penanda. Semua yang di kirinya berpindah ke panel.";
+"menubar.space.title" = "Buat ruang";
+"menubar.space.button" = "Buka pengaturan Pusat Kontrol…";
+"menubar.space.desc" = "Wi-Fi dan Bluetooth masing-masing memakai ikon sendiri di bilah menu meski juga ada di Pusat Kontrol. Sembunyikan dari bilah untuk memberi ruang bagi ikon penting (mis. WireGuard) — keduanya tetap dapat diakses lewat Pusat Kontrol.";
+"menubar.space.hint" = "Di sana, atur Wi-Fi dan Bluetooth masing-masing ke »Jangan Tampilkan di Bilah Menu«.";
+"menubar.autoupdated" = "Diperbarui otomatis";
+"menubar.empty" = "Belum ada item terdeteksi — daftar diperbarui otomatis di latar belakang begitu Tidier membaca bilah menu.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disk";
+"sysitem.network" = "Jaringan";
+"sysitem.battery" = "Baterai";

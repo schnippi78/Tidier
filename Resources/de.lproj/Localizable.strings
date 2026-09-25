@@ -43,3 +43,18 @@
 "sysitem.wifi" = "WLAN";
 "sysitem.nowplaying" = "Jetzt läuft";
 "about.opensource" = "GPL-3.0 · Open Source";
+
+"menubar.arrange.title" = "Icons anordnen";
+"menubar.arrange.button" = "Menüleiste anordnen…";
+"menubar.arrange.desc" = "macOS erlaubt Programmen kein automatisches Umsortieren der Menüleiste. Tidier klappt sie auf und markiert den Trenner — ziehe dann mit **⌘** die Icons, die immer sichtbar bleiben sollen, rechts neben die Markierung. Alles links davon wandert in die Kachel.";
+"menubar.space.title" = "Platz schaffen";
+"menubar.space.button" = "Kontrollzentrum-Einstellungen öffnen…";
+"menubar.space.desc" = "WLAN und Bluetooth belegen je ein eigenes Menüleisten-Icon, obwohl sie auch im Kontrollzentrum liegen. Blende sie in der Leiste aus, um Platz für wichtige Icons (z. B. WireGuard) zu gewinnen — erreichbar bleiben sie über das Kontrollzentrum.";
+"menubar.space.hint" = "Dort bei WLAN und Bluetooth jeweils auf »Nicht in der Menüleiste anzeigen« stellen.";
+"menubar.autoupdated" = "Automatisch aktuell";
+"menubar.empty" = "Noch keine Objekte erfasst — die Liste aktualisiert sich automatisch im Hintergrund, sobald Tidier die Leiste eingelesen hat.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Speicher";
+"sysitem.network" = "Netzwerk";
+"sysitem.battery" = "Batterie";

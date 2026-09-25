@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "再生中";
 "about.opensource" = "GPL-3.0 · オープンソース";
+
+"menubar.arrange.title" = "アイコンを並べ替え";
+"menubar.arrange.button" = "メニューバーを並べ替え…";
+"menubar.arrange.desc" = "macOS はアプリによるメニューバーの自動並べ替えを許可していません。Tidier がメニューバーを開いて区切りを示すので、**⌘** を押しながら、常に表示したいアイコンを目印の右側へドラッグしてください。左側にあるものはすべてパネルに入ります。";
+"menubar.space.title" = "スペースを空ける";
+"menubar.space.button" = "コントロールセンター設定を開く…";
+"menubar.space.desc" = "Wi-Fi と Bluetooth は、コントロールセンターにもあるのにメニューバーでそれぞれ独自のアイコンを占有します。重要なアイコン（例：WireGuard）のためにバーから非表示にしましょう。コントロールセンターから引き続き利用できます。";
+"menubar.space.hint" = "そこで Wi-Fi と Bluetooth をそれぞれ「メニューバーに表示しない」に設定します。";
+"menubar.autoupdated" = "自動更新";
+"menubar.empty" = "まだ項目が検出されていません — Tidier がメニューバーを読み込むと、リストはバックグラウンドで自動的に更新されます。";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "ディスク";
+"sysitem.network" = "ネットワーク";
+"sysitem.battery" = "バッテリー";

@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Wordt afgespeeld";
 "about.opensource" = "GPL-3.0 · Opensource";
+
+"menubar.arrange.title" = "Symbolen ordenen";
+"menubar.arrange.button" = "Menubalk ordenen…";
+"menubar.arrange.desc" = "macOS laat apps de menubalk niet automatisch herschikken. Tidier klapt hem uit en markeert de scheiding — sleep dan met **⌘** de symbolen die zichtbaar moeten blijven naar rechts van de markering. Alles links ervan gaat naar het paneel.";
+"menubar.space.title" = "Ruimte maken";
+"menubar.space.button" = "Bedieningspaneel-instellingen openen…";
+"menubar.space.desc" = "Wi-Fi en Bluetooth nemen elk een eigen menubalksymbool in beslag, ook al zitten ze in het Bedieningspaneel. Verberg ze uit de balk om ruimte te maken voor belangrijke symbolen (bijv. WireGuard) — ze blijven bereikbaar via het Bedieningspaneel.";
+"menubar.space.hint" = "Zet daar Wi-Fi en Bluetooth elk op »Niet in menubalk tonen«.";
+"menubar.autoupdated" = "Automatisch bijgewerkt";
+"menubar.empty" = "Nog geen objecten gedetecteerd — de lijst wordt automatisch op de achtergrond bijgewerkt zodra Tidier de menubalk heeft ingelezen.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Schijf";
+"sysitem.network" = "Netwerk";
+"sysitem.battery" = "Batterij";

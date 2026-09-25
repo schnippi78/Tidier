@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Reproduciendo";
 "about.opensource" = "GPL-3.0 · Código abierto";
+
+"menubar.arrange.title" = "Organizar iconos";
+"menubar.arrange.button" = "Organizar barra de menús…";
+"menubar.arrange.desc" = "macOS no permite que las apps reordenen la barra de menús automáticamente. Tidier la despliega y marca el separador; luego arrastra con **⌘** los iconos que quieras mantener visibles a la derecha de la marca. Todo lo que quede a la izquierda pasa al panel.";
+"menubar.space.title" = "Hacer espacio";
+"menubar.space.button" = "Abrir ajustes del Centro de control…";
+"menubar.space.desc" = "El Wi-Fi y el Bluetooth ocupan cada uno su propio icono en la barra de menús aunque también estén en el Centro de control. Ocúltalos de la barra para dejar espacio a iconos importantes (p. ej. WireGuard); siguen disponibles en el Centro de control.";
+"menubar.space.hint" = "Allí, ajusta el Wi-Fi y el Bluetooth a »No mostrar en la barra de menús«.";
+"menubar.autoupdated" = "Actualizado automáticamente";
+"menubar.empty" = "Aún no se han detectado objetos: la lista se actualiza automáticamente en segundo plano en cuanto Tidier lee la barra de menús.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disco";
+"sysitem.network" = "Red";
+"sysitem.battery" = "Batería";

@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Právě hraje";
 "about.opensource" = "GPL-3.0 · Otevřený kód";
+
+"menubar.arrange.title" = "Uspořádat ikony";
+"menubar.arrange.button" = "Uspořádat řádek nabídek…";
+"menubar.arrange.desc" = "macOS neumožňuje aplikacím automaticky měnit pořadí řádku nabídek. Tidier jej rozbalí a označí oddělovač — poté přetáhněte se **⌘** ikony, které mají zůstat viditelné, napravo od značky. Vše nalevo se přesune do panelu.";
+"menubar.space.title" = "Uvolnit místo";
+"menubar.space.button" = "Otevřít nastavení Ovládacího centra…";
+"menubar.space.desc" = "Wi-Fi a Bluetooth zabírají každý vlastní ikonu v řádku nabídek, i když jsou také v Ovládacím centru. Skryjte je z řádku, abyste uvolnili místo pro důležité ikony (např. WireGuard) — zůstanou dostupné přes Ovládací centrum.";
+"menubar.space.hint" = "Tam nastav Wi-Fi a Bluetooth na »Nezobrazovat v řádku nabídek«.";
+"menubar.autoupdated" = "Aktualizováno automaticky";
+"menubar.empty" = "Zatím nezachyceny žádné položky — seznam se automaticky aktualizuje na pozadí, jakmile Tidier přečte řádek nabídek.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disk";
+"sysitem.network" = "Síť";
+"sysitem.battery" = "Baterie";

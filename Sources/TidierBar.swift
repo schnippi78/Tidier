@@ -446,14 +446,14 @@ struct TidierBarView: View {
 
     private var statItems: [Stat] {
         var s: [Stat] = [
-            Stat(key: "sys.cpu",  label: "CPU",  value: stats.cpu, accent: .orange),
-            Stat(key: "sys.ram",  label: "RAM",  value: stats.ram, accent: Color(red: 0.25, green: 0.78, blue: 0.87)),
-            Stat(key: "sys.disk", label: "Disk", value: stats.disk, accent: .purple),
+            Stat(key: "sys.cpu",  label: L("sysitem.cpu"),  value: stats.cpu, accent: .orange),
+            Stat(key: "sys.ram",  label: L("sysitem.ram"),  value: stats.ram, accent: Color(red: 0.25, green: 0.78, blue: 0.87)),
+            Stat(key: "sys.disk", label: L("sysitem.disk"), value: stats.disk, accent: .purple),
         ]
-        if let b = stats.battery { s.append(Stat(key: "sys.batt", label: "Batterie", value: b, accent: .green)) }
+        if let b = stats.battery { s.append(Stat(key: "sys.batt", label: L("sysitem.battery"), value: b, accent: .green)) }
         return s
     }
-    private var netStat: Stat { Stat(key: "sys.net", label: "Netzwerk", value: 0, accent: .blue) }
+    private var netStat: Stat { Stat(key: "sys.net", label: L("sysitem.network"), value: 0, accent: .blue) }
 
     private func systemContents() -> [TileContent] {
         let p = Preferences.shared

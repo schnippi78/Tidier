@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "재생 중";
 "about.opensource" = "GPL-3.0 · 오픈 소스";
+
+"menubar.arrange.title" = "아이콘 정렬";
+"menubar.arrange.button" = "메뉴 막대 정렬…";
+"menubar.arrange.desc" = "macOS는 앱이 메뉴 막대를 자동으로 재정렬하도록 허용하지 않습니다. Tidier가 메뉴 막대를 펼치고 구분자를 표시하면, **⌘**을 누른 채 계속 보이게 할 아이콘을 표시 오른쪽으로 드래그하세요. 왼쪽에 있는 항목은 모두 패널로 이동합니다.";
+"menubar.space.title" = "공간 확보";
+"menubar.space.button" = "제어 센터 설정 열기…";
+"menubar.space.desc" = "Wi-Fi와 Bluetooth는 제어 센터에도 있지만 메뉴 막대에서 각각 별도의 아이콘을 차지합니다. 중요한 아이콘(예: WireGuard)을 위한 공간을 만들려면 막대에서 숨기세요. 제어 센터로는 계속 이용할 수 있습니다.";
+"menubar.space.hint" = "거기에서 Wi-Fi와 Bluetooth를 각각 »메뉴 막대에 표시 안 함«으로 설정하세요.";
+"menubar.autoupdated" = "자동 업데이트";
+"menubar.empty" = "아직 감지된 항목이 없습니다 — Tidier가 메뉴 막대를 읽으면 목록이 백그라운드에서 자동으로 업데이트됩니다.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "디스크";
+"sysitem.network" = "네트워크";
+"sysitem.battery" = "배터리";

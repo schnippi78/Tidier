@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Şimdi çalıyor";
 "about.opensource" = "GPL-3.0 · Açık kaynak";
+
+"menubar.arrange.title" = "Simgeleri düzenle";
+"menubar.arrange.button" = "Menü çubuğunu düzenle…";
+"menubar.arrange.desc" = "macOS, uygulamaların menü çubuğunu otomatik yeniden sıralamasına izin vermez. Tidier onu açar ve ayırıcıyı işaretler — sonra görünür kalmasını istediğin simgeleri **⌘** ile işaretin sağına sürükle. Solundaki her şey panele taşınır.";
+"menubar.space.title" = "Yer aç";
+"menubar.space.button" = "Denetim Merkezi ayarlarını aç…";
+"menubar.space.desc" = "Wi-Fi ve Bluetooth, Denetim Merkezi'nde de bulunmasına rağmen menü çubuğunda ayrı birer simge kaplar. Önemli simgelere (ör. WireGuard) yer açmak için onları çubuktan gizle — Denetim Merkezi'nden erişilebilir kalırlar.";
+"menubar.space.hint" = "Orada Wi-Fi ve Bluetooth'u »Menü çubuğunda gösterme« olarak ayarla.";
+"menubar.autoupdated" = "Otomatik güncel";
+"menubar.empty" = "Henüz öge yakalanmadı — Tidier menü çubuğunu okur okumaz liste arka planda otomatik güncellenir.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disk";
+"sysitem.network" = "Ağ";
+"sysitem.battery" = "Pil";

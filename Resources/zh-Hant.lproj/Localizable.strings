@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "正在播放";
 "about.opensource" = "GPL-3.0 · 開源";
+
+"menubar.arrange.title" = "排列圖示";
+"menubar.arrange.button" = "排列選單列…";
+"menubar.arrange.desc" = "macOS 不允許 App 自動重新排列選單列。Tidier 會將其展開並標記分隔符——然後按住 **⌘** 把想保持可見的圖示拖到標記右側。左側的一切都會進入面板。";
+"menubar.space.title" = "騰出空間";
+"menubar.space.button" = "打開控制中心設定…";
+"menubar.space.desc" = "Wi-Fi 和藍牙雖然也在控制中心裡，卻各自在選單列佔用一個圖示。把它們從選單列隱藏，為重要圖示（如 WireGuard）騰出空間——它們仍可透過控制中心存取。";
+"menubar.space.hint" = "在那裡把 Wi-Fi 和藍牙分別設為「不在選單列中顯示」。";
+"menubar.autoupdated" = "自動更新";
+"menubar.empty" = "尚未擷取任何項目——Tidier 讀取選單列後，清單會在背景自動更新。";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "磁碟";
+"sysitem.network" = "網路";
+"sysitem.battery" = "電池";

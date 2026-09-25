@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Afspiller nu";
 "about.opensource" = "GPL-3.0 · Open source";
+
+"menubar.arrange.title" = "Arranger ikoner";
+"menubar.arrange.button" = "Arranger menulinjen…";
+"menubar.arrange.desc" = "macOS tillader ikke, at apps automatisk omarrangerer menulinjen. Tidier folder den ud og markerer adskilleren — træk derefter med **⌘** de ikoner, du vil holde synlige, til højre for markeringen. Alt til venstre ryger i panelet.";
+"menubar.space.title" = "Skab plads";
+"menubar.space.button" = "Åbn Kontrolcenter-indstillinger…";
+"menubar.space.desc" = "Wi-Fi og Bluetooth optager hver sit ikon i menulinjen, selvom de også ligger i Kontrolcenter. Skjul dem fra linjen for at give plads til vigtige ikoner (f.eks. WireGuard) — de kan stadig nås via Kontrolcenter.";
+"menubar.space.hint" = "Indstil der Wi-Fi og Bluetooth til »Vis ikke i menulinjen«.";
+"menubar.autoupdated" = "Opdateres automatisk";
+"menubar.empty" = "Ingen objekter registreret endnu — listen opdateres automatisk i baggrunden, så snart Tidier har læst menulinjen.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disk";
+"sysitem.network" = "Netværk";
+"sysitem.battery" = "Batteri";

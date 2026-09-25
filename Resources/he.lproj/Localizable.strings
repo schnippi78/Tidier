@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "מתנגן כעת";
 "about.opensource" = "GPL-3.0 · קוד פתוח";
+
+"menubar.arrange.title" = "סידור סמלים";
+"menubar.arrange.button" = "סידור שורת התפריטים…";
+"menubar.arrange.desc" = "macOS לא מאפשר לאפליקציות לסדר מחדש את שורת התפריטים אוטומטית. Tidier פותח אותה ומסמן את המפריד — לאחר מכן גרור עם **⌘** את הסמלים שברצונך להשאיר גלויים אל מימין לסימון. כל מה שמשמאלו עובר ללוח.";
+"menubar.space.title" = "פינוי מקום";
+"menubar.space.button" = "פתיחת הגדרות מרכז הבקרה…";
+"menubar.space.desc" = "Wi-Fi ו-Bluetooth תופסים כל אחד סמל משלו בשורת התפריטים, אף שהם גם במרכז הבקרה. הסתר אותם מהשורה כדי לפנות מקום לסמלים חשובים (למשל WireGuard) — הם נשארים נגישים דרך מרכז הבקרה.";
+"menubar.space.hint" = "שם, הגדר את Wi-Fi ואת Bluetooth ל-»אל תציג בשורת התפריטים«.";
+"menubar.autoupdated" = "מתעדכן אוטומטית";
+"menubar.empty" = "עדיין לא זוהו פריטים — הרשימה מתעדכנת אוטומטית ברקע ברגע ש-Tidier קורא את שורת התפריטים.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "דיסק";
+"sysitem.network" = "רשת";
+"sysitem.battery" = "סוללה";

@@ -121,13 +121,13 @@ private struct MenuBarTab: View {
     @EnvironmentObject var lang: LanguageManager
     @EnvironmentObject var scanner: ScannerModel
 
-    private struct SysRow { let key: String; let label: String; let symbol: String }
+    private struct SysRow { let key: String; let labelKey: String; let symbol: String }
     private static let systemRows: [SysRow] = [
-        SysRow(key: "sys.cpu",  label: "CPU",       symbol: "cpu"),
-        SysRow(key: "sys.ram",  label: "RAM",       symbol: "memorychip"),
-        SysRow(key: "sys.disk", label: "Disk",      symbol: "internaldrive"),
-        SysRow(key: "sys.net",  label: "Netzwerk",  symbol: "network"),
-        SysRow(key: "sys.batt", label: "Batterie",  symbol: "battery.100"),
+        SysRow(key: "sys.cpu",  labelKey: "sysitem.cpu",     symbol: "cpu"),
+        SysRow(key: "sys.ram",  labelKey: "sysitem.ram",     symbol: "memorychip"),
+        SysRow(key: "sys.disk", labelKey: "sysitem.disk",    symbol: "internaldrive"),
+        SysRow(key: "sys.net",  labelKey: "sysitem.network", symbol: "network"),
+        SysRow(key: "sys.batt", labelKey: "sysitem.battery", symbol: "battery.100"),
     ]
 
     var body: some View {
@@ -152,15 +152,15 @@ private struct MenuBarTab: View {
             // the supported path.
             GroupBox {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Icons anordnen").font(.headline)
-                    Text("macOS erlaubt Programmen kein automatisches Umsortieren der Menüleiste. Tidier klappt sie auf und markiert den Trenner — ziehe dann mit **⌘** die Icons, die immer sichtbar bleiben sollen, rechts neben die Markierung. Alles links davon wandert in die Kachel.")
+                    Text(L("menubar.arrange.title")).font(.headline)
+                    Text(.init(L("menubar.arrange.desc")))
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Button {
                         SettingsWindowController.shared.window?.close()
                         StatusBarController.shared?.enterArrangeMode()
                     } label: {
-                        Label("Menüleiste anordnen…", systemImage: "arrow.left.and.right")
+                        Label(L("menubar.arrange.button"), systemImage: "arrow.left.and.right")
                     }
                     .controlSize(.large)
                 }
@@ -170,8 +170,8 @@ private struct MenuBarTab: View {
 
             GroupBox {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Platz schaffen").font(.headline)
-                    Text("WLAN und Bluetooth belegen je ein eigenes Menüleisten-Icon, obwohl sie auch im Kontrollzentrum liegen. Blende sie in der Leiste aus, um Platz für wichtige Icons (z. B. WireGuard) zu gewinnen — erreichbar bleiben sie über das Kontrollzentrum.")
+                    Text(L("menubar.space.title")).font(.headline)
+                    Text(L("menubar.space.desc"))
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     Button {
@@ -179,10 +179,10 @@ private struct MenuBarTab: View {
                             NSWorkspace.shared.open(url)
                         }
                     } label: {
-                        Label("Kontrollzentrum-Einstellungen öffnen…", systemImage: "switch.2")
+                        Label(L("menubar.space.button"), systemImage: "switch.2")
                     }
                     .controlSize(.large)
-                    Text("Dort bei WLAN und Bluetooth jeweils auf »Nicht in der Menüleiste anzeigen« stellen.")
+                    Text(L("menubar.space.hint"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -195,7 +195,7 @@ private struct MenuBarTab: View {
                     HStack(spacing: 10) {
                         Image(systemName: row.symbol).frame(width: 22, height: 18)
                             .foregroundStyle(.secondary)
-                        Text(row.label)
+                        Text(L(row.labelKey))
                         Spacer()
                         Toggle("", isOn: Binding(
                             get: { !prefs.isItemHidden(row.key) },
@@ -214,14 +214,14 @@ private struct MenuBarTab: View {
                 Spacer()
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .font(.caption).foregroundStyle(.secondary)
-                Text("Automatisch aktuell").font(.caption).foregroundStyle(.secondary)
+                Text(L("menubar.autoupdated")).font(.caption).foregroundStyle(.secondary)
             }
             Text(L("menubar.selectHelp"))
                 .font(.callout).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if scanner.detected.isEmpty {
-                Text("Noch keine Objekte erfasst — die Liste aktualisiert sich automatisch im Hintergrund, sobald Tidier die Leiste eingelesen hat.")
+                Text(L("menubar.empty"))
                     .font(.callout).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {

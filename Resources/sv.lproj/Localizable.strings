@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Spelas nu";
 "about.opensource" = "GPL-3.0 · Öppen källkod";
+
+"menubar.arrange.title" = "Ordna ikoner";
+"menubar.arrange.button" = "Ordna menyraden…";
+"menubar.arrange.desc" = "macOS låter inte appar ordna om menyraden automatiskt. Tidier fäller ut den och markerar avdelaren — dra sedan med **⌘** ikonerna du vill ha kvar synliga till höger om markeringen. Allt till vänster hamnar i panelen.";
+"menubar.space.title" = "Skapa plats";
+"menubar.space.button" = "Öppna Kontrollcenter-inställningar…";
+"menubar.space.desc" = "Wi-Fi och Bluetooth tar var sin ikon i menyraden trots att de även finns i Kontrollcenter. Dölj dem från raden för att göra plats för viktiga ikoner (t.ex. WireGuard) — de nås fortfarande via Kontrollcenter.";
+"menubar.space.hint" = "Ställ där in Wi-Fi och Bluetooth på »Visa inte i menyraden«.";
+"menubar.autoupdated" = "Uppdateras automatiskt";
+"menubar.empty" = "Inga objekt hittade ännu — listan uppdateras automatiskt i bakgrunden så snart Tidier har läst menyraden.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Disk";
+"sysitem.network" = "Nätverk";
+"sysitem.battery" = "Batteri";

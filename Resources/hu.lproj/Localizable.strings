@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Most szól";
 "about.opensource" = "GPL-3.0 · Nyílt forráskód";
+
+"menubar.arrange.title" = "Ikonok rendezése";
+"menubar.arrange.button" = "Menüsor rendezése…";
+"menubar.arrange.desc" = "A macOS nem engedi, hogy appok automatikusan átrendezzék a menüsort. A Tidier kinyitja és megjelöli az elválasztót — majd **⌘**-tal húzd a láthatóan tartandó ikonokat a jelölés jobb oldalára. Minden, ami tőle balra van, a panelbe kerül.";
+"menubar.space.title" = "Helyet csinálni";
+"menubar.space.button" = "Vezérlőközpont beállításai megnyitása…";
+"menubar.space.desc" = "A Wi-Fi és a Bluetooth külön-külön saját ikont foglal a menüsorban, pedig a Vezérlőközpontban is ott vannak. Rejtsd el őket a sorból, hogy helyet adj a fontos ikonoknak (pl. WireGuard) — a Vezérlőközpontból továbbra is elérhetők.";
+"menubar.space.hint" = "Ott állítsd a Wi-Fi-t és a Bluetooth-t is »Ne jelenjen meg a menüsorban« értékre.";
+"menubar.autoupdated" = "Automatikusan frissül";
+"menubar.empty" = "Még nincsenek észlelt elemek — a lista automatikusan frissül a háttérben, amint a Tidier beolvasta a menüsort.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Lemez";
+"sysitem.network" = "Hálózat";
+"sysitem.battery" = "Akkumulátor";

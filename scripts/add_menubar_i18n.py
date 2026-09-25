@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+# Appends the remaining Menü-Leiste tab strings to every Localizable.strings (idempotent).
+import os
+
+RES = os.path.join(os.path.dirname(__file__), "..", "Resources")
+
+# key -> {lang: value}
+T = {
+ "menubar.arrange.title": {
+  "de":"Icons anordnen","en":"Arrange icons","es":"Organizar iconos","fr":"Organiser les icônes",
+  "it":"Disponi icone","pt-BR":"Organizar ícones","nl":"Symbolen ordenen","sv":"Ordna ikoner",
+  "nb":"Ordne ikoner","da":"Arranger ikoner","fi":"Järjestä kuvakkeet","pl":"Rozmieść ikony",
+  "cs":"Uspořádat ikony","hu":"Ikonok rendezése","ro":"Aranjează pictogramele","tr":"Simgeleri düzenle",
+  "el":"Τακτοποίηση εικονιδίων","ru":"Расставить значки","uk":"Упорядкувати значки","ja":"アイコンを並べ替え",
+  "ko":"아이콘 정렬","zh-Hans":"排列图标","zh-Hant":"排列圖示","ar":"ترتيب الأيقونات","he":"סידור סמלים",
+  "id":"Atur ikon"},
+ "menubar.arrange.button": {
+  "de":"Menüleiste anordnen…","en":"Arrange menu bar…","es":"Organizar barra de menús…","fr":"Organiser la barre des menus…",
+  "it":"Disponi barra dei menu…","pt-BR":"Organizar barra de menus…","nl":"Menubalk ordenen…","sv":"Ordna menyraden…",
+  "nb":"Ordne menylinjen…","da":"Arranger menulinjen…","fi":"Järjestä valikkopalkki…","pl":"Rozmieść pasek menu…",
+  "cs":"Uspořádat řádek nabídek…","hu":"Menüsor rendezése…","ro":"Aranjează bara de meniu…","tr":"Menü çubuğunu düzenle…",
+  "el":"Τακτοποίηση γραμμής μενού…","ru":"Расставить строку меню…","uk":"Упорядкувати рядок меню…","ja":"メニューバーを並べ替え…",
+  "ko":"메뉴 막대 정렬…","zh-Hans":"排列菜单栏…","zh-Hant":"排列選單列…","ar":"ترتيب شريط القوائم…","he":"סידור שורת התפריטים…",
+  "id":"Atur bilah menu…"},
+ "menubar.arrange.desc": {
+  "de":"macOS erlaubt Programmen kein automatisches Umsortieren der Menüleiste. Tidier klappt sie auf und markiert den Trenner — ziehe dann mit **⌘** die Icons, die immer sichtbar bleiben sollen, rechts neben die Markierung. Alles links davon wandert in die Kachel.",
+  "en":"macOS doesn't let apps reorder the menu bar automatically. Tidier reveals it and marks the separator — then **⌘**-drag the icons you want to keep visible to the right of the marker. Everything to its left moves into the tile.",
+  "es":"macOS no permite que las apps reordenen la barra de menús automáticamente. Tidier la despliega y marca el separador; luego arrastra con **⌘** los iconos que quieras mantener visibles a la derecha de la marca. Todo lo que quede a la izquierda pasa al panel.",
+  "fr":"macOS n'autorise pas les apps à réorganiser la barre des menus automatiquement. Tidier la déploie et marque le séparateur — faites ensuite glisser avec **⌘** les icônes à garder visibles à droite du repère. Tout ce qui est à gauche passe dans le panneau.",
+  "it":"macOS non consente alle app di riordinare automaticamente la barra dei menu. Tidier la espande e segna il separatore: poi trascina con **⌘** le icone da tenere visibili a destra del segno. Tutto ciò che sta a sinistra finisce nel pannello.",
+  "pt-BR":"O macOS não permite que apps reordenem a barra de menus automaticamente. O Tidier a expande e marca o separador — depois arraste com **⌘** os ícones que quer manter visíveis para a direita da marca. Tudo à esquerda vai para o painel.",
+  "nl":"macOS laat apps de menubalk niet automatisch herschikken. Tidier klapt hem uit en markeert de scheiding — sleep dan met **⌘** de symbolen die zichtbaar moeten blijven naar rechts van de markering. Alles links ervan gaat naar het paneel.",
+  "sv":"macOS låter inte appar ordna om menyraden automatiskt. Tidier fäller ut den och markerar avdelaren — dra sedan med **⌘** ikonerna du vill ha kvar synliga till höger om markeringen. Allt till vänster hamnar i panelen.",
+  "nb":"macOS lar ikke apper omorganisere menylinjen automatisk. Tidier feller den ut og markerer skilletegnet — dra deretter med **⌘** ikonene du vil ha synlige til høyre for markøren. Alt til venstre havner i panelet.",
+  "da":"macOS tillader ikke, at apps automatisk omarrangerer menulinjen. Tidier folder den ud og markerer adskilleren — træk derefter med **⌘** de ikoner, du vil holde synlige, til højre for markeringen. Alt til venstre ryger i panelet.",
+  "fi":"macOS ei anna sovellusten järjestää valikkopalkkia automaattisesti. Tidier avaa sen ja merkitsee erottimen — vedä sitten **⌘**-näppäimellä näkyvinä pidettävät kuvakkeet merkin oikealle puolelle. Kaikki vasemmalla siirtyy paneeliin.",
+  "pl":"macOS nie pozwala aplikacjom automatycznie zmieniać kolejności paska menu. Tidier rozwija go i zaznacza separator — następnie przeciągnij z **⌘** ikony, które mają pozostać widoczne, na prawo od znacznika. Wszystko po lewej trafia do panelu.",
+  "cs":"macOS neumožňuje aplikacím automaticky měnit pořadí řádku nabídek. Tidier jej rozbalí a označí oddělovač — poté přetáhněte se **⌘** ikony, které mají zůstat viditelné, napravo od značky. Vše nalevo se přesune do panelu.",
+  "hu":"A macOS nem engedi, hogy appok automatikusan átrendezzék a menüsort. A Tidier kinyitja és megjelöli az elválasztót — majd **⌘**-tal húzd a láthatóan tartandó ikonokat a jelölés jobb oldalára. Minden, ami tőle balra van, a panelbe kerül.",
+  "ro":"macOS nu permite aplicațiilor să rearanjeze automat bara de meniu. Tidier o desfășoară și marchează separatorul — apoi trage cu **⌘** pictogramele pe care vrei să le păstrezi vizibile în dreapta marcajului. Tot ce e la stânga trece în panou.",
+  "tr":"macOS, uygulamaların menü çubuğunu otomatik yeniden sıralamasına izin vermez. Tidier onu açar ve ayırıcıyı işaretler — sonra görünür kalmasını istediğin simgeleri **⌘** ile işaretin sağına sürükle. Solundaki her şey panele taşınır.",
+  "el":"Το macOS δεν επιτρέπει στις εφαρμογές να αναδιατάσσουν αυτόματα τη γραμμή μενού. Το Tidier την ανοίγει και σημειώνει τον διαχωριστή — μετά σύρε με **⌘** τα εικονίδια που θέλεις ορατά στα δεξιά του σημαδιού. Ό,τι είναι αριστερά πάει στο πλαίσιο.",
+  "ru":"macOS не позволяет приложениям автоматически менять порядок в строке меню. Tidier раскрывает её и отмечает разделитель — затем перетащите с **⌘** значки, которые хотите оставить видимыми, правее метки. Всё, что слева, уходит в панель.",
+  "uk":"macOS не дозволяє програмам автоматично змінювати порядок у рядку меню. Tidier розгортає його й позначає роздільник — потім перетягніть із **⌘** значки, які хочете залишити видимими, праворуч від позначки. Усе ліворуч переходить у панель.",
+  "ja":"macOS はアプリによるメニューバーの自動並べ替えを許可していません。Tidier がメニューバーを開いて区切りを示すので、**⌘** を押しながら、常に表示したいアイコンを目印の右側へドラッグしてください。左側にあるものはすべてパネルに入ります。",
+  "ko":"macOS는 앱이 메뉴 막대를 자동으로 재정렬하도록 허용하지 않습니다. Tidier가 메뉴 막대를 펼치고 구분자를 표시하면, **⌘**을 누른 채 계속 보이게 할 아이콘을 표시 오른쪽으로 드래그하세요. 왼쪽에 있는 항목은 모두 패널로 이동합니다.",
+  "zh-Hans":"macOS 不允许应用自动重新排列菜单栏。Tidier 会将其展开并标记分隔符——然后按住 **⌘** 把想要保持可见的图标拖到标记右侧。左侧的一切都会进入面板。",
+  "zh-Hant":"macOS 不允許 App 自動重新排列選單列。Tidier 會將其展開並標記分隔符——然後按住 **⌘** 把想保持可見的圖示拖到標記右側。左側的一切都會進入面板。",
+  "ar":"لا يسمح macOS للتطبيقات بإعادة ترتيب شريط القوائم تلقائيًا. يفتحه Tidier ويحدّد الفاصل — ثم اسحب باستخدام **⌘** الأيقونات التي تريد إبقاءها ظاهرة إلى يمين العلامة. كل ما على اليسار ينتقل إلى اللوحة.",
+  "he":"macOS לא מאפשר לאפליקציות לסדר מחדש את שורת התפריטים אוטומטית. Tidier פותח אותה ומסמן את המפריד — לאחר מכן גרור עם **⌘** את הסמלים שברצונך להשאיר גלויים אל מימין לסימון. כל מה שמשמאלו עובר ללוח.",
+  "id":"macOS tidak mengizinkan aplikasi menata ulang bilah menu secara otomatis. Tidier membukanya dan menandai pemisah — lalu seret dengan **⌘** ikon yang ingin tetap terlihat ke kanan penanda. Semua yang di kirinya berpindah ke panel."},
+ "menubar.space.title": {
+  "de":"Platz schaffen","en":"Make room","es":"Hacer espacio","fr":"Faire de la place","it":"Fare spazio",
+  "pt-BR":"Abrir espaço","nl":"Ruimte maken","sv":"Skapa plats","nb":"Skap plass","da":"Skab plads",
+  "fi":"Tee tilaa","pl":"Zrób miejsce","cs":"Uvolnit místo","hu":"Helyet csinálni","ro":"Fă loc",
+  "tr":"Yer aç","el":"Δημιουργία χώρου","ru":"Освободить место","uk":"Звільнити місце","ja":"スペースを空ける",
+  "ko":"공간 확보","zh-Hans":"腾出空间","zh-Hant":"騰出空間","ar":"توفير مساحة","he":"פינוי מקום","id":"Buat ruang"},
+ "menubar.space.button": {
+  "de":"Kontrollzentrum-Einstellungen öffnen…","en":"Open Control Center settings…","es":"Abrir ajustes del Centro de control…",
+  "fr":"Ouvrir les réglages du Centre de contrôle…","it":"Apri impostazioni Centro di Controllo…","pt-BR":"Abrir ajustes da Central de Controle…",
+  "nl":"Bedieningspaneel-instellingen openen…","sv":"Öppna Kontrollcenter-inställningar…","nb":"Åpne Kontrollsenter-innstillinger…",
+  "da":"Åbn Kontrolcenter-indstillinger…","fi":"Avaa Ohjauskeskuksen asetukset…","pl":"Otwórz ustawienia Centrum sterowania…",
+  "cs":"Otevřít nastavení Ovládacího centra…","hu":"Vezérlőközpont beállításai megnyitása…","ro":"Deschide setările Centrului de control…",
+  "tr":"Denetim Merkezi ayarlarını aç…","el":"Άνοιγμα ρυθμίσεων Κέντρου ελέγχου…","ru":"Открыть настройки Пункта управления…",
+  "uk":"Відкрити параметри Центру керування…","ja":"コントロールセンター設定を開く…","ko":"제어 센터 설정 열기…",
+  "zh-Hans":"打开控制中心设置…","zh-Hant":"打開控制中心設定…","ar":"فتح إعدادات مركز التحكم…","he":"פתיחת הגדרות מרכז הבקרה…",
+  "id":"Buka pengaturan Pusat Kontrol…"},
+ "menubar.space.desc": {
+  "de":"WLAN und Bluetooth belegen je ein eigenes Menüleisten-Icon, obwohl sie auch im Kontrollzentrum liegen. Blende sie in der Leiste aus, um Platz für wichtige Icons (z. B. WireGuard) zu gewinnen — erreichbar bleiben sie über das Kontrollzentrum.",
+  "en":"Wi-Fi and Bluetooth each take up their own menu bar icon even though they're also in Control Center. Hide them from the bar to make room for important icons (e.g. WireGuard) — they stay reachable via Control Center.",
+  "es":"El Wi-Fi y el Bluetooth ocupan cada uno su propio icono en la barra de menús aunque también estén en el Centro de control. Ocúltalos de la barra para dejar espacio a iconos importantes (p. ej. WireGuard); siguen disponibles en el Centro de control.",
+  "fr":"Le Wi-Fi et le Bluetooth occupent chacun leur propre icône dans la barre des menus alors qu'ils sont aussi dans le Centre de contrôle. Masquez-les de la barre pour libérer de la place pour des icônes importantes (p. ex. WireGuard) — ils restent accessibles via le Centre de contrôle.",
+  "it":"Wi-Fi e Bluetooth occupano ciascuno la propria icona nella barra dei menu anche se sono nel Centro di Controllo. Nascondili dalla barra per far spazio a icone importanti (es. WireGuard): restano raggiungibili dal Centro di Controllo.",
+  "pt-BR":"Wi-Fi e Bluetooth ocupam cada um seu próprio ícone na barra de menus mesmo estando na Central de Controle. Oculte-os da barra para abrir espaço para ícones importantes (ex.: WireGuard) — eles continuam acessíveis pela Central de Controle.",
+  "nl":"Wi-Fi en Bluetooth nemen elk een eigen menubalksymbool in beslag, ook al zitten ze in het Bedieningspaneel. Verberg ze uit de balk om ruimte te maken voor belangrijke symbolen (bijv. WireGuard) — ze blijven bereikbaar via het Bedieningspaneel.",
+  "sv":"Wi-Fi och Bluetooth tar var sin ikon i menyraden trots att de även finns i Kontrollcenter. Dölj dem från raden för att göra plats för viktiga ikoner (t.ex. WireGuard) — de nås fortfarande via Kontrollcenter.",
+  "nb":"Wi-Fi og Bluetooth tar hvert sitt ikon i menylinjen selv om de også ligger i Kontrollsenter. Skjul dem fra linjen for å gi plass til viktige ikoner (f.eks. WireGuard) — de er fortsatt tilgjengelige via Kontrollsenter.",
+  "da":"Wi-Fi og Bluetooth optager hver sit ikon i menulinjen, selvom de også ligger i Kontrolcenter. Skjul dem fra linjen for at give plads til vigtige ikoner (f.eks. WireGuard) — de kan stadig nås via Kontrolcenter.",
+  "fi":"Wi-Fi ja Bluetooth varaavat kumpikin oman kuvakkeensa valikkopalkista, vaikka ne ovat myös Ohjauskeskuksessa. Piilota ne palkista tehdäksesi tilaa tärkeille kuvakkeille (esim. WireGuard) — ne ovat yhä käytettävissä Ohjauskeskuksesta.",
+  "pl":"Wi-Fi i Bluetooth zajmują po własnej ikonie na pasku menu, mimo że są też w Centrum sterowania. Ukryj je z paska, aby zrobić miejsce dla ważnych ikon (np. WireGuard) — pozostaną dostępne przez Centrum sterowania.",
+  "cs":"Wi-Fi a Bluetooth zabírají každý vlastní ikonu v řádku nabídek, i když jsou také v Ovládacím centru. Skryjte je z řádku, abyste uvolnili místo pro důležité ikony (např. WireGuard) — zůstanou dostupné přes Ovládací centrum.",
+  "hu":"A Wi-Fi és a Bluetooth külön-külön saját ikont foglal a menüsorban, pedig a Vezérlőközpontban is ott vannak. Rejtsd el őket a sorból, hogy helyet adj a fontos ikonoknak (pl. WireGuard) — a Vezérlőközpontból továbbra is elérhetők.",
+  "ro":"Wi-Fi și Bluetooth ocupă fiecare propria pictogramă în bara de meniu, deși se află și în Centrul de control. Ascunde-le din bară pentru a face loc pictogramelor importante (ex. WireGuard) — rămân accesibile din Centrul de control.",
+  "tr":"Wi-Fi ve Bluetooth, Denetim Merkezi'nde de bulunmasına rağmen menü çubuğunda ayrı birer simge kaplar. Önemli simgelere (ör. WireGuard) yer açmak için onları çubuktan gizle — Denetim Merkezi'nden erişilebilir kalırlar.",
+  "el":"Το Wi-Fi και το Bluetooth καταλαμβάνουν το καθένα το δικό του εικονίδιο στη γραμμή μενού, αν και βρίσκονται και στο Κέντρο ελέγχου. Απόκρυψέ τα από τη γραμμή για να κάνεις χώρο για σημαντικά εικονίδια (π.χ. WireGuard) — παραμένουν προσβάσιμα από το Κέντρο ελέγχου.",
+  "ru":"Wi-Fi и Bluetooth занимают в строке меню по отдельному значку, хотя они есть и в Пункте управления. Скройте их из строки, чтобы освободить место для важных значков (например, WireGuard) — они останутся доступны через Пункт управления.",
+  "uk":"Wi-Fi і Bluetooth займають у рядку меню по окремому значку, хоча вони є і в Центрі керування. Приховайте їх із рядка, щоб звільнити місце для важливих значків (наприклад, WireGuard) — вони лишаться доступними через Центр керування.",
+  "ja":"Wi-Fi と Bluetooth は、コントロールセンターにもあるのにメニューバーでそれぞれ独自のアイコンを占有します。重要なアイコン（例：WireGuard）のためにバーから非表示にしましょう。コントロールセンターから引き続き利用できます。",
+  "ko":"Wi-Fi와 Bluetooth는 제어 센터에도 있지만 메뉴 막대에서 각각 별도의 아이콘을 차지합니다. 중요한 아이콘(예: WireGuard)을 위한 공간을 만들려면 막대에서 숨기세요. 제어 센터로는 계속 이용할 수 있습니다.",
+  "zh-Hans":"Wi-Fi 和蓝牙虽然也在控制中心里，却各自在菜单栏占用一个图标。把它们从菜单栏隐藏，为重要图标（如 WireGuard）腾出空间——它们仍可通过控制中心访问。",
+  "zh-Hant":"Wi-Fi 和藍牙雖然也在控制中心裡，卻各自在選單列佔用一個圖示。把它們從選單列隱藏，為重要圖示（如 WireGuard）騰出空間——它們仍可透過控制中心存取。",
+  "ar":"يشغل كل من Wi-Fi وBluetooth أيقونة خاصة به في شريط القوائم رغم وجودهما أيضًا في مركز التحكم. أخفِهما من الشريط لتوفير مساحة للأيقونات المهمة (مثل WireGuard) — ويظلان متاحين عبر مركز التحكم.",
+  "he":"Wi-Fi ו-Bluetooth תופסים כל אחד סמל משלו בשורת התפריטים, אף שהם גם במרכז הבקרה. הסתר אותם מהשורה כדי לפנות מקום לסמלים חשובים (למשל WireGuard) — הם נשארים נגישים דרך מרכז הבקרה.",
+  "id":"Wi-Fi dan Bluetooth masing-masing memakai ikon sendiri di bilah menu meski juga ada di Pusat Kontrol. Sembunyikan dari bilah untuk memberi ruang bagi ikon penting (mis. WireGuard) — keduanya tetap dapat diakses lewat Pusat Kontrol."},
+ "menubar.space.hint": {
+  "de":"Dort bei WLAN und Bluetooth jeweils auf »Nicht in der Menüleiste anzeigen« stellen.",
+  "en":"There, set Wi-Fi and Bluetooth each to »Don't Show in Menu Bar«.",
+  "es":"Allí, ajusta el Wi-Fi y el Bluetooth a »No mostrar en la barra de menús«.",
+  "fr":"Là, réglez le Wi-Fi et le Bluetooth sur »Ne pas afficher dans la barre des menus«.",
+  "it":"Lì, imposta Wi-Fi e Bluetooth su »Non mostrare nella barra dei menu«.",
+  "pt-BR":"Lá, defina Wi-Fi e Bluetooth como »Não mostrar na barra de menus«.",
+  "nl":"Zet daar Wi-Fi en Bluetooth elk op »Niet in menubalk tonen«.",
+  "sv":"Ställ där in Wi-Fi och Bluetooth på »Visa inte i menyraden«.",
+  "nb":"Der stiller du Wi-Fi og Bluetooth til »Ikke vis i menylinjen«.",
+  "da":"Indstil der Wi-Fi og Bluetooth til »Vis ikke i menulinjen«.",
+  "fi":"Aseta siellä Wi-Fi ja Bluetooth kumpikin arvoon »Älä näytä valikkopalkissa«.",
+  "pl":"Tam ustaw Wi-Fi i Bluetooth na »Nie pokazuj na pasku menu«.",
+  "cs":"Tam nastav Wi-Fi a Bluetooth na »Nezobrazovat v řádku nabídek«.",
+  "hu":"Ott állítsd a Wi-Fi-t és a Bluetooth-t is »Ne jelenjen meg a menüsorban« értékre.",
+  "ro":"Acolo, setează Wi-Fi și Bluetooth pe »Nu afișa în bara de meniu«.",
+  "tr":"Orada Wi-Fi ve Bluetooth'u »Menü çubuğunda gösterme« olarak ayarla.",
+  "el":"Εκεί, όρισε το Wi-Fi και το Bluetooth σε »Να μην εμφανίζεται στη γραμμή μενού«.",
+  "ru":"Там установите для Wi-Fi и Bluetooth значение »Не показывать в строке меню«.",
+  "uk":"Там встановіть для Wi-Fi і Bluetooth значення »Не показувати в рядку меню«.",
+  "ja":"そこで Wi-Fi と Bluetooth をそれぞれ「メニューバーに表示しない」に設定します。",
+  "ko":"거기에서 Wi-Fi와 Bluetooth를 각각 »메뉴 막대에 표시 안 함«으로 설정하세요.",
+  "zh-Hans":"在那里把 Wi-Fi 和蓝牙分别设为“不在菜单栏中显示”。",
+  "zh-Hant":"在那裡把 Wi-Fi 和藍牙分別設為「不在選單列中顯示」。",
+  "ar":"هناك، اضبط Wi-Fi وBluetooth على »عدم الإظهار في شريط القوائم«.",
+  "he":"שם, הגדר את Wi-Fi ואת Bluetooth ל-»אל תציג בשורת התפריטים«.",
+  "id":"Di sana, atur Wi-Fi dan Bluetooth masing-masing ke »Jangan Tampilkan di Bilah Menu«."},
+ "menubar.autoupdated": {
+  "de":"Automatisch aktuell","en":"Auto-updated","es":"Actualizado automáticamente","fr":"Mis à jour automatiquement",
+  "it":"Aggiornato automaticamente","pt-BR":"Atualizado automaticamente","nl":"Automatisch bijgewerkt","sv":"Uppdateras automatiskt",
+  "nb":"Oppdateres automatisk","da":"Opdateres automatisk","fi":"Päivittyy automaattisesti","pl":"Aktualizowane automatycznie",
+  "cs":"Aktualizováno automaticky","hu":"Automatikusan frissül","ro":"Actualizat automat","tr":"Otomatik güncel",
+  "el":"Αυτόματη ενημέρωση","ru":"Обновляется автоматически","uk":"Оновлюється автоматично","ja":"自動更新",
+  "ko":"자동 업데이트","zh-Hans":"自动更新","zh-Hant":"自動更新","ar":"محدَّث تلقائيًا","he":"מתעדכן אוטומטית","id":"Diperbarui otomatis"},
+ "menubar.empty": {
+  "de":"Noch keine Objekte erfasst — die Liste aktualisiert sich automatisch im Hintergrund, sobald Tidier die Leiste eingelesen hat.",
+  "en":"No items captured yet — the list updates automatically in the background once Tidier has read the menu bar.",
+  "es":"Aún no se han detectado objetos: la lista se actualiza automáticamente en segundo plano en cuanto Tidier lee la barra de menús.",
+  "fr":"Aucun élément détecté pour l'instant — la liste se met à jour automatiquement en arrière-plan dès que Tidier a lu la barre des menus.",
+  "it":"Nessun oggetto rilevato ancora: l'elenco si aggiorna automaticamente in background non appena Tidier legge la barra dei menu.",
+  "pt-BR":"Nenhum item detectado ainda — a lista se atualiza automaticamente em segundo plano assim que o Tidier ler a barra de menus.",
+  "nl":"Nog geen objecten gedetecteerd — de lijst wordt automatisch op de achtergrond bijgewerkt zodra Tidier de menubalk heeft ingelezen.",
+  "sv":"Inga objekt hittade ännu — listan uppdateras automatiskt i bakgrunden så snart Tidier har läst menyraden.",
+  "nb":"Ingen objekter registrert ennå — listen oppdateres automatisk i bakgrunnen så snart Tidier har lest menylinjen.",
+  "da":"Ingen objekter registreret endnu — listen opdateres automatisk i baggrunden, så snart Tidier har læst menulinjen.",
+  "fi":"Kohteita ei vielä havaittu — luettelo päivittyy automaattisesti taustalla heti kun Tidier on lukenut valikkopalkin.",
+  "pl":"Nie wykryto jeszcze obiektów — lista aktualizuje się automatycznie w tle, gdy tylko Tidier odczyta pasek menu.",
+  "cs":"Zatím nezachyceny žádné položky — seznam se automaticky aktualizuje na pozadí, jakmile Tidier přečte řádek nabídek.",
+  "hu":"Még nincsenek észlelt elemek — a lista automatikusan frissül a háttérben, amint a Tidier beolvasta a menüsort.",
+  "ro":"Încă niciun element detectat — lista se actualizează automat în fundal de îndată ce Tidier a citit bara de meniu.",
+  "tr":"Henüz öge yakalanmadı — Tidier menü çubuğunu okur okumaz liste arka planda otomatik güncellenir.",
+  "el":"Δεν εντοπίστηκαν ακόμη στοιχεία — η λίστα ενημερώνεται αυτόματα στο παρασκήνιο μόλις το Tidier διαβάσει τη γραμμή μενού.",
+  "ru":"Объекты пока не обнаружены — список обновится автоматически в фоне, как только Tidier прочитает строку меню.",
+  "uk":"Об'єкти ще не виявлені — список оновиться автоматично у фоні, щойно Tidier прочитає рядок меню.",
+  "ja":"まだ項目が検出されていません — Tidier がメニューバーを読み込むと、リストはバックグラウンドで自動的に更新されます。",
+  "ko":"아직 감지된 항목이 없습니다 — Tidier가 메뉴 막대를 읽으면 목록이 백그라운드에서 자동으로 업데이트됩니다.",
+  "zh-Hans":"尚未捕获任何项目——Tidier 读取菜单栏后，列表会在后台自动更新。",
+  "zh-Hant":"尚未擷取任何項目——Tidier 讀取選單列後，清單會在背景自動更新。",
+  "ar":"لم يتم رصد أي عناصر بعد — تُحدَّث القائمة تلقائيًا في الخلفية بمجرد أن يقرأ Tidier شريط القوائم.",
+  "he":"עדיין לא זוהו פריטים — הרשימה מתעדכנת אוטומטית ברקע ברגע ש-Tidier קורא את שורת התפריטים.",
+  "id":"Belum ada item terdeteksi — daftar diperbarui otomatis di latar belakang begitu Tidier membaca bilah menu."},
+ "sysitem.cpu": {l:"CPU" for l in ["de","en","es","fr","it","pt-BR","nl","sv","nb","da","fi","pl","cs","hu","ro","tr","el","ru","uk","ja","ko","zh-Hans","zh-Hant","ar","he","id"]},
+ "sysitem.ram": {l:"RAM" for l in ["de","en","es","fr","it","pt-BR","nl","sv","nb","da","fi","pl","cs","hu","ro","tr","el","ru","uk","ja","ko","zh-Hans","zh-Hant","ar","he","id"]},
+ "sysitem.disk": {
+  "de":"Speicher","en":"Disk","es":"Disco","fr":"Disque","it":"Disco","pt-BR":"Disco","nl":"Schijf","sv":"Disk",
+  "nb":"Disk","da":"Disk","fi":"Levy","pl":"Dysk","cs":"Disk","hu":"Lemez","ro":"Disc","tr":"Disk",
+  "el":"Δίσκος","ru":"Диск","uk":"Диск","ja":"ディスク","ko":"디스크","zh-Hans":"磁盘","zh-Hant":"磁碟",
+  "ar":"القرص","he":"דיסק","id":"Disk"},
+ "sysitem.network": {
+  "de":"Netzwerk","en":"Network","es":"Red","fr":"Réseau","it":"Rete","pt-BR":"Rede","nl":"Netwerk","sv":"Nätverk",
+  "nb":"Nettverk","da":"Netværk","fi":"Verkko","pl":"Sieć","cs":"Síť","hu":"Hálózat","ro":"Rețea","tr":"Ağ",
+  "el":"Δίκτυο","ru":"Сеть","uk":"Мережа","ja":"ネットワーク","ko":"네트워크","zh-Hans":"网络","zh-Hant":"網路",
+  "ar":"الشبكة","he":"רשת","id":"Jaringan"},
+ "sysitem.battery": {
+  "de":"Batterie","en":"Battery","es":"Batería","fr":"Batterie","it":"Batteria","pt-BR":"Bateria","nl":"Batterij","sv":"Batteri",
+  "nb":"Batteri","da":"Batteri","fi":"Akku","pl":"Bateria","cs":"Baterie","hu":"Akkumulátor","ro":"Baterie","tr":"Pil",
+  "el":"Μπαταρία","ru":"Батарея","uk":"Акумулятор","ja":"バッテリー","ko":"배터리","zh-Hans":"电池","zh-Hant":"電池",
+  "ar":"البطارية","he":"סוללה","id":"Baterai"},
+}
+
+langs = sorted({l for m in T.values() for l in m})
+for lang in langs:
+    path = os.path.join(RES, f"{lang}.lproj", "Localizable.strings")
+    if not os.path.exists(path):
+        print("skip missing", lang); continue
+    existing = open(path, encoding="utf-8").read()
+    add = []
+    for key, m in T.items():
+        if f'"{key}"' in existing: continue
+        val = m.get(lang) or m["en"]
+        add.append(f'"{key}" = "{val}";')
+    if add:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write("\n" + "\n".join(add) + "\n")
+    print(lang, "+", len(add))

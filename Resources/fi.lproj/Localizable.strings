@@ -43,3 +43,18 @@
 "sysitem.wifi" = "Wi-Fi";
 "sysitem.nowplaying" = "Nyt soi";
 "about.opensource" = "GPL-3.0 · Avoin lähdekoodi";
+
+"menubar.arrange.title" = "Järjestä kuvakkeet";
+"menubar.arrange.button" = "Järjestä valikkopalkki…";
+"menubar.arrange.desc" = "macOS ei anna sovellusten järjestää valikkopalkkia automaattisesti. Tidier avaa sen ja merkitsee erottimen — vedä sitten **⌘**-näppäimellä näkyvinä pidettävät kuvakkeet merkin oikealle puolelle. Kaikki vasemmalla siirtyy paneeliin.";
+"menubar.space.title" = "Tee tilaa";
+"menubar.space.button" = "Avaa Ohjauskeskuksen asetukset…";
+"menubar.space.desc" = "Wi-Fi ja Bluetooth varaavat kumpikin oman kuvakkeensa valikkopalkista, vaikka ne ovat myös Ohjauskeskuksessa. Piilota ne palkista tehdäksesi tilaa tärkeille kuvakkeille (esim. WireGuard) — ne ovat yhä käytettävissä Ohjauskeskuksesta.";
+"menubar.space.hint" = "Aseta siellä Wi-Fi ja Bluetooth kumpikin arvoon »Älä näytä valikkopalkissa«.";
+"menubar.autoupdated" = "Päivittyy automaattisesti";
+"menubar.empty" = "Kohteita ei vielä havaittu — luettelo päivittyy automaattisesti taustalla heti kun Tidier on lukenut valikkopalkin.";
+"sysitem.cpu" = "CPU";
+"sysitem.ram" = "RAM";
+"sysitem.disk" = "Levy";
+"sysitem.network" = "Verkko";
+"sysitem.battery" = "Akku";
