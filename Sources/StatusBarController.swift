@@ -243,11 +243,10 @@ final class StatusBarController {
     private var buildingCache = false
     private var didFullBuild = false
 
-    /// Build the item cache WITHOUT moving anything (moving corrupts the user's menu bar
-    /// arrangement). Reveal + shrink so items slide on-screen via the separator trick
-    /// (non-destructive — item positions are untouched), then resolve + capture each
-    /// on-screen item via AXResolver (the only reliable identity — CGWindow owner is always
-    /// "Control Center"). Then collapse. This is the only cache build; it never reorders.
+    /// Build the item cache. Reveal + shrink so as many items as possible slide on-screen,
+    /// then capture each; items still obscured under the notch are briefly staged on-screen
+    /// via MoveEngine, captured, and moved back to their original (hidden) slot — so ALL
+    /// items get a real glyph while the visible arrangement is preserved. Then collapse.
     func rebuildFullCache() {
         guard !buildingCache else { return }
         buildingCache = true
@@ -255,18 +254,13 @@ final class StatusBarController {
         revealingAlways = true
         applyLayout()
         shrinkOwnItems()
+        let threshold = mainItem.button?.window?.frame.minX ?? 1200
         DispatchQueue.global().async { [weak self] in
             usleep(350_000)
-            var items: [BarItem] = []
-            var seen = Set<String>()
-            for r in CaptureEngine.scanAll() {
-                // Only on-screen items can be resolved/captured; obscured overflow is skipped
-                // (it can't be identified reliably without moving, which we no longer do).
-                guard ItemCapture.image(forWindow: Int(r.id)) != nil,
-                      let b = TidierBar.makeItem(from: r.info),
-                      seen.insert(b.key).inserted else { continue }
-                items.append(b)
-            }
+            let y = CaptureEngine.scanAll().first(where: { $0.x >= 0 })?.info.centerY ?? 12
+            // Move-capture: obscured (notch-overflow) items are briefly staged on-screen,
+            // captured, and moved back to their original hidden slot. Preserves the arrangement.
+            let items = CaptureEngine.captureAll(stageX: threshold - 40, menuBarY: y, thresholdX: threshold)
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.buildingCache = false

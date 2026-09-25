@@ -63,15 +63,12 @@ enum CaptureEngine {
             }
             // Not capturable in place.
             if r.name == "Item-0" {   // movable third-party → stage it, capture, move back
-                let rightNeighbor = order.first { $0.x > r.x && $0.id != r.id }
                 MoveEngine.move(windowID: r.id, pid: r.pid, toX: stageX, menuBarY: menuBarY)
                 usleep(300_000)
                 if let staged = current(r.id) { add(TidierBar.makeItem(from: staged.info)) }
-                if let rn = rightNeighbor, let rnNow = current(rn.id) {
-                    MoveEngine.move(windowID: r.id, pid: r.pid, toX: rnNow.x - r.w - 1, menuBarY: menuBarY)
-                } else {
-                    MoveEngine.move(windowID: r.id, pid: r.pid, toX: thresholdX - r.w - 1, menuBarY: menuBarY)
-                }
+                // Restore to its ORIGINAL x — an under-notch / off-screen slot, i.e. still
+                // hidden. Never near the toggle (that would leave it visible = "escaped").
+                MoveEngine.move(windowID: r.id, pid: r.pid, toX: r.x, menuBarY: menuBarY)
                 usleep(240_000)
             } else {
                 // fixed system module (not movable) — still list it via symbol fallback
