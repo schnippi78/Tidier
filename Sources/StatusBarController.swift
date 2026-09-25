@@ -273,6 +273,41 @@ final class StatusBarController {
                     self.applyItemFilter()                    // panel shows only the chosen ones
                     self.lastBarSignature = self.barSignature()
                 }
+                // A move-captured item can land right of the separator (visible) instead of
+                // back in the hidden zone. Sweep it back so nothing "escapes" into the bar.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+                    self?.reHideEscapedItems()
+                }
+            }
+        }
+    }
+
+    /// After a capture, re-hide any third-party item that ended up visible in the bar but
+    /// the user did NOT pin to "Leiste" — it escaped during the move-capture. One targeted
+    /// pass; moves only the genuinely-escaped items far left (collapsed state = reliable).
+    private func reHideEscapedItems() {
+        guard !buildingCache, !arranging, !expanded, !tileOpen else { return }
+        guard let toggleX = mainItem.button?.window?.frame.minX,
+              let barY = mainItem.button?.window?.frame.midY,
+              let sepX = hiddenSep.button?.window?.frame.minX, sepX < 0 else { return }
+        let pinned = Preferences.shared.barPinnedKeys
+        // Escaped = a third-party "Item-0" that is on-screen and left of the toggle but the
+        // user did not pin it. (Genuine visible system items are named / sit right of the toggle.)
+        var escaped: [CaptureEngine.Raw] = []
+        for r in CaptureEngine.scanAll() {
+            guard r.name == "Item-0", r.owner != "Tidier", r.x >= 0, r.x < toggleX - 2,
+                  ItemCapture.image(forWindow: Int(r.id)) != nil else { continue }
+            if let item = TidierBar.makeItem(from: r.info), pinned.contains(item.key) { continue }
+            escaped.append(r)
+        }
+        guard !escaped.isEmpty else { return }
+        // Move each into the hidden cluster (left of the collapsed separator) so it disappears.
+        DispatchQueue.global().async {
+            var dropX = sepX - 200
+            for r in escaped {
+                MoveEngine.move(windowID: r.id, pid: r.pid, toX: dropX, menuBarY: barY)
+                dropX -= 40
+                usleep(280_000)
             }
         }
     }
