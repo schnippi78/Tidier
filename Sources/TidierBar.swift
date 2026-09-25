@@ -785,20 +785,20 @@ private struct PanelTileView: View {
         } else if isIconOnly {
             squareBadgeTile
         } else {
-            capsuleRow
+            capsuleRow(tinted: false)
         }
     }
 
-    // MARK: A — capsules
+    // MARK: A — capsules — colourful accent-tinted capsules with a filled badge
     @ViewBuilder private var capsuleTile: some View {
-        if isValueGlyph { valueGlyphTile(gradient: false) }
+        if isValueGlyph { valueGlyphTile(gradient: true) }
         else if isIconOnly { squareBadgeTile }
-        else { capsuleRow }
+        else { capsuleRow(tinted: true) }
     }
 
-    private var capsuleRow: some View {
-        HStack(spacing: 8) {
-            badge()
+    private func capsuleRow(tinted: Bool) -> some View {
+        HStack(spacing: 9) {
+            if tinted { filledBadge() } else { badge() }
             VStack(alignment: .leading, spacing: 0) {
                 Text(titleText).font(.system(size: 11.5, weight: .semibold))
                     .lineLimit(1).truncationMode(.tail)
@@ -811,7 +811,27 @@ private struct PanelTileView: View {
         }
         .padding(.horizontal, 10)
         .frame(maxWidth: .infinity, alignment: .leading).frame(height: 46)  // fills its column (or the whole row for network)
-        .background(tileFill, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(tinted ? AnyShapeStyle(accent.opacity(hover.on ? 0.28 : 0.18))
+                           : AnyShapeStyle(tileFill),
+                    in: RoundedRectangle(cornerRadius: 23, style: .continuous))
+    }
+
+    // Filled accent disc with a white glyph (Control-Center style, for the capsules design).
+    private func filledBadge(_ d: CGFloat = 30) -> some View {
+        ZStack {
+            Circle().fill(accent).frame(width: d, height: d)
+            Group {
+                if let img = itemImage {
+                    Image(nsImage: img).resizable().renderingMode(.template).interpolation(.high)
+                        .scaledToFit().frame(width: d * 0.56, height: d * 0.56)
+                } else if let sym = symbol {
+                    Image(systemName: sym).font(.system(size: d * 0.5, weight: .semibold))
+                } else {
+                    Text(monogram).font(.system(size: d * 0.48, weight: .bold, design: .rounded))
+                }
+            }
+            .foregroundStyle(.white)
+        }
     }
 
     private func valueGlyphTile(gradient: Bool) -> some View {
@@ -858,19 +878,25 @@ private struct PanelTileView: View {
         .background(tileFill, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 
-    // MARK: D — strip
+    // MARK: D — strip — labelled chips that wrap like a folded menu bar
     private var stripTile: some View {
-        HStack(spacing: 5) {
-            if statValue == nil { rawGlyph(height: 17, maxWidth: 40) }
-            else { Image(systemName: symbol ?? "gauge").font(.system(size: 13, weight: .medium)).foregroundStyle(accent) }
+        HStack(spacing: 6) {
             if let v = statValue {
-                Text("\(Int(v.rounded()))%").font(.system(size: 11, weight: .semibold))
-            } else if isValueGlyph, let sub = valueFromGlyphLabel {
-                Text(sub).font(.system(size: 11, weight: .semibold))
+                Image(systemName: symbol ?? "gauge").font(.system(size: 12, weight: .semibold)).foregroundStyle(accent)
+                Text(titleText).font(.system(size: 11, weight: .medium))
+                Text("\(Int(v.rounded()))%").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            } else if case .net(let d, _) = content {
+                Image(systemName: "network").font(.system(size: 12, weight: .semibold)).foregroundStyle(accent)
+                Text(titleText).font(.system(size: 11, weight: .medium))
+                Text(Self.rate(d)).font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            } else {
+                rawGlyph(height: 16, maxWidth: 34)
+                if !titleText.isEmpty {
+                    Text(titleText).font(.system(size: 11, weight: .medium)).lineLimit(1).truncationMode(.tail)
+                }
             }
         }
-        .padding(.horizontal, 7).frame(height: 30)
-        .background(hover.on ? tileFill : Color.clear, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .padding(.horizontal, 9).frame(height: 30)
+        .background(hover.on ? Color.primary.opacity(0.12) : Color.primary.opacity(0.06), in: Capsule())
     }
-    private var valueFromGlyphLabel: String? { nil }
 }
