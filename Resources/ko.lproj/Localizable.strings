@@ -39,3 +39,6 @@
 "menubar.place.panel" = "패널";
 "menubar.place.off" = "끔";
 "menubar.systemItems" = "시스템 항목";
+"sysitem.inputmenu" = "이모티콘 및 기호";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "재생 중";

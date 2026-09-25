@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Панель";
 "menubar.place.off" = "Нет";
 "menubar.systemItems" = "Системные объекты";
+"sysitem.inputmenu" = "Эмодзи и символы";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Сейчас играет";

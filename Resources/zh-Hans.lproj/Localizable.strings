@@ -39,3 +39,6 @@
 "menubar.place.panel" = "面板";
 "menubar.place.off" = "关";
 "menubar.systemItems" = "系统项目";
+"sysitem.inputmenu" = "表情与符号";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "正在播放";

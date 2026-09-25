@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Panou";
 "menubar.place.off" = "Nu";
 "menubar.systemItems" = "Elemente de sistem";
+"sysitem.inputmenu" = "Emoji și simboluri";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Se redă acum";

@@ -283,10 +283,10 @@ final class TidierBar: NSObject, NSWindowDelegate {
         // ("WLAN, verbunden, …"), so keying by title makes the tile's identity change
         // between cache-build and click → the match misses and the click does nothing.
         // Prefer the stable name; fall back to bundle+title only for generic "Item-0".
-        if !info.name.isEmpty && info.name != "Item-0" {
-            if let b = resolved?.bundleId, !b.isEmpty { return "b:" + b + "#" + info.name }
-            return "n:" + info.name
-        }
+        // A specific window name (WiFi/Bluetooth/Battery/NowPlaying/…) is the most stable id
+        // and, crucially, is available even while the item is obscured (no AX) — so key by it
+        // alone, independent of the resolved bundle (which flips to Control Center off-screen).
+        if !info.name.isEmpty && info.name != "Item-0" { return "n:" + info.name }
         // Generic "Item-0": key by bundle + name, NOT the title — some titles are dynamic or
         // resolve empty intermittently, which would flip the tile's identity (breaking the
         // show/hide selection and drag order). One status item per app is the norm.
@@ -299,12 +299,41 @@ final class TidierBar: NSObject, NSWindowDelegate {
         if n.hasPrefix("com.bjango.istatmenus.") {
             return "iStat · " + n.replacingOccurrences(of: "com.bjango.istatmenus.", with: "")
         }
-        if isApple, let t = resolved?.title, !t.isEmpty { return t }          // e.g. "WLAN", "Spotlight"
+        if let ml = moduleLabel(name: n) { return ml }                        // WiFi/Bluetooth/… by stable name
+        if isApple, let t = resolved?.title, !t.isEmpty { return clean(t) }   // e.g. "Spotlight"
+        if let b = resolved?.bundleId, let f = friendlyName(bundle: b) { return f }  // known Apple agents
         if !isApple, let a = resolved?.appName,                                // e.g. "iStat Menus"
            a != "Kontrollzentrum", a != "Control Center", !a.isEmpty { return a }
-        if let t = resolved?.title, !t.isEmpty { return t }
+        if let t = resolved?.title, !t.isEmpty { return clean(t) }
         if !n.isEmpty && n != "Item-0" { return n }
         return ""                                                             // icon-only
+    }
+
+    /// Drop the live status a Control-Center title carries ("WLAN, verbunden, 3 Balken"
+    /// → "WLAN"; "Bluetooth, ein" → "Bluetooth") — keep just the module name.
+    private static func clean(_ t: String) -> String {
+        if let r = t.range(of: ", ") { return String(t[..<r.lowerBound]) }
+        return t
+    }
+
+    /// Friendly names for Apple agents whose AX title is unhelpful / often empty.
+    private static func friendlyName(bundle: String) -> String? {
+        switch bundle {
+        case "com.apple.TextInputMenuAgent": return L("sysitem.inputmenu")
+        default: return nil
+        }
+    }
+
+    /// Stable, capture-independent label for the fixed Control-Center modules — derived from
+    /// the constant window NAME, so they stay named even while obscured under the notch
+    /// (where AX can't resolve) and their identity never depends on live status text.
+    private static func moduleLabel(name: String) -> String? {
+        switch name {
+        case "WiFi":       return L("sysitem.wifi")
+        case "Bluetooth":  return "Bluetooth"
+        case "NowPlaying": return L("sysitem.nowplaying")
+        default:           return nil
+        }
     }
 
     /// The tile shows exactly what sits in the menu bar: the captured item glyph

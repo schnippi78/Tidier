@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Paneeli";
 "menubar.place.off" = "Ei";
 "menubar.systemItems" = "Järjestelmäkohteet";
+"sysitem.inputmenu" = "Emojit ja symbolit";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Nyt soi";

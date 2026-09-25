@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Πλαίσιο";
 "menubar.place.off" = "Όχι";
 "menubar.systemItems" = "Στοιχεία συστήματος";
+"sysitem.inputmenu" = "Emoji και σύμβολα";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Αναπαράγεται τώρα";

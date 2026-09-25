@@ -39,3 +39,6 @@
 "menubar.place.panel" = "לוח";
 "menubar.place.off" = "כבוי";
 "menubar.systemItems" = "פריטי מערכת";
+"sysitem.inputmenu" = "אמוג'י וסמלים";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "מתנגן כעת";

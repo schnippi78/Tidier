@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Panel";
 "menubar.place.off" = "Ki";
 "menubar.systemItems" = "Rendszerelemek";
+"sysitem.inputmenu" = "Emodzsik és szimbólumok";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Most szól";

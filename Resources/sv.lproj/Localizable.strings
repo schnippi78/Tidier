@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Panel";
 "menubar.place.off" = "Av";
 "menubar.systemItems" = "Systemobjekt";
+"sysitem.inputmenu" = "Emoji och symboler";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Spelas nu";

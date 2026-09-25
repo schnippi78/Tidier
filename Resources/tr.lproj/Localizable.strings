@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Panel";
 "menubar.place.off" = "Kapalı";
 "menubar.systemItems" = "Sistem ögeleri";
+"sysitem.inputmenu" = "Emoji ve semboller";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Şimdi çalıyor";

@@ -39,3 +39,6 @@
 "menubar.place.panel" = "パネル";
 "menubar.place.off" = "オフ";
 "menubar.systemItems" = "システム項目";
+"sysitem.inputmenu" = "絵文字と記号";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "再生中";

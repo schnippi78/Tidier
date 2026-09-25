@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Panel";
 "menubar.place.off" = "Mati";
 "menubar.systemItems" = "Item sistem";
+"sysitem.inputmenu" = "Emoji & Simbol";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Sedang diputar";

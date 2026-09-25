@@ -39,3 +39,6 @@
 "menubar.place.panel" = "اللوحة";
 "menubar.place.off" = "إيقاف";
 "menubar.systemItems" = "عناصر النظام";
+"sysitem.inputmenu" = "الرموز التعبيرية والرموز";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "قيد التشغيل";

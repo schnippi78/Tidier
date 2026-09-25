@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Pannello";
 "menubar.place.off" = "No";
 "menubar.systemItems" = "Elementi di sistema";
+"sysitem.inputmenu" = "Emoji e simboli";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "In riproduzione";

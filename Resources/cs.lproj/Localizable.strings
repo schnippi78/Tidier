@@ -39,3 +39,6 @@
 "menubar.place.panel" = "Tidier";
 "menubar.place.off" = "Ne";
 "menubar.systemItems" = "Systémové položky";
+"sysitem.inputmenu" = "Emoji a symboly";
+"sysitem.wifi" = "Wi-Fi";
+"sysitem.nowplaying" = "Právě hraje";
