@@ -417,20 +417,34 @@ final class StatusBarController {
     /// on-screen items, match the one with the SAME stable key, and click it in place. No
     /// moving, and no owner guessing (that would hit the first Item-0 = the wrong app).
     private func clickHiddenItem(matching item: BarItem, threshold: CGFloat) {
-        let all = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
-        guard let t = all.first(where: { $0.key == item.key }) else { return }
-        // A few items report AXPress "success" but do nothing (e.g. Gemini's launcher) —
-        // for those a synthetic click is what actually activates them.
-        if let b = bundleId(fromKey: t.key), Self.clickPreferBundles.contains(b) {
-            postClick(atX: t.info.centerX, y: t.info.centerY)
+        // 1) On-screen after the reveal? Re-resolve and match by stable key, click in place.
+        let onscreen = TidierBar.makeGroups(from: hiddenCandidates()).flatMap { $0.items }
+        if let t = onscreen.first(where: { $0.key == item.key }) {
+            activate(key: t.key, atX: t.info.centerX, y: t.info.centerY)
             return
         }
-        // Prefer the accessibility press (reliable, and it keeps the item's menu open until
-        // the user clicks elsewhere); fall back to a synthetic click only if the element
-        // exposes no working press action at all.
-        if !AXResolver.press(at: t.info.centerX, y: t.info.centerY) {
-            postClick(atX: t.info.centerX, y: t.info.centerY)
+        // 2) Still obscured under the notch (didn't fit). Find its live window by its stable
+        // window id, stage it onto a visible slot, activate it there. The reveal-collapse
+        // afterwards re-hides it (reHideEscapedItems), so it never lingers in the bar.
+        let raws = CaptureEngine.scanAll()
+        guard let barY = raws.first(where: { $0.x >= 0 })?.info.centerY,
+              let target = raws.first(where: { Int($0.id) == item.info.id }) else { return }
+        MoveEngine.move(windowID: target.id, pid: target.pid, toX: threshold - 40, menuBarY: barY)
+        usleep(340_000)
+        if let staged = CaptureEngine.scanAll().first(where: { $0.id == target.id }) {
+            activate(key: item.key, atX: staged.x + staged.w / 2, y: staged.y + staged.h / 2)
         }
+    }
+
+    /// Activate the real item at a screen point: accessibility press (keeps the item's menu
+    /// open), with a synthetic click for the few bundles whose AXPress is a no-op, or as a
+    /// fallback when no press action exists.
+    private func activate(key: String, atX x: CGFloat, y: CGFloat) {
+        if let b = bundleId(fromKey: key), Self.clickPreferBundles.contains(b) {
+            postClick(atX: x, y: y)
+            return
+        }
+        if !AXResolver.press(at: x, y: y) { postClick(atX: x, y: y) }
     }
 
     /// Bundles whose status item ignores AXPress → activate them with a synthetic click.
@@ -504,6 +518,10 @@ final class StatusBarController {
         disarmRevealCollapse()
         restoreOwnItems()   // activation shrank the toggle; bring it back
         ensureCollapsed()
+        // If activating an obscured item staged it on-screen, tuck it back into hiding.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            self?.reHideEscapedItems()
+        }
     }
 
     private func closeTile() {
