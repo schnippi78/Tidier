@@ -232,11 +232,13 @@ final class StatusBarController {
     /// more past the notch so they can be captured.
     private func shrinkOwnItems() {
         mainItem.length = 1
+        mainItem.button?.image = nil    // hide the 1px chevron sliver during a reveal
         hiddenSep.length = 1
         alwaysSep?.length = 1
     }
     private func restoreOwnItems() {
         mainItem.length = normalLength
+        applyLayout()                   // brings the chevron back
     }
 
     private var buildingCache = false
