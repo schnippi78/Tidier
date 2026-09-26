@@ -231,8 +231,12 @@ final class TidierBar: NSObject, NSWindowDelegate {
         if let t = resolved?.title?.lowercased(),
            t.contains("bildschirmaufnahme") || t.contains("screen recording") || t.contains("recording") { return nil }
         let isApple: Bool = {
-            if let b = resolved?.bundleId { return b == "com.apple.controlcenter" || b.hasPrefix("com.apple.") }
-            return info.isSystem
+            // A known system window name (Bluetooth/WiFi/Battery/…) is authoritative — the AX
+            // resolve can mis-hit a neighbour when the item is obscured and then wrongly land
+            // the tile under "Apps" instead of "Apple & System".
+            if info.isSystem { return true }
+            if let b = resolved?.bundleId { return b.hasPrefix("com.apple.") }
+            return false
         }()
         var label = label(for: info, resolved: resolved, isApple: isApple)
         let key = stableKey(info: info, resolved: resolved, label: label)

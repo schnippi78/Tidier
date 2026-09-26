@@ -631,11 +631,10 @@ final class StatusBarController {
 
     private func handleHover() {
         guard Preferences.shared.revealOnHover, !tileOpen, !arranging else { return }
-        let loc = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(loc) }) ?? NSScreen.main else { return }
-        let menuBarHeight = screen.frame.maxY - screen.visibleFrame.maxY
-        let strip = max(menuBarHeight, 24)
-        if loc.y >= screen.frame.maxY - strip {
+        // Open ONLY when the pointer is actually over Tidier's toggle button — not anywhere
+        // along the menu bar (which would trigger on the clock, Control Center, …).
+        guard let frame = mainItem.button?.window?.frame else { return }
+        if frame.insetBy(dx: -3, dy: -3).contains(NSEvent.mouseLocation) {
             openTile()
         }
     }
