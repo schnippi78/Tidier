@@ -440,22 +440,20 @@ final class StatusBarController {
     /// open), with a synthetic click for the few bundles whose AXPress is a no-op, or as a
     /// fallback when no press action exists.
     private func activate(key: String, atX x: CGFloat, y: CGFloat) {
-        if let b = bundleId(fromKey: key), Self.clickPreferBundles.contains(b) {
-            postClick(atX: x, y: y)
+        if Self.prefersSyntheticClick(key: key) {
+            postClick(atX: x, y: y)          // AXPress is a no-op for these — a real click works
             return
         }
         if !AXResolver.press(at: x, y: y) { postClick(atX: x, y: y) }
     }
 
-    /// Bundles whose status item ignores AXPress → activate them with a synthetic click.
-    private static let clickPreferBundles: Set<String> = ["com.google.GeminiMacOS.launcher"]
-
-    /// Extract the bundle id embedded in a "b:<bundle>#…" stable key.
-    private func bundleId(fromKey key: String) -> String? {
-        guard key.hasPrefix("b:") else { return nil }
-        let rest = key.dropFirst(2)
-        if let hash = rest.firstIndex(of: "#") { return String(rest[..<hash]) }
-        return String(rest)
+    /// Some status items report AXPress "success" but do nothing (ChatGPT, Gemini) — those
+    /// need a synthetic click. Match on the key so it works whether or not a bundle id
+    /// resolved (ChatGPT's helper exposes none, so it keys by name).
+    private static let syntheticClickHints = ["geminimacos", "chatgpt"]
+    private static func prefersSyntheticClick(key: String) -> Bool {
+        let low = key.lowercased()
+        return syntheticClickHints.contains { low.contains($0) }
     }
 
     /// Post a left click at a menu-bar point. CGWindow bounds share CGEvent's top-left
