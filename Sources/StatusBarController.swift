@@ -180,8 +180,7 @@ final class StatusBarController {
 
     private func configureSeparatorButton(_ button: NSStatusBarButton?, dim: Bool) {
         guard let b = button else { return }
-        b.image = symbol("line.diagonal")
-        b.image?.isTemplate = true
+        b.image = nil                    // marker only appears in Arrange mode (see applyLayout)
         b.appearsDisabled = dim
         b.target = self
         b.action = #selector(mainClicked)
@@ -590,12 +589,14 @@ final class StatusBarController {
         hiddenSep.length = (expanded || arranging) ? sepLength : collapsedLength
         alwaysSep?.length = (revealingAlways || arranging) ? sepLength : collapsedLength
         mainItem.button?.image = symbol(expanded ? "chevron.right" : "chevron.left")
-        // Mark the hidden-separator clearly while arranging: it is the "hidden ↔ visible"
-        // boundary the user drags items across.
+        // The separators only need a visible marker while ARRANGING (the "hidden ↔ visible"
+        // boundary the user ⌘-drags across). During a normal reveal — e.g. activating an item
+        // — show no glyph, so no stray mark appears between the real menu bar icons.
         if let b = hiddenSep.button {
-            b.image = symbol(arranging ? "arrow.left.and.right" : "line.diagonal")
+            b.image = arranging ? symbol("arrow.left.and.right") : nil
             b.image?.isTemplate = true
         }
+        alwaysSep?.button?.image = nil
     }
 
     // MARK: - Arrange mode
