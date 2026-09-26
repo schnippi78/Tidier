@@ -231,14 +231,13 @@ final class StatusBarController {
     /// so the user's items shift right into that freed space — squeezing one or two
     /// more past the notch so they can be captured.
     private func shrinkOwnItems() {
-        mainItem.length = 1
-        mainItem.button?.image = nil    // hide the 1px chevron sliver during a reveal
+        // Keep the toggle at full width — the user wants the chevron always visible; only
+        // the (invisible) separators collapse to claw back a little room during a reveal.
         hiddenSep.length = 1
         alwaysSep?.length = 1
     }
     private func restoreOwnItems() {
-        mainItem.length = normalLength
-        applyLayout()                   // brings the chevron back
+        applyLayout()                   // restore separator lengths + chevron
     }
 
     private var buildingCache = false
