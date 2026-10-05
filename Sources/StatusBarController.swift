@@ -41,6 +41,10 @@ final class StatusBarController {
     /// visible bar shuffle happens only when something really changed, never on a blind timer.
     private var watchTimer: Timer?
     private var lastBarSignature = ""
+    /// Real captured tiles from the last full (startup) capture, keyed by a stable app id
+    /// (bundle id / system name). Lets the background refresh update the panel on app
+    /// launch/quit WITHOUT revealing or moving anything — no visible menu-bar shuffle.
+    private var itemCacheByAppId: [String: BarItem] = [:]
 
     init() {
         StatusBarController.shared = self
@@ -113,10 +117,64 @@ final class StatusBarController {
         let sig = barSignature()
         guard sig != lastBarSignature else { return }
         lastBarSignature = sig
-        // An app added/removed its status item → re-capture via the reveal (non-destructive).
-        // We can't identify items without resolving them on-screen, so a full reveal-capture
-        // is the correct update; it only runs on real launch/quit, and never moves items.
-        rebuildFullCache()
+        // An app added/removed its status item. Update the panel INVISIBLY — no reveal, no
+        // moving (that caused the nervous menu-bar shuffle). Known items reuse their cached
+        // glyph; a newly-appeared on-screen item is captured in place; a new obscured one
+        // gets its app icon until the next full capture.
+        invisibleRefresh()
+    }
+
+    /// Rebuild the detected list from a plain (off-screen-inclusive) scan, reusing cached
+    /// glyphs so nothing in the real menu bar moves or flashes.
+    private func invisibleRefresh() {
+        var items: [BarItem] = []
+        var seenKeys = Set<String>()
+        for r in CaptureEngine.scanAll() {
+            if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
+            if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
+            if r.name == "Clock" || r.name == "BentoBox-0" { continue }
+            let id = canonicalAppId(r)
+            let built: BarItem?
+            if let cached = itemCacheByAppId[id] {
+                built = cached                                   // reuse real glyph, no work
+            } else if ItemCapture.image(forWindow: Int(r.id)) != nil, let made = TidierBar.makeItem(from: r.info) {
+                itemCacheByAppId[id] = made                      // new & on-screen → capture in place
+                built = made
+            } else {
+                built = fallbackItem(for: r)                     // new & obscured → app-icon stand-in
+            }
+            if let b = built, seenKeys.insert(b.key).inserted { items.append(b) }
+        }
+        guard !items.isEmpty else { return }
+        ScannerModel.shared.detected = items
+        applyItemFilter()
+    }
+
+    /// A stable per-app identity that is the SAME whether the item is on-screen or hidden:
+    /// off-screen items report their bundle id as the window name, on-screen ones report
+    /// "Item-0" (then we resolve the bundle); system modules report a fixed name both ways.
+    private func canonicalAppId(_ r: CaptureEngine.Raw) -> String {
+        if r.name != "Item-0" && !r.name.isEmpty { return r.name }
+        if let b = AXResolver.resolve(at: r.info.centerX, y: r.info.centerY)?.bundleId { return b }
+        return "pid:\(r.pid)"
+    }
+
+    /// Stand-in tile for a new, currently-obscured third-party item (bundle id = window name):
+    /// its app icon + name. Replaced by the real glyph at the next full capture.
+    private func fallbackItem(for r: CaptureEngine.Raw) -> BarItem? {
+        guard r.name.contains("."), r.name != "Item-0" else { return nil }
+        let app = NSRunningApplication(processIdentifier: r.pid)
+        let label = TidierBar.cleanAppName(app?.localizedName ?? r.name)
+        return BarItem(info: r.info, image: app?.icon,
+                       symbolName: app?.icon == nil ? "app.dashed" : nil,
+                       label: label, isApple: r.name.hasPrefix("com.apple."),
+                       key: "b:" + r.name + "#Item-0")
+    }
+
+    private func cacheId(for item: BarItem) -> String {
+        if item.key.hasPrefix("b:") { return String(item.key.dropFirst(2).prefix { $0 != "#" }) }
+        if item.key.hasPrefix("n:") { return String(item.key.dropFirst(2)) }
+        return item.key
     }
 
     // MARK: - Build
@@ -270,6 +328,7 @@ final class StatusBarController {
                 self.applyLayout()
                 if !items.isEmpty {
                     ScannerModel.shared.detected = items      // full list (Settings shows all)
+                    for it in items { self.itemCacheByAppId[self.cacheId(for: it)] = it }  // real glyphs for invisible refreshes
                     self.applyItemFilter()                    // panel shows only the chosen ones
                     self.lastBarSignature = self.barSignature()
                 }

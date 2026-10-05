@@ -322,7 +322,7 @@ final class TidierBar: NSObject, NSWindowDelegate {
 
     /// Tidy raw app names for the tile: strip "Helper"/"Agent" suffixes ("ChatGPTHelper"
     /// → "ChatGPT") and shorten a few long official names ("Google Chrome" → "Chrome").
-    private static func cleanAppName(_ a: String) -> String {
+    static func cleanAppName(_ a: String) -> String {
         if let short = ["Google Chrome": "Chrome", "Microsoft Edge": "Edge"][a] { return short }
         var s = a
         for suffix in [" Helper", "Helper", " Agent", "Agent", " (GPU)"] where s.hasSuffix(suffix) {
