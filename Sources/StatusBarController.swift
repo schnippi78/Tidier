@@ -41,11 +41,6 @@ final class StatusBarController {
     /// visible bar shuffle happens only when something really changed, never on a blind timer.
     private var watchTimer: Timer?
     private var lastBarSignature = ""
-    /// Real captured glyphs keyed by a stable app id (bundle id / system name). PERSISTED to
-    /// disk, so after the first capture the panel is filled instantly on launch — only a
-    /// genuinely new/unknown icon still needs a (one-time) capture. No glyph in cache = no
-    /// menu-bar shuffle at startup.
-    private var itemCacheByAppId: [String: CachedGlyph] = [:]
 
     init() {
         StatusBarController.shared = self
@@ -59,17 +54,18 @@ final class StatusBarController {
         NotificationCenter.default.addObserver(
             self, selector: #selector(prefsChanged),
             name: .tidierPrefsChanged, object: nil)
-        loadGlyphCache()   // real glyphs remembered from previous launches
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            guard let self = self else { return }
-            // At launch the icons are still visible (before we hide them) — capture whatever is
-            // on-screen now, with NO shuffle, and fill the panel. Then settle into resting.
-            let needsFull = self.invisibleRefresh()
-            self.collapseToResting()
-            // Only if some icon is in the notch-overflow (couldn't be captured on-screen AND
-            // isn't in the persisted cache) do we run the one visible move-capture to learn it.
-            if needsFull { self.rebuildFullCache() }
-            self.startAutoRefresh()
+            self?.refreshCache()
+            self?.collapseToResting()
+            // Let the collapse settle before the capture reveals again — otherwise items are
+            // still in flight and the move-capture misses most of them.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+                // ONE full move-capture at launch: reveals + stages the notch-overflow icons so
+                // ALL items (incl. ChatGPT/Spotlight/Emoji) get a real glyph. This is the only
+                // visible shuffle; from here the background keeps the list current invisibly.
+                self?.rebuildFullCache()
+                self?.startAutoRefresh()
+            }
         }
     }
 
@@ -120,93 +116,31 @@ final class StatusBarController {
         let sig = barSignature()
         guard sig != lastBarSignature else { return }
         lastBarSignature = sig
-        // An app added/removed its status item. Update the panel INVISIBLY — no reveal, no
-        // moving (that caused the nervous menu-bar shuffle). Known items reuse their cached
-        // glyph; a newly-appeared on-screen item is captured in place; a new obscured one
-        // gets its app icon until the next full capture.
         invisibleRefresh()
     }
 
-    /// Rebuild the detected list from a plain (off-screen-inclusive) scan, reusing cached
-    /// glyphs so nothing in the real menu bar moves or flashes. Returns true if some obscured
-    /// item had no cached glyph (so a one-time full capture would improve it).
-    @discardableResult
-    private func invisibleRefresh() -> Bool {
-        let cacheCountBefore = itemCacheByAppId.count
-        var items: [BarItem] = []
-        var seenKeys = Set<String>()
-        var missingObscured = false
-        for r in CaptureEngine.scanAll() {
+    /// Keep the detected list current on app launch/quit WITHOUT any reveal or move — purely
+    /// incremental over the live window ids (session-stable): drop items whose window vanished
+    /// (app quit), add newly-appeared items we can capture on-screen now. The notch-overflow
+    /// items captured at startup are kept (their window ids persist), never rebuilt — macOS
+    /// gives them no stable identity while hidden, so a rebuild-from-scratch would lose them.
+    private func invisibleRefresh() {
+        let raws = CaptureEngine.scanAll()
+        let liveIds = Set(raws.map { Int($0.id) })
+        var detected = ScannerModel.shared.detected
+        detected.removeAll { !liveIds.contains($0.info.id) }                  // app quit → gone
+        let known = Set(detected.map { $0.info.id })
+        for r in raws where !known.contains(Int(r.id)) {                      // newly appeared
             if r.owner == "Tidier" || r.name.hasPrefix("Tidier") { continue }
             if r.name.hasPrefix("com.bjango.istatmenus.") { continue }
             if r.name == "Clock" || r.name == "BentoBox-0" { continue }
-            let id = canonicalAppId(r)
-            let built: BarItem?
-            if let cached = itemCacheByAppId[id] {
-                built = cached.tile(for: r.info)                 // cached glyph + current window id
-            } else if ItemCapture.image(forWindow: Int(r.id)) != nil, let made = TidierBar.makeItem(from: r.info) {
-                itemCacheByAppId[id] = CachedGlyph(from: made)   // new & on-screen → capture in place
-                built = made
-            } else {
-                built = fallbackItem(for: r)                     // new & obscured → app-icon stand-in
-                if built != nil { missingObscured = true }
-            }
-            if let b = built, seenKeys.insert(b.key).inserted { items.append(b) }
+            guard ItemCapture.image(forWindow: Int(r.id)) != nil,            // only if visible now
+                  let made = TidierBar.makeItem(from: r.info),
+                  !detected.contains(where: { $0.key == made.key }) else { continue }
+            detected.append(made)
         }
-        if !items.isEmpty {
-            ScannerModel.shared.detected = items
-            applyItemFilter()
-        }
-        if itemCacheByAppId.count > cacheCountBefore { saveGlyphCache() }   // persist newly-learned glyphs
-        return missingObscured
-    }
-
-    // MARK: - Persistent glyph cache
-
-    private var glyphCacheURL: URL? {
-        let fm = FileManager.default
-        guard let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-        let folder = dir.appendingPathComponent("Tidier", isDirectory: true)
-        try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
-        return folder.appendingPathComponent("glyphcache.json")
-    }
-
-    private func loadGlyphCache() {
-        guard let url = glyphCacheURL, let data = try? Data(contentsOf: url),
-              let dict = try? JSONDecoder().decode([String: CachedGlyph].self, from: data) else { return }
-        itemCacheByAppId = dict
-    }
-
-    private func saveGlyphCache() {
-        guard let url = glyphCacheURL, let data = try? JSONEncoder().encode(itemCacheByAppId) else { return }
-        try? data.write(to: url, options: .atomic)
-    }
-
-    /// A stable per-app identity that is the SAME whether the item is on-screen or hidden:
-    /// off-screen items report their bundle id as the window name, on-screen ones report
-    /// "Item-0" (then we resolve the bundle); system modules report a fixed name both ways.
-    private func canonicalAppId(_ r: CaptureEngine.Raw) -> String {
-        if r.name != "Item-0" && !r.name.isEmpty { return r.name }
-        if let b = AXResolver.resolve(at: r.info.centerX, y: r.info.centerY)?.bundleId { return b }
-        return "pid:\(r.pid)"
-    }
-
-    /// Stand-in tile for a new, currently-obscured third-party item (bundle id = window name):
-    /// its app icon + name. Replaced by the real glyph at the next full capture.
-    private func fallbackItem(for r: CaptureEngine.Raw) -> BarItem? {
-        guard r.name.contains("."), r.name != "Item-0" else { return nil }
-        let app = NSRunningApplication(processIdentifier: r.pid)
-        let label = TidierBar.cleanAppName(app?.localizedName ?? r.name)
-        return BarItem(info: r.info, image: app?.icon,
-                       symbolName: app?.icon == nil ? "app.dashed" : nil,
-                       label: label, isApple: r.name.hasPrefix("com.apple."),
-                       key: "b:" + r.name + "#Item-0")
-    }
-
-    private func cacheId(for item: BarItem) -> String {
-        if item.key.hasPrefix("b:") { return String(item.key.dropFirst(2).prefix { $0 != "#" }) }
-        if item.key.hasPrefix("n:") { return String(item.key.dropFirst(2)) }
-        return item.key
+        ScannerModel.shared.detected = detected
+        applyItemFilter()
     }
 
     // MARK: - Build
@@ -346,7 +280,7 @@ final class StatusBarController {
         shrinkOwnItems()
         let threshold = mainItem.button?.window?.frame.minX ?? 1200
         DispatchQueue.global().async { [weak self] in
-            usleep(350_000)
+            usleep(650_000)
             let y = CaptureEngine.scanAll().first(where: { $0.x >= 0 })?.info.centerY ?? 12
             // Move-capture: obscured (notch-overflow) items are briefly staged on-screen,
             // captured, and moved back to their original hidden slot. Preserves the arrangement.
@@ -360,8 +294,6 @@ final class StatusBarController {
                 self.applyLayout()
                 if !items.isEmpty {
                     ScannerModel.shared.detected = items      // full list (Settings shows all)
-                    for it in items { self.itemCacheByAppId[self.cacheId(for: it)] = CachedGlyph(from: it) }
-                    self.saveGlyphCache()                     // persist real glyphs for future launches
                     self.applyItemFilter()                    // panel shows only the chosen ones
                     self.lastBarSignature = self.barSignature()
                 }
@@ -835,33 +767,5 @@ final class StatusBarController {
         setupHover()
         applyLayout()
         applyItemFilter()   // reflect show/hide selection (also re-presents an open panel)
-    }
-}
-
-/// A captured menu-bar glyph without any live window geometry — safe to persist across
-/// launches and reattach to the current window on reuse.
-struct CachedGlyph: Codable {
-    let key: String
-    let label: String
-    let isApple: Bool
-    let symbolName: String?
-    let imagePNG: Data?
-
-    init(from item: BarItem) {
-        key = item.key; label = item.label; isApple = item.isApple
-        symbolName = item.symbolName; imagePNG = item.image?.pngData()
-    }
-    var image: NSImage? { imagePNG.flatMap { NSImage(data: $0) } }
-
-    /// Rebuild a tile for the CURRENT live window (`info`) using this cached glyph.
-    func tile(for info: MenuBarItemInfo) -> BarItem {
-        BarItem(info: info, image: image, symbolName: symbolName, label: label, isApple: isApple, key: key)
-    }
-}
-
-extension NSImage {
-    func pngData() -> Data? {
-        guard let tiff = tiffRepresentation, let rep = NSBitmapImageRep(data: tiff) else { return nil }
-        return rep.representation(using: .png, properties: [:])
     }
 }
