@@ -14,15 +14,22 @@ der App, ohne Systemsprache zu ändern.
 
 ## Status (MVP, v0.1.0)
 
+> ⚠️ **macOS 26/27-Hinweis:** Ab macOS 27.0.1 ist das **Ausblenden** fremder
+> Menüleisten-Items über öffentliche APIs **nicht mehr möglich** (betrifft Ice/Bartender
+> genauso). Apple hat alle drei genutzten Mechanismen geschlossen — Details und die noch
+> funktionierenden Teile (AX-Enumeration, Umsortieren per ⌘-Drag, Panel/Launcher) in
+> [`docs/MACOS27.md`](docs/MACOS27.md). Das Hide-Feature ist bis auf Weiteres **pausiert**.
+> Die Zustandstabelle unten beschreibt den Stand auf macOS ≤ 15.
+
 | Bereich | Zustand |
 |---|---|
 | Nativer Build (Swift 6 / AppKit + SwiftUI) | ✅ kompiliert & läuft (macOS 14+) |
-| Verstecken/Zeigen von Menüleisten-Items | ✅ **live verifiziert** — 1 Klick versteckt out-of-the-box alle Icons links des Trenners |
+| Verstecken/Zeigen von Menüleisten-Items | ✅ macOS ≤ 15 — 1 Klick versteckt alle Icons links des Trenners · ☠️ **macOS 26/27: nicht mehr möglich** (s. `docs/MACOS27.md`) |
 | Aktive Positionierung (Umschalter rechts vorbelegt) | ✅ Seeding der „Preferred Position" → kein manuelles ⌘-Drag nötig |
 | **Tidier Bar** (Panel für versteckte Items, Control-Center-Look) | ✅ fertig: elegantes NSPanel, gruppiert Apple/System · Drittanbieter, echte App-Icons + SF-Symbole, echte Namen (AX), schließt bei Klick außerhalb |
 | Icons nur in der Kachel (Leiste bleibt sauber) | ✅ Ruhezustand eingeklappt; Klick öffnet/schließt nur die Kachel |
 | — Kacheln anklickbar (Item aktivieren) + selbst anordnen | ⏳ geplant (Klick-Weiterleitung + Repositioning) |
-| Berechtigung | nur **Bedienungshilfen** nötig (Screen-Recording optional); ⚠️ Rebuild resettet TCC bei Selbst-Signatur → `tccutil reset` + neu erlauben, dauerhaft erst mit Developer-ID |
+| Berechtigung | **Bedienungshilfen** (+ Screen-Recording für Glyph-Capture/Enumeration); ✅ TCC überlebt jetzt Rebuilds dank stabiler Selbst-Signatur „Tidier Self-Signed" (`build.sh`, signiert per SHA-1-Hash) |
 | „Immer ausgeblendet"-Sektion | ✅ zuschaltbar |
 | Auto-Rehide (mit Intervall) | ✅ |
 | Reveal-on-Hover | ✅ (Basis) |

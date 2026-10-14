@@ -27,10 +27,12 @@ cp -R Resources/*.lproj "$CONTENTS/Resources/"
 
 # Stable self-signed identity so TCC permissions (Accessibility, Screen Recording)
 # survive rebuilds. Falls back to ad-hoc if the identity isn't present.
-SIGN_ID="Tidier Self-Signed"
-if security find-identity -p codesigning 2>/dev/null | grep -q "$SIGN_ID"; then
-  echo "Signing ($SIGN_ID)…"
-  codesign --force --deep --sign "$SIGN_ID" --identifier de.csho.Tidier "$OUT/$APP" >/dev/null 2>&1 || true
+# Resolve by SHA-1 hash, not name: codesign treats two certs of the same name as
+# "ambiguous" and refuses, so matching the exact valid identity is safer.
+SIGN_HASH=$(security find-identity -v -p codesigning 2>/dev/null | awk '/Tidier Self-Signed/{print $2; exit}')
+if [ -n "$SIGN_HASH" ]; then
+  echo "Signing (Tidier Self-Signed $SIGN_HASH)…"
+  codesign --force --deep --sign "$SIGN_HASH" --identifier de.csho.Tidier "$OUT/$APP" || echo "  codesign FAILED"
 else
   echo "Signing (ad-hoc — stable identity not found)…"
   codesign --force --deep --sign - "$OUT/$APP" >/dev/null 2>&1 || true

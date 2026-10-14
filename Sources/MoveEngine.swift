@@ -11,6 +11,12 @@ import CoreGraphics
 /// This is an independent implementation built only on public CoreGraphics event APIs and
 /// the documented behaviour of ⌘-dragging menu-bar items. The event fields used below are
 /// the standard CGEvent fields the window server consults to pick the receiving window.
+///
+/// ⚠️ macOS 27 (2026-10): the window-number routing below is INERT. Status items are no
+/// longer individual CGWindows (the whole bar is one composited "Menubar" window), so there
+/// is no per-item window number to address. On macOS 27 the only working move primitive is a
+/// synthetic ⌘-drag at REAL on-screen coordinates, and items can only be *reordered* (never
+/// pushed off-screen). Hiding is therefore not possible on macOS 27. See docs/MACOS27.md.
 enum MoveEngine {
 
     /// A point well outside every display. The button-down happens here so it can never
