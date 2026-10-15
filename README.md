@@ -15,10 +15,12 @@ der App, ohne Systemsprache zu ändern.
 ## Status (MVP, v0.1.0)
 
 > ⚠️ **macOS 26/27-Hinweis:** Ab macOS 27.0.1 ist das **Ausblenden** fremder
-> Menüleisten-Items über öffentliche APIs **nicht mehr möglich** (betrifft Ice/Bartender
-> genauso). Apple hat alle drei genutzten Mechanismen geschlossen — Details und die noch
-> funktionierenden Teile (AX-Enumeration, Umsortieren per ⌘-Drag, Panel/Launcher) in
-> [`docs/MACOS27.md`](docs/MACOS27.md). Das Hide-Feature ist bis auf Weiteres **pausiert**.
+> Menüleisten-Items über **öffentliche** APIs **nicht mehr möglich** (alle drei bisher
+> genutzten Mechanismen geschlossen). Verstecken geht weiterhin nur noch über **private
+> WindowServer-APIs** (SkyLight/CGS) in einer unsandboxed + notarisierten App — so machen
+> es Bartender 7, BetterTouchTool und Bar Keeper's Friend. Details, Belege und die noch
+> öffentlich funktionierenden Teile (AX-Enumeration, Umsortieren, Panel/Launcher) in
+> [`docs/MACOS27.md`](docs/MACOS27.md). Das Hide-Feature ist **pausiert** (Richtung offen).
 > Die Zustandstabelle unten beschreibt den Stand auf macOS ≤ 15.
 
 | Bereich | Zustand |

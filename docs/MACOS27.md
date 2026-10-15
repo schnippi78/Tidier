@@ -5,14 +5,26 @@ die Menüleisten-Icons nicht mehr ausblenden können, und was stattdessen noch g
 
 ## Kurzfassung
 
-Auf macOS 27 ist das **Ausblenden fremder Menüleisten-Items über öffentliche APIs
-nicht mehr möglich**. Apple hat alle drei Mechanismen geschlossen, auf denen die
-etablierten Menüleisten-Manager beruhten. Reines Umsortieren der Items ist weiterhin
-möglich, blendet aber nichts aus.
+Auf macOS 27 ist das **Ausblenden fremder Menüleisten-Items über ÖFFENTLICHE APIs
+nicht mehr möglich** (empirisch verifiziert, s. u.; unabhängig bestätigt von
+`menubar-hide`, das auf macOS 27 „Panel mode and Icon Arrangement" deaktiviert).
 
-**Entscheidung: Feature pausiert** und als „unter macOS 27 nicht unterstützt"
-dokumentiert, bis Apple das Verhalten wieder öffnet. Kein Private-API-Weg (zu fragil
-für ein verkaufbares/spendenfinanziertes Produkt).
+**Verstecken ist aber NICHT generell tot:** Die kommerzielle Konkurrenz
+(**Bartender 7 GoldenGate**, **BetterTouchTool**, **Bar Keeper's Friend**) versteckt
+weiter — über **private WindowServer-APIs** (SkyLight/CGS). Zitat Bar Keeper's Friend:
+*„Moving other apps' menu bar items needs private WindowServer APIs and an app that is
+not sandboxed."* Genau deshalb „Bartender no longer touches your mouse to move items" —
+der synthetische ⌘-Drag ist durch einen direkten privaten API-Aufruf ersetzt.
+
+**Preis des privaten Wegs:** App muss **unsandboxed** laufen, **Developer-ID-signiert +
+notarisiert** sein (99 $/Jahr Apple-Account), und die Funktionen sind undokumentiert →
+**brechen zwischen Point-Releases** (26.1 → 26.5 hat sich schon verändert). Für ein
+verkaufbares Produkt machbar (Bartender tut es), aber dauerhafter Wartungsaufwand.
+
+**Aktuelle Entscheidung (2026-10-14): Feature pausiert.** Noch offen, ob Tidier den
+privaten-API-Weg geht (Richtungsfrage mit Christian). Referenz-Implementierungen zum
+Studieren: **Thaw** (aktiv gepflegter Ice-Fork), **Bar Keeper's Friend** (nativ, Tahoe
+26+, unsandboxed), Ices Tahoe-Dev-Branch.
 
 ## Was kaputt ist
 
@@ -103,9 +115,16 @@ geminimacos) brauchen einen synthetischen Klick.
 
 ## Fazit / Richtung
 
-- Ehrlicher Weg für die Zukunft, falls das Feature wiederbelebt wird: **Panel/Launcher +
-  Umsortieren** (beides verifiziert), kein echtes Verstecken.
-- Private-API-Hide (SkyLight o.ä.) bewusst verworfen: fragil, bricht bei Updates,
-  Notarisierungs-/Entitlement-Risiko.
-- Monitoring: bei jedem macOS-Update erneut prüfen, ob Apple Layer-25-Fenster oder die
-  `.length`-Layout-Reservierung zurückbringt.
+Zwei realistische Wege (Entscheidung offen):
+
+1. **Privater-WindowServer-API-Weg** (wie Bartender 7 / BKF / BetterTouchTool) — der
+   EINZIGE Weg, der auf macOS 27 fremde Items wirklich versteckt. Voraussetzungen:
+   unsandboxed, Developer-ID + Notarisierung, undokumentierte SkyLight/CGS-Funktionen
+   (reverse-engineeren aus Thaw / Bar Keeper's Friend / Ice-Tahoe-Branch). Fragil über
+   Point-Releases, aber kommerziell erprobt. Konkrete Funktionsnamen noch zu ermitteln.
+2. **Öffentlich-sauberer Weg** — **Panel/Launcher + Umsortieren** (beides verifiziert),
+   KEIN echtes Verstecken; macOS 27 übernimmt das Überlauf-Verstecken selbst („«" /
+   Systemeinstellungen → Menüleiste). Stabil, kein Private-API-Risiko.
+
+Monitoring: bei jedem macOS-Update prüfen, ob Apple Layer-25-Fenster oder die
+`.length`-Layout-Reservierung zurückbringt (würde Weg 2 wieder zum Vollversteck machen).
