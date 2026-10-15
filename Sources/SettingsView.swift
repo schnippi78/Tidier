@@ -194,7 +194,21 @@ private struct MenuBarTab: View {
                 .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
             }
 
-            Text("Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst. System-Symbole (WLAN, Batterie, Uhr …) bleiben immer sichtbar.")
+            Text("Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("System-Symbole").font(.headline).padding(.top, 4)
+            VStack(spacing: 0) {
+                ForEach(Array(MenuBarHideEngine.knownSystemItems.enumerated()), id: \.element.id) { i, item in
+                    SystemItemRow(item: item, prefs: prefs)
+                    if i < MenuBarHideEngine.knownSystemItems.count - 1 { Divider() }
+                }
+            }
+            .padding(.horizontal, 10)
+            .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
+
+            Text("Spotlight, Siri und die Eingabequelle lassen sich systembedingt nicht ausblenden.")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -326,6 +340,25 @@ private struct MenuBarTab: View {
         } else {
             Image(systemName: item.isApple ? "gearshape.2" : "app.dashed").foregroundStyle(.secondary)
         }
+    }
+}
+
+/// One system-item row in the macOS 27 hide list (WLAN, Bluetooth, Batterie, …). Flat struct.
+private struct SystemItemRow: View {
+    let item: MenuBarHideEngine.SystemItem
+    @ObservedObject var prefs: Preferences
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: item.symbol).frame(width: 22, height: 18).foregroundStyle(.secondary)
+            Text(item.label).lineLimit(1)
+            Spacer(minLength: 8)
+            Toggle("", isOn: Binding(
+                get: { !prefs.isSystemItemHidden(item.id) },
+                set: { prefs.setSystemItem(item.id, hidden: !$0) }))
+                .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+        }
+        .padding(.vertical, 7)
     }
 }
 

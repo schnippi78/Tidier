@@ -35,6 +35,7 @@ enum PrefKey {
     static let hiddenItems        = "hiddenItems"   // stable keys the user hid from the panel
     static let barPinnedItems     = "barPinnedItems" // stable keys pinned to the real menu bar
     static let hiddenBundleIDs    = "hiddenBundleIDs" // macOS 27: app bundle ids to hide when collapsed
+    static let hiddenSystemItems  = "hiddenSystemItemIDs" // macOS 27: MBSystemItemIdentifier numbers to hide
 }
 
 /// Where a menu bar item lives, as chosen per item in Settings.
@@ -125,6 +126,21 @@ final class Preferences: ObservableObject {
         var s = hiddenBundleIDs
         if hidden { s.insert(id) } else { s.remove(id) }
         hiddenBundleIDs = s
+    }
+
+    /// macOS 27: system menu-bar items (by MBSystemItemIdentifier number) the user chose to hide.
+    var hiddenSystemItemIDs: Set<Int> {
+        get {
+            let raw = d.array(forKey: PrefKey.hiddenSystemItems) ?? []
+            return Set(raw.compactMap { ($0 as? NSNumber)?.intValue ?? Int("\($0)") })
+        }
+        set { d.set(Array(newValue), forKey: PrefKey.hiddenSystemItems); changed() }
+    }
+    func isSystemItemHidden(_ id: Int) -> Bool { hiddenSystemItemIDs.contains(id) }
+    func setSystemItem(_ id: Int, hidden: Bool) {
+        var s = hiddenSystemItemIDs
+        if hidden { s.insert(id) } else { s.remove(id) }
+        hiddenSystemItemIDs = s
     }
 
     /// Stable item keys the user pinned to stay visible in the real menu bar.

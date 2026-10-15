@@ -31,6 +31,27 @@ final class MenuBarHideEngine {
     /// builds visible too.
     static let allowedSystemItems: [NSNumber] = (0..<64).map { NSNumber(value: $0) }
 
+    /// A hideable system menu-bar item (MBSystemItemIdentifier) with a label + SF symbol for
+    /// the Settings list. Items addressed by bundle id (Siri/Spotlight/…) aren't here — they're
+    /// in `alwaysAllowedBundleIDs`.
+    struct SystemItem { let id: Int; let label: String; let symbol: String }
+    static let knownSystemItems: [SystemItem] = [
+        .init(id: 6, label: "WLAN",            symbol: "wifi"),
+        .init(id: 1, label: "Bluetooth",       symbol: "dot.radiowaves.left.and.right"),
+        .init(id: 0, label: "Batterie",        symbol: "battery.100"),
+        .init(id: 5, label: "Lautstärke",      symbol: "speaker.wave.2.fill"),
+        .init(id: 2, label: "Uhr",             symbol: "clock"),
+        .init(id: 3, label: "Displays",        symbol: "display"),
+        .init(id: 4, label: "Tastatureingabe", symbol: "keyboard"),
+        .init(id: 7, label: "Bildschirmsync.", symbol: "rectangle.on.rectangle"),
+        .init(id: 8, label: "Kontrollzentrum", symbol: "switch.2"),
+    ]
+
+    /// All system item ids (0..<64) except the ones being hidden — for the config's allow list.
+    static func allowedSystemItems(hiding hidden: Set<Int>) -> [NSNumber] {
+        (0..<64).filter { !hidden.contains($0) }.map { NSNumber(value: $0) }
+    }
+
     /// Apple agents addressed by bundle id (not by system-item number) that must never be hidden.
     static let alwaysAllowedBundleIDs: [String] = [
         "com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.systemuiserver",
@@ -60,10 +81,13 @@ final class MenuBarHideEngine {
     /// True when the private framework and its classes are present (macOS 27+).
     var isAvailable: Bool { assertionClass != nil && configClass != nil }
 
-    /// Keep exactly these app bundle ids visible (plus all system items and the always-allowed
-    /// Apple agents); MenuBarAgent hides every other third-party item. Replaces any prior
-    /// restriction. `completion` runs on the main thread.
-    func restrict(keepVisibleBundleIDs: [String], completion: @escaping (Error?) -> Void) {
+    /// Keep exactly these app bundle ids and these system items visible (plus the always-allowed
+    /// Apple agents); MenuBarAgent hides everything else. `allowedSystemItems` defaults to all of
+    /// them; pass a reduced list to also hide specific system items (battery/bluetooth/clock/…).
+    /// Replaces any prior restriction. `completion` runs on the main thread.
+    func restrict(keepVisibleBundleIDs: [String],
+                  allowedSystemItems: [NSNumber] = MenuBarHideEngine.allowedSystemItems,
+                  completion: @escaping (Error?) -> Void) {
         guard let assertionClass, let configClass else {
             completion(NSError(domain: "Tidier.HideEngine", code: 1,
                                userInfo: [NSLocalizedDescriptionKey: "MenuBarClientCore nicht verfügbar"]))
@@ -73,7 +97,7 @@ final class MenuBarHideEngine {
         // [[MBAssessmentModeConfiguration alloc] initWithAllowedSystemItems:allowedBundleIdentifiers:]
         guard let allocated = (configClass as AnyObject).perform(NSSelectorFromString("alloc"))?.takeUnretainedValue(),
               let config = allocated.perform(Self.configInit,
-                                             with: Self.allowedSystemItems as NSArray,
+                                             with: allowedSystemItems as NSArray,
                                              with: allowed as NSArray)?.takeRetainedValue() else {
             completion(NSError(domain: "Tidier.HideEngine", code: 2,
                                userInfo: [NSLocalizedDescriptionKey: "Konfiguration fehlgeschlagen"]))

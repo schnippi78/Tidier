@@ -59,7 +59,9 @@ final class StatusBarController {
         if usesEngine {
             // macOS 27 path: drive MenuBarAgent directly. No panel/capture/move.
             updateChevron()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            // Small settle so every app's AXExtrasMenuBar is ready before the first scan —
+            // otherwise an app the scan misses would briefly get hidden until the next re-apply.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
                 self?.engineCollapse()        // resting = hidden apps gone
                 self?.startEngineWatch()       // re-apply allow-list as apps launch/quit
             }
@@ -101,7 +103,9 @@ final class StatusBarController {
         // is over-permissive and makes MenuBarAgent no-op the restriction.
         var allow = Set(MenuBarApps.scanBundleIDs()).subtracting(hidden)
         if let own = Bundle.main.bundleIdentifier { allow.insert(own) }
-        MenuBarHideEngine.shared.restrict(keepVisibleBundleIDs: Array(allow)) { _ in }
+        let allowedSys = MenuBarHideEngine.allowedSystemItems(hiding: Preferences.shared.hiddenSystemItemIDs)
+        MenuBarHideEngine.shared.restrict(keepVisibleBundleIDs: Array(allow),
+                                          allowedSystemItems: allowedSys) { _ in }
     }
 
     private func engineCollapse() {
