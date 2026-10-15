@@ -21,10 +21,11 @@ notarisiert** sein (99 $/Jahr Apple-Account), und die Funktionen sind undokument
 **brechen zwischen Point-Releases** (26.1 → 26.5 hat sich schon verändert). Für ein
 verkaufbares Produkt machbar (Bartender tut es), aber dauerhafter Wartungsaufwand.
 
-**Aktuelle Entscheidung (2026-10-14): Feature pausiert.** Noch offen, ob Tidier den
-privaten-API-Weg geht (Richtungsfrage mit Christian). Referenz-Implementierungen zum
-Studieren: **Thaw** (aktiv gepflegter Ice-Fork), **Bar Keeper's Friend** (nativ, Tahoe
-26+, unsandboxed), Ices Tahoe-Dev-Branch.
+**★ LÖSUNG GEFUNDEN & VERIFIZIERT (2026-10-15):** Der private-API-Weg ist konkret und
+funktioniert auf 27.0.1 — siehe Abschnitt „Die Lösung: MenuBarClientCore" unten.
+Umgesetzt in `Sources/MenuBarHideEngine.swift`, Test-Arm `--hidetest`. Technik gelernt
+vom MIT-lizenzierten **MenuBarHider** (happy666End/MenuBarHider); Thaw/Ice nutzen dagegen
+nur CGS zum *Lesen* (kein echtes Hide auf 27).
 
 ## Was kaputt ist
 
@@ -113,9 +114,44 @@ geminimacos) brauchen einen synthetischen Klick.
   Das Designated Requirement ist jetzt `certificate leaf = H"…"` → TCC-Freigaben
   überleben Rebuilds dauerhaft.
 
+## Die Lösung: MenuBarClientCore „Assessment Mode" (verifiziert 27.0.1)
+
+macOS 27 bringt das private Framework
+`/System/Library/PrivateFrameworks/MenuBarClientCore.framework`. Es stellt einen
+Allow-List-/„Assessment"-Modus bereit (ursprünglich für Prüfungs-/Kiosk-Apps): man nennt
+die System-Items + App-Bundle-IDs, die **sichtbar bleiben** dürfen — **`MenuBarAgent`
+blendet alles andere selbst aus.** Kein Screen Recording, kein Drag, kein Längen-Trick.
+
+Zwei ObjC-Klassen, zur Laufzeit per `dlopen` aufgelöst (fehlt das Framework → sauber
+deaktiviert statt Absturz):
+- `MBAssessmentModeConfiguration` — `initWithAllowedSystemItems:allowedBundleIdentifiers:`
+  (allowedSystemItems = `NSArray<NSNumber>`; `MBSystemItemIdentifier` auf 27.0: 0 battery,
+  1 bluetooth, 2 clock, 3 displays, 4 keyboard, 5 volume, 6 wifi, 7 screenMirroring,
+  8 primaryBentoBox → großzügig `0..<64` nehmen. allowedBundleIdentifiers = `NSArray<String>`).
+- `MBAssessmentModeAssertion` — `activateWithConfiguration:completionHandler:` (completion
+  liefert `NSError?`), `invalidate` zum Aufheben.
+
+Immer sichtbar lassen (per Bundle-ID adressierte Apple-Agents): `com.apple.controlcenter`,
+`com.apple.MenuBarAgent`, `com.apple.systemuiserver`, `com.apple.TextInputMenuAgent`,
+`com.apple.Siri`, `com.apple.Spotlight`, `com.apple.wifi.WiFiAgent`,
+`com.apple.ScreenTimeAgent`, `com.apple.AirPlayUIAgent`, `com.apple.UserNotificationCenter`,
+`com.apple.notificationcenterui`, `com.apple.loginwindow`.
+
+**Voraussetzungen (verifiziert):** unsandboxed, Accessibility; KEIN spezielles Entitlement
+(kein `automatic-assessment-configuration`), kein Hardened Runtime nötig — selbst ad-hoc-
+signiert aktivierbar. App sollte aus `/Applications` laufen (sonst versteckt macOS ihr
+eigenes Icon). **Test:** `open /Applications/Tidier.app --args --hidetest` → 6 s lang alle
+Drittanbieter weg, dann zurück (Screenshots in der Session-History, 2026-10-15).
+
+**Bekannte Nebenwirkung (aus MenuBarHider):** Während die Restriction aktiv ist, öffnet
+Notification Center nicht (Uhr-Klick) → beim Hover auf die Uhr kurz `release()`.
+
+**Caveat:** privates Framework, undokumentiert → Klassen-/Selektor-Namen können sich
+zwischen Builds ändern (`isAvailable` fängt das ab); bei jedem macOS-Update re-testen.
+
 ## Fazit / Richtung
 
-Zwei realistische Wege (Entscheidung offen):
+Weg gewählt & belegt: **MenuBarClientCore** (oben). Die zwei früheren Optionen zur Einordnung:
 
 1. **Privater-WindowServer-API-Weg** (wie Bartender 7 / BKF / BetterTouchTool) — der
    EINZIGE Weg, der auf macOS 27 fremde Items wirklich versteckt. Voraussetzungen:

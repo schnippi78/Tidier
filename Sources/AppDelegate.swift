@@ -16,6 +16,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        if CommandLine.arguments.contains("--hidetest") {
+            let e = MenuBarHideEngine.shared
+            var log = "HideEngine test @ \(Date())\n  isAvailable=\(e.isAvailable)\n  AXTrusted=\(AXIsProcessTrusted())\n"
+            try? log.write(toFile: "/tmp/tidier_hide.log", atomically: true, encoding: .utf8)
+            // Keep NOTHING third-party visible → MenuBarAgent hides all app items; system stays.
+            e.restrict(keepVisibleBundleIDs: []) { err in
+                log += err == nil ? "  ✅ restrict OK — Drittanbieter-Items ausgeblendet (6s)\n"
+                                   : "  ❌ restrict error: \(err!.localizedDescription)\n"
+                try? log.write(toFile: "/tmp/tidier_hide.log", atomically: true, encoding: .utf8)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                    e.release()
+                    log += "  ↩︎ release — Items wieder eingeblendet\n"
+                    try? log.write(toFile: "/tmp/tidier_hide.log", atomically: true, encoding: .utf8)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { exit(0) }
+                }
+            }
+            return
+        }
         Preferences.registerDefaults()
         LanguageManager.shared.applyStored()
         statusBar = StatusBarController()

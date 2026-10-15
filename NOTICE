@@ -9,3 +9,11 @@ All source code is original work by the author. The menu-bar item reposition in
 Sources/MoveEngine.swift is an independent implementation built on public
 CoreGraphics event APIs and factual macOS ABI details (the CGEvent fields the
 window server consults to route a synthetic mouse event to a specific window).
+
+The macOS 27 hide engine in Sources/MenuBarHideEngine.swift is an independent
+reimplementation. The technique — using the private MenuBarClientCore.framework
+"assessment mode" (MBAssessmentModeConfiguration / MBAssessmentModeAssertion) to
+have MenuBarAgent restrict the menu bar to an allow-list — was learned from the
+MIT-licensed MenuBarHider by happy666End (https://github.com/happy666End/MenuBarHider).
+The framework class and selector names it references are facts about Apple's
+private framework, not copyrightable material.
