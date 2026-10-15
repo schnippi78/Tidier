@@ -9,7 +9,11 @@ final class ScannerModel: ObservableObject {
     /// The real, identified hidden items (name + icon), populated by the controller
     /// from the same detection the panel uses — unlike the raw on-screen `scan()`.
     @Published var detected: [BarItem] = []
+    /// macOS 27 engine path: third-party apps currently in the menu bar (by bundle id),
+    /// for the Settings hide list.
+    @Published var menuBarApps: [MenuBarApps.Entry] = []
     func refresh() { items = MenuBarScanner.scan() }
+    func refreshMenuBarApps() { menuBarApps = MenuBarApps.scanThirdParty() }
 }
 
 /// One detected menu bar status item (from CGWindowList, layer 25).

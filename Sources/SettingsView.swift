@@ -138,14 +138,65 @@ private struct MenuBarTab: View {
         SysRow(key: "sys.batt", labelKey: "sysitem.battery", symbol: "battery.100"),
     ]
 
+    private var usesEngine: Bool { MenuBarHideEngine.shared.isAvailable }
+
     var body: some View {
         ScrollView {
-            content.padding(20)
+            Group {
+                if usesEngine { engineContent } else { content }
+            }
+            .padding(20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
-            scanner.refresh()
-            if scanner.detected.isEmpty { StatusBarController.shared?.refreshDetected() }
+            if usesEngine {
+                scanner.refreshMenuBarApps()
+            } else {
+                scanner.refresh()
+                if scanner.detected.isEmpty { StatusBarController.shared?.refreshDetected() }
+            }
+        }
+    }
+
+    // MARK: - macOS 27 engine UI (hide apps via MenuBarAgent allow-list)
+    // TODO i18n: German literals for now; fold into gen_strings.py for all 26 languages.
+
+    private var engineContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Wähle aus, welche App-Symbole Tidier im Ruhezustand ausblendet. Ein Klick auf das Chevron blendet sie kurz wieder ein.",
+                  systemImage: "eye.slash")
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 6) {
+                Text("Menüleisten-Apps").font(.headline)
+                Spacer()
+                Button {
+                    scanner.refreshMenuBarApps()
+                } label: {
+                    Label("Neu scannen", systemImage: "arrow.clockwise")
+                }
+                .controlSize(.small)
+            }
+
+            if scanner.menuBarApps.isEmpty {
+                Text("Keine Apps gefunden. Stelle sicher, dass Bedienungshilfen erlaubt sind, und scanne neu.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(scanner.menuBarApps.enumerated()), id: \.element.bundleID) { i, app in
+                        MenuBarAppRow(app: app, prefs: prefs)
+                        if i < scanner.menuBarApps.count - 1 { Divider() }
+                    }
+                }
+                .padding(.horizontal, 10)
+                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
+            }
+
+            Text("Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst. System-Symbole (WLAN, Batterie, Uhr …) bleiben immer sichtbar.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -275,6 +326,38 @@ private struct MenuBarTab: View {
         } else {
             Image(systemName: item.isApple ? "gearshape.2" : "app.dashed").foregroundStyle(.secondary)
         }
+    }
+}
+
+/// One app row in the macOS 27 hide list. Flat struct on purpose — deeply nested inline
+/// views crash the swiftc-without-Xcode metadata resolver (see TidierBar StripRow lesson).
+private struct MenuBarAppRow: View {
+    let app: MenuBarApps.Entry
+    @ObservedObject var prefs: Preferences
+
+    private var icon: NSImage? {
+        NSRunningApplication.runningApplications(withBundleIdentifier: app.bundleID).first?.icon
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Group {
+                if let img = icon {
+                    Image(nsImage: img).resizable().scaledToFit()
+                } else {
+                    Image(systemName: "app.dashed").foregroundStyle(.secondary)
+                }
+            }
+            .frame(width: 22, height: 18)
+
+            Text(app.name).lineLimit(1)
+            Spacer(minLength: 8)
+            Toggle("", isOn: Binding(
+                get: { !prefs.isBundleHidden(app.bundleID) },
+                set: { prefs.setBundle(app.bundleID, hidden: !$0) }))
+                .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+        }
+        .padding(.vertical, 7)
     }
 }
 

@@ -42,18 +42,35 @@ final class StatusBarController {
     private var watchTimer: Timer?
     private var lastBarSignature = ""
 
+    /// macOS 27+: hide via the MenuBarClientCore engine (allow-list) instead of the dead
+    /// length-trick / move-capture. All the capture/move machinery is bypassed on this path.
+    private let usesEngine = MenuBarHideEngine.shared.isAvailable
+    /// Engine path only: true while the bar is revealed (restriction lifted).
+    private var engineRevealed = false
+
     init() {
         StatusBarController.shared = self
         buildItems()
-        applyLayout()
         setupHover()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(prefsChanged),
+            name: .tidierPrefsChanged, object: nil)
+
+        if usesEngine {
+            // macOS 27 path: drive MenuBarAgent directly. No panel/capture/move.
+            updateChevron()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.engineCollapse()        // resting = hidden apps gone
+                self?.startEngineWatch()       // re-apply allow-list as apps launch/quit
+            }
+            return
+        }
+
+        applyLayout()
         TidierBar.shared.onClose = { [weak self] in
             self?.tileOpen = false
             self?.lastTileClose = Date()
         }
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(prefsChanged),
-            name: .tidierPrefsChanged, object: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
             self?.refreshCache()
             self?.collapseToResting()
@@ -67,6 +84,76 @@ final class StatusBarController {
                 self?.startAutoRefresh()
             }
         }
+    }
+
+    // MARK: - macOS 27 engine path (MenuBarClientCore allow-list)
+
+    /// Compute the allow-list for the collapsed state and apply it: every running app stays
+    /// visible EXCEPT the ones the user hid. Revealing lifts the restriction entirely.
+    private func applyEngineAllowList() {
+        // Keep visible = the Apple system agents (always) + the third-party menu-bar apps the
+        // user did NOT hide. Precise, scan-based: allow-listing *all* running apps (over-permissive)
+        // makes MenuBarAgent no-op the restriction, so we list only real menu-bar apps.
+        let hidden = Preferences.shared.hiddenBundleIDs
+        // Keep visible = the third-party menu-bar apps the user did NOT hide, plus Tidier's own
+        // toggle (the reveal control). System agents are added by the engine. Everything else is
+        // left out → MenuBarAgent hides it. Scan-based (precise): allow-listing *all* running apps
+        // is over-permissive and makes MenuBarAgent no-op the restriction.
+        var allow = Set(MenuBarApps.scanBundleIDs()).subtracting(hidden)
+        if let own = Bundle.main.bundleIdentifier { allow.insert(own) }
+        MenuBarHideEngine.shared.restrict(keepVisibleBundleIDs: Array(allow)) { _ in }
+    }
+
+    private func engineCollapse() {
+        engineRevealed = false
+        disarmRevealCollapse()
+        rehideTimer?.invalidate()
+        applyEngineAllowList()
+        updateChevron()
+    }
+
+    private func engineReveal() {
+        engineRevealed = true
+        MenuBarHideEngine.shared.release()     // show everything
+        updateChevron()
+        // Re-hide on click outside the menu bar, or after the auto-rehide interval.
+        armRevealCollapse()
+        if Preferences.shared.autoRehide {
+            rehideTimer?.invalidate()
+            rehideTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(Preferences.shared.rehideInterval),
+                                               repeats: false) { [weak self] _ in self?.engineCollapse() }
+        }
+    }
+
+    private func engineToggle() {
+        if engineRevealed { engineCollapse() } else { engineReveal() }
+    }
+
+    /// React to apps launching/quitting: while collapsed, re-apply so a newly launched app is
+    /// allowed (stays visible) unless the user hid it, and a quit app drops out cleanly.
+    private func startEngineWatch() {
+        let wsc = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didLaunchApplicationNotification,
+                     NSWorkspace.didTerminateApplicationNotification] {
+            wsc.addObserver(self, selector: #selector(engineAppsChanged), name: name, object: nil)
+        }
+    }
+
+    @objc private func engineAppsChanged() {
+        watchTimer?.invalidate()
+        let t = Timer(timeInterval: 1.2, repeats: false) { [weak self] _ in
+            guard let self = self, !self.engineRevealed else { return }
+            self.applyEngineAllowList()
+        }
+        RunLoop.main.add(t, forMode: .common)
+        watchTimer = t
+    }
+
+    /// Point the chevron the right way for the current state (both paths).
+    private func updateChevron() {
+        let revealed = usesEngine ? engineRevealed : expanded
+        mainItem.button?.image = symbol(revealed ? "chevron.right" : "chevron.left")
+        mainItem.button?.image?.isTemplate = true
     }
 
     // MARK: - Background auto-refresh (event-driven, ALWAYS invisible)
@@ -169,6 +256,10 @@ final class StatusBarController {
         mainItem.autosaveName = "Tidier.Main"
         configureToggleButton(mainItem.button)
 
+        // macOS 27: the length-trick is dead — MenuBarAgent hides items via the engine, so no
+        // separators are needed (an empty separator would just leave a gap in the bar).
+        guard !usesEngine else { return }
+
         hiddenSep = bar.statusItem(withLength: sepLength)
         hiddenSep.autosaveName = "Tidier.HiddenSeparator"
         configureSeparatorButton(hiddenSep.button, dim: false)
@@ -224,6 +315,8 @@ final class StatusBarController {
         if let e = NSApp.currentEvent,
            e.type == .rightMouseUp || e.modifierFlags.contains(.control) {
             showMenu()
+        } else if usesEngine {
+            engineToggle()
         } else {
             toggleTile()
         }
@@ -537,6 +630,7 @@ final class StatusBarController {
     }
 
     private func finishReveal() {
+        if usesEngine { engineCollapse(); return }
         disarmRevealCollapse()
         restoreOwnItems()   // activation shrank the toggle; bring it back
         ensureCollapsed()
@@ -677,13 +771,14 @@ final class StatusBarController {
         // along the menu bar (which would trigger on the clock, Control Center, …).
         guard let frame = mainItem.button?.window?.frame else { return }
         if frame.insetBy(dx: -3, dy: -3).contains(NSEvent.mouseLocation) {
-            openTile()
+            if usesEngine { if !engineRevealed { engineReveal() } } else { openTile() }
         }
     }
 
     // MARK: - Context menu
 
     private func showMenu() {
+        if usesEngine { showEngineMenu(); return }
         let menu = NSMenu()
         let toggle = NSMenuItem(title: expanded ? L("menu.hide") : L("menu.show"),
                                 action: #selector(menuToggle), keyEquivalent: "")
@@ -740,6 +835,33 @@ final class StatusBarController {
         mainItem.menu = nil   // restore left-click toggle behaviour afterwards
     }
 
+    /// macOS 27 engine path: a lean menu — reveal/hide, settings, about, quit. (Arrange mode and
+    /// the panel-design picker are legacy-only; MenuBarAgent does the hiding directly now.)
+    private func showEngineMenu() {
+        let menu = NSMenu()
+        let toggle = NSMenuItem(title: engineRevealed ? L("menu.hide") : L("menu.show"),
+                                action: #selector(menuEngineToggle), keyEquivalent: "")
+        toggle.target = self
+        menu.addItem(toggle)
+        menu.addItem(.separator())
+        let settings = NSMenuItem(title: L("menu.settings"), action: #selector(menuSettings), keyEquivalent: ",")
+        settings.target = self
+        menu.addItem(settings)
+        let about = NSMenuItem(title: L("menu.about"), action: #selector(menuAbout), keyEquivalent: "")
+        about.target = self
+        menu.addItem(about)
+        menu.addItem(.separator())
+        let quit = NSMenuItem(title: L("menu.quit"), action: #selector(menuQuit), keyEquivalent: "q")
+        quit.target = self
+        menu.addItem(quit)
+
+        mainItem.menu = menu
+        mainItem.button?.performClick(nil)
+        mainItem.menu = nil
+    }
+
+    @objc private func menuEngineToggle() { engineToggle() }
+
     @objc private func menuPickStyle(_ sender: NSMenuItem) {
         guard let raw = sender.representedObject as? String, let style = TileStyle(rawValue: raw) else { return }
         Preferences.shared.tileStyle = style
@@ -762,6 +884,12 @@ final class StatusBarController {
     // MARK: - Preferences
 
     @objc private func prefsChanged() {
+        if usesEngine {
+            setupHover()
+            if !engineRevealed { applyEngineAllowList() }   // hiding/showing an app takes effect now
+            updateChevron()
+            return
+        }
         if Preferences.shared.enableAlwaysHidden { addAlwaysSeparator() }
         else { removeAlwaysSeparator() }
         setupHover()

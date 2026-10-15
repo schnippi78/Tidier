@@ -34,6 +34,7 @@ enum PrefKey {
     static let showWeather        = "showWeather"
     static let hiddenItems        = "hiddenItems"   // stable keys the user hid from the panel
     static let barPinnedItems     = "barPinnedItems" // stable keys pinned to the real menu bar
+    static let hiddenBundleIDs    = "hiddenBundleIDs" // macOS 27: app bundle ids to hide when collapsed
 }
 
 /// Where a menu bar item lives, as chosen per item in Settings.
@@ -111,6 +112,19 @@ final class Preferences: ObservableObject {
         var s = hiddenItemKeys
         if hidden { s.insert(key) } else { s.remove(key) }
         hiddenItemKeys = s
+    }
+
+    /// macOS 27 (MenuBarClientCore hide engine): app bundle ids the user chose to hide in the
+    /// collapsed/resting state. The engine keeps everything else visible; revealing shows all.
+    var hiddenBundleIDs: Set<String> {
+        get { Set(d.stringArray(forKey: PrefKey.hiddenBundleIDs) ?? []) }
+        set { d.set(Array(newValue), forKey: PrefKey.hiddenBundleIDs); changed() }
+    }
+    func isBundleHidden(_ id: String) -> Bool { hiddenBundleIDs.contains(id) }
+    func setBundle(_ id: String, hidden: Bool) {
+        var s = hiddenBundleIDs
+        if hidden { s.insert(id) } else { s.remove(id) }
+        hiddenBundleIDs = s
     }
 
     /// Stable item keys the user pinned to stay visible in the real menu bar.

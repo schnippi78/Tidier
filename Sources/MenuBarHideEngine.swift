@@ -34,7 +34,7 @@ final class MenuBarHideEngine {
     /// Apple agents addressed by bundle id (not by system-item number) that must never be hidden.
     static let alwaysAllowedBundleIDs: [String] = [
         "com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.systemuiserver",
-        "com.apple.TextInputMenuAgent", "com.apple.Siri", "com.apple.Spotlight",
+        "com.apple.TextInputMenuAgent", "com.apple.Siri", "com.apple.Spotlight", "com.apple.campo",
         "com.apple.wifi.WiFiAgent", "com.apple.ScreenTimeAgent", "com.apple.AirPlayUIAgent",
         "com.apple.UserNotificationCenter", "com.apple.notificationcenterui", "com.apple.loginwindow",
     ]
@@ -80,12 +80,18 @@ final class MenuBarHideEngine {
             return
         }
         let newAssertion = unsafeBitCast(assertionClass.init(), to: MBAssertion.self)
+        released = false
         newAssertion.activate(with: config) { [weak self] error in
             DispatchQueue.main.async {
                 guard let self else { return }
                 if let error {
                     newAssertion.invalidate()                 // keep prior restriction on failure
                     completion(error)
+                } else if self.released {
+                    // A release() landed while this assertion was activating — honour it: don't
+                    // install a restriction the caller already asked to lift (race fix).
+                    newAssertion.invalidate()
+                    completion(nil)
                 } else {
                     self.active?.invalidate()                 // swap only once the new one holds → no flash
                     self.active = newAssertion
@@ -95,8 +101,12 @@ final class MenuBarHideEngine {
         }
     }
 
+    /// True once `release()` has been called and no later `restrict` has superseded it.
+    private var released = false
+
     /// Lift the restriction — every hidden item comes back.
     func release() {
+        released = true
         active?.invalidate()
         active = nil
     }
