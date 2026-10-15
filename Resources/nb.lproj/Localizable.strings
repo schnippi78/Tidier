@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Nettverk";
 "sysitem.battery" = "Batteri";
+
+"menubar.engine.help" = "Velg hvilke appikoner Tidier skjuler i hvilemodus. Klikk på chevronen for å vise dem kort.";
+"menubar.engine.apps" = "Menylinjeapper";
+"menubar.engine.rescan" = "Skann på nytt";
+"menubar.engine.empty" = "Ingen apper funnet. Kontroller at Tilgjengelighet er tillatt, og skann på nytt.";
+"menubar.engine.appsNote" = "Apper du slår av, forsvinner fra linjen til du klikker på Tidier for å vise dem.";
+"menubar.engine.system" = "Systemikoner";
+"menubar.engine.systemNote" = "Spotlight, Siri og inndatakilden kan ikke skjules på grunn av systembegrensninger.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volum";
+"sysitem.clock" = "Klokke";
+"sysitem.displays" = "Skjermer";
+"sysitem.keyboard" = "Tastatur";
+"sysitem.screenMirror" = "Skjermspeiling";
+"sysitem.controlCenter" = "Kontrollsenter";

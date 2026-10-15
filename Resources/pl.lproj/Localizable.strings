@@ -58,3 +58,18 @@
 "sysitem.disk" = "Dysk";
 "sysitem.network" = "Sieć";
 "sysitem.battery" = "Bateria";
+
+"menubar.engine.help" = "Wybierz, które ikony aplikacji Tidier ukrywa w stanie spoczynku. Kliknij strzałkę, aby je na chwilę pokazać.";
+"menubar.engine.apps" = "Aplikacje paska menu";
+"menubar.engine.rescan" = "Skanuj ponownie";
+"menubar.engine.empty" = "Nie znaleziono aplikacji. Upewnij się, że Dostępność jest dozwolona, i skanuj ponownie.";
+"menubar.engine.appsNote" = "Wyłączone aplikacje znikają z paska, dopóki nie klikniesz Tidier, aby je pokazać.";
+"menubar.engine.system" = "Ikony systemowe";
+"menubar.engine.systemNote" = "Spotlight, Siri i źródło wprowadzania nie mogą być ukryte z powodu ograniczeń systemu.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Głośność";
+"sysitem.clock" = "Zegar";
+"sysitem.displays" = "Ekrany";
+"sysitem.keyboard" = "Klawiatura";
+"sysitem.screenMirror" = "Powielanie ekranu";
+"sysitem.controlCenter" = "Centrum sterowania";

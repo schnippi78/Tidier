@@ -34,17 +34,17 @@ final class MenuBarHideEngine {
     /// A hideable system menu-bar item (MBSystemItemIdentifier) with a label + SF symbol for
     /// the Settings list. Items addressed by bundle id (Siri/Spotlight/…) aren't here — they're
     /// in `alwaysAllowedBundleIDs`.
-    struct SystemItem { let id: Int; let label: String; let symbol: String }
+    struct SystemItem { let id: Int; let labelKey: String; let symbol: String }
     static let knownSystemItems: [SystemItem] = [
-        .init(id: 6, label: "WLAN",            symbol: "wifi"),
-        .init(id: 1, label: "Bluetooth",       symbol: "dot.radiowaves.left.and.right"),
-        .init(id: 0, label: "Batterie",        symbol: "battery.100"),
-        .init(id: 5, label: "Lautstärke",      symbol: "speaker.wave.2.fill"),
-        .init(id: 2, label: "Uhr",             symbol: "clock"),
-        .init(id: 3, label: "Displays",        symbol: "display"),
-        .init(id: 4, label: "Tastatureingabe", symbol: "keyboard"),
-        .init(id: 7, label: "Bildschirmsync.", symbol: "rectangle.on.rectangle"),
-        .init(id: 8, label: "Kontrollzentrum", symbol: "switch.2"),
+        .init(id: 6, labelKey: "sysitem.wifi",          symbol: "wifi"),
+        .init(id: 1, labelKey: "sysitem.bluetooth",     symbol: "dot.radiowaves.left.and.right"),
+        .init(id: 0, labelKey: "sysitem.battery",       symbol: "battery.100"),
+        .init(id: 5, labelKey: "sysitem.volume",        symbol: "speaker.wave.2.fill"),
+        .init(id: 2, labelKey: "sysitem.clock",         symbol: "clock"),
+        .init(id: 3, labelKey: "sysitem.displays",      symbol: "display"),
+        .init(id: 4, labelKey: "sysitem.keyboard",      symbol: "keyboard"),
+        .init(id: 7, labelKey: "sysitem.screenMirror",  symbol: "rectangle.on.rectangle"),
+        .init(id: 8, labelKey: "sysitem.controlCenter", symbol: "switch.2"),
     ]
 
     /// All system item ids (0..<64) except the ones being hidden — for the config's allow list.

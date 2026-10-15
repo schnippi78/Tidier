@@ -58,3 +58,18 @@
 "sysitem.disk" = "דיסק";
 "sysitem.network" = "רשת";
 "sysitem.battery" = "סוללה";
+
+"menubar.engine.help" = "בחר אילו סמלי יישומים Tidier מסתיר במצב מנוחה. לחץ על החץ כדי להציג אותם לרגע.";
+"menubar.engine.apps" = "יישומי שורת התפריטים";
+"menubar.engine.rescan" = "סריקה מחדש";
+"menubar.engine.empty" = "לא נמצאו יישומים. ודא שהנגישות מאופשרת, ואז סרוק מחדש.";
+"menubar.engine.appsNote" = "יישומים שתכבה ייעלמו מהשורה עד שתלחץ על Tidier כדי להציג אותם.";
+"menubar.engine.system" = "סמלי מערכת";
+"menubar.engine.systemNote" = "לא ניתן להסתיר את Spotlight, Siri ומקור הקלט בשל מגבלות מערכת.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "עוצמת שמע";
+"sysitem.clock" = "שעון";
+"sysitem.displays" = "צגים";
+"sysitem.keyboard" = "מקלדת";
+"sysitem.screenMirror" = "שיקוף מסך";
+"sysitem.controlCenter" = "מרכז הבקרה";

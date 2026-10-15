@@ -58,3 +58,18 @@
 "sysitem.disk" = "ディスク";
 "sysitem.network" = "ネットワーク";
 "sysitem.battery" = "バッテリー";
+
+"menubar.engine.help" = "Tidier が待機時に隠すアプリアイコンを選びます。シェブロンをクリックすると一時的に表示します。";
+"menubar.engine.apps" = "メニューバーのアプリ";
+"menubar.engine.rescan" = "再スキャン";
+"menubar.engine.empty" = "アプリが見つかりません。アクセシビリティが許可されていることを確認して再スキャンしてください。";
+"menubar.engine.appsNote" = "オフにしたアプリは、Tidier をクリックして表示するまでバーから消えます。";
+"menubar.engine.system" = "システムアイコン";
+"menubar.engine.systemNote" = "Spotlight、Siri、入力ソースはシステム上の制約で非表示にできません。";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "音量";
+"sysitem.clock" = "時計";
+"sysitem.displays" = "ディスプレイ";
+"sysitem.keyboard" = "キーボード";
+"sysitem.screenMirror" = "画面ミラーリング";
+"sysitem.controlCenter" = "コントロールセンター";

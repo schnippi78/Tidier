@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Nätverk";
 "sysitem.battery" = "Batteri";
+
+"menubar.engine.help" = "Välj vilka appikoner Tidier döljer i viloläge. Klicka på chevronen för att visa dem kort.";
+"menubar.engine.apps" = "Menyradsappar";
+"menubar.engine.rescan" = "Skanna om";
+"menubar.engine.empty" = "Inga appar hittades. Se till att Hjälpmedel är tillåtet och skanna om.";
+"menubar.engine.appsNote" = "Appar du stänger av försvinner från raden tills du klickar på Tidier för att visa dem.";
+"menubar.engine.system" = "Systemikoner";
+"menubar.engine.systemNote" = "Spotlight, Siri och inmatningskällan kan inte döljas på grund av systembegränsningar.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volym";
+"sysitem.clock" = "Klocka";
+"sysitem.displays" = "Skärmar";
+"sysitem.keyboard" = "Tangentbord";
+"sysitem.screenMirror" = "Skärmdublering";
+"sysitem.controlCenter" = "Kontrollcenter";

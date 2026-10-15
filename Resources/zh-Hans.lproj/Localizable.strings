@@ -58,3 +58,18 @@
 "sysitem.disk" = "磁盘";
 "sysitem.network" = "网络";
 "sysitem.battery" = "电池";
+
+"menubar.engine.help" = "选择 Tidier 在静置时隐藏哪些应用图标。点按箭头可短暂显示它们。";
+"menubar.engine.apps" = "菜单栏应用";
+"menubar.engine.rescan" = "重新扫描";
+"menubar.engine.empty" = "未找到应用。请确认已允许“辅助功能”，然后重新扫描。";
+"menubar.engine.appsNote" = "关闭的应用会从菜单栏消失，直到你点按 Tidier 显示它们。";
+"menubar.engine.system" = "系统图标";
+"menubar.engine.systemNote" = "由于系统限制，Spotlight、Siri 和输入法无法隐藏。";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "音量";
+"sysitem.clock" = "时钟";
+"sysitem.displays" = "显示器";
+"sysitem.keyboard" = "键盘";
+"sysitem.screenMirror" = "屏幕镜像";
+"sysitem.controlCenter" = "控制中心";

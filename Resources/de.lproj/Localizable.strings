@@ -58,3 +58,18 @@
 "sysitem.disk" = "Speicher";
 "sysitem.network" = "Netzwerk";
 "sysitem.battery" = "Batterie";
+
+"menubar.engine.help" = "Wähle aus, welche App-Symbole Tidier im Ruhezustand ausblendet. Ein Klick auf das Chevron blendet sie kurz wieder ein.";
+"menubar.engine.apps" = "Menüleisten-Apps";
+"menubar.engine.rescan" = "Neu scannen";
+"menubar.engine.empty" = "Keine Apps gefunden. Stelle sicher, dass Bedienungshilfen erlaubt sind, und scanne neu.";
+"menubar.engine.appsNote" = "Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst.";
+"menubar.engine.system" = "System-Symbole";
+"menubar.engine.systemNote" = "Spotlight, Siri und die Eingabequelle lassen sich systembedingt nicht ausblenden.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Lautstärke";
+"sysitem.clock" = "Uhr";
+"sysitem.displays" = "Displays";
+"sysitem.keyboard" = "Tastatur";
+"sysitem.screenMirror" = "Bildschirmsync.";
+"sysitem.controlCenter" = "Kontrollzentrum";

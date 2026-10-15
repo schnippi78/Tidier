@@ -58,3 +58,18 @@
 "sysitem.disk" = "Schijf";
 "sysitem.network" = "Netwerk";
 "sysitem.battery" = "Batterij";
+
+"menubar.engine.help" = "Kies welke app-symbolen Tidier in ruststand verbergt. Klik op de chevron om ze kort te tonen.";
+"menubar.engine.apps" = "Menubalk-apps";
+"menubar.engine.rescan" = "Opnieuw scannen";
+"menubar.engine.empty" = "Geen apps gevonden. Zorg dat Toegankelijkheid is toegestaan en scan opnieuw.";
+"menubar.engine.appsNote" = "Uitgeschakelde apps verdwijnen uit de balk totdat je op Tidier klikt om ze te tonen.";
+"menubar.engine.system" = "Systeemsymbolen";
+"menubar.engine.systemNote" = "Spotlight, Siri en de invoerbron kunnen vanwege systeembeperkingen niet worden verborgen.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volume";
+"sysitem.clock" = "Klok";
+"sysitem.displays" = "Schermen";
+"sysitem.keyboard" = "Toetsenbord";
+"sysitem.screenMirror" = "Schermspiegeling";
+"sysitem.controlCenter" = "Bedieningspaneel";

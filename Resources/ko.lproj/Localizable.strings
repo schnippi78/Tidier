@@ -58,3 +58,18 @@
 "sysitem.disk" = "디스크";
 "sysitem.network" = "네트워크";
 "sysitem.battery" = "배터리";
+
+"menubar.engine.help" = "Tidier가 대기 상태에서 숨길 앱 아이콘을 선택하세요. 셰브런을 클릭하면 잠시 표시됩니다.";
+"menubar.engine.apps" = "메뉴 막대 앱";
+"menubar.engine.rescan" = "다시 스캔";
+"menubar.engine.empty" = "앱을 찾을 수 없습니다. 손쉬운 사용이 허용되었는지 확인하고 다시 스캔하세요.";
+"menubar.engine.appsNote" = "끈 앱은 Tidier를 클릭해 표시할 때까지 막대에서 사라집니다.";
+"menubar.engine.system" = "시스템 아이콘";
+"menubar.engine.systemNote" = "Spotlight, Siri 및 입력 소스는 시스템 제한으로 숨길 수 없습니다.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "음량";
+"sysitem.clock" = "시계";
+"sysitem.displays" = "디스플레이";
+"sysitem.keyboard" = "키보드";
+"sysitem.screenMirror" = "화면 미러링";
+"sysitem.controlCenter" = "제어 센터";

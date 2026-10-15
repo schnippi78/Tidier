@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Síť";
 "sysitem.battery" = "Baterie";
+
+"menubar.engine.help" = "Vyberte, které ikony aplikací Tidier skryje v klidu. Klikněte na šipku pro jejich krátké zobrazení.";
+"menubar.engine.apps" = "Aplikace řádku nabídek";
+"menubar.engine.rescan" = "Znovu prohledat";
+"menubar.engine.empty" = "Nenalezeny žádné aplikace. Ujistěte se, že je povoleno Zpřístupnění, a prohledejte znovu.";
+"menubar.engine.appsNote" = "Vypnuté aplikace zmizí z řádku, dokud neklepnete na Tidier pro jejich zobrazení.";
+"menubar.engine.system" = "Systémové ikony";
+"menubar.engine.systemNote" = "Spotlight, Siri a zdroj vstupu nelze skrýt kvůli systémovým omezením.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Hlasitost";
+"sysitem.clock" = "Hodiny";
+"sysitem.displays" = "Displeje";
+"sysitem.keyboard" = "Klávesnice";
+"sysitem.screenMirror" = "Zrcadlení obrazovky";
+"sysitem.controlCenter" = "Ovládací centrum";

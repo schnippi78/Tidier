@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disque";
 "sysitem.network" = "Réseau";
 "sysitem.battery" = "Batterie";
+
+"menubar.engine.help" = "Choisissez les icônes d'apps que Tidier masque au repos. Cliquez sur le chevron pour les afficher brièvement.";
+"menubar.engine.apps" = "Apps de la barre des menus";
+"menubar.engine.rescan" = "Réanalyser";
+"menubar.engine.empty" = "Aucune app trouvée. Vérifiez que l'Accessibilité est autorisée, puis réanalysez.";
+"menubar.engine.appsNote" = "Les apps désactivées disparaissent de la barre jusqu'à ce que vous cliquiez sur Tidier pour les afficher.";
+"menubar.engine.system" = "Icônes système";
+"menubar.engine.systemNote" = "Spotlight, Siri et la source de saisie ne peuvent pas être masqués, en raison de limites du système.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volume";
+"sysitem.clock" = "Horloge";
+"sysitem.displays" = "Écrans";
+"sysitem.keyboard" = "Clavier";
+"sysitem.screenMirror" = "Recopie d'écran";
+"sysitem.controlCenter" = "Centre de contrôle";

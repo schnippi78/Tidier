@@ -86,13 +86,19 @@ private struct GeneralTab: View {
     @EnvironmentObject var prefs: Preferences
     @EnvironmentObject var lang: LanguageManager
 
+    // macOS 27 drives MenuBarAgent directly — the always-hidden section and the panel's
+    // system/weather tiles don't exist on that path, so hide those toggles there.
+    private var usesEngine: Bool { MenuBarHideEngine.shared.isAvailable }
+
     var body: some View {
         Form {
             Toggle(L("general.launchAtLogin"), isOn: Binding(
                 get: { prefs.launchAtLogin }, set: { prefs.launchAtLogin = $0 }))
 
-            Toggle(L("general.enableAlwaysHidden"), isOn: Binding(
-                get: { prefs.enableAlwaysHidden }, set: { prefs.enableAlwaysHidden = $0 }))
+            if !usesEngine {
+                Toggle(L("general.enableAlwaysHidden"), isOn: Binding(
+                    get: { prefs.enableAlwaysHidden }, set: { prefs.enableAlwaysHidden = $0 }))
+            }
 
             Divider()
 
@@ -112,13 +118,15 @@ private struct GeneralTab: View {
             Toggle(L("general.revealOnHover"), isOn: Binding(
                 get: { prefs.revealOnHover }, set: { prefs.revealOnHover = $0 }))
 
-            Divider()
+            if !usesEngine {
+                Divider()
 
-            Toggle(L("general.showSystemTiles"), isOn: Binding(
-                get: { prefs.showSystemTiles }, set: { prefs.showSystemTiles = $0 }))
+                Toggle(L("general.showSystemTiles"), isOn: Binding(
+                    get: { prefs.showSystemTiles }, set: { prefs.showSystemTiles = $0 }))
 
-            Toggle(L("general.showWeather"), isOn: Binding(
-                get: { prefs.showWeather }, set: { prefs.showWeather = $0 }))
+                Toggle(L("general.showWeather"), isOn: Binding(
+                    get: { prefs.showWeather }, set: { prefs.showWeather = $0 }))
+            }
         }
         .formStyle(.grouped)
     }
@@ -163,24 +171,23 @@ private struct MenuBarTab: View {
 
     private var engineContent: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Wähle aus, welche App-Symbole Tidier im Ruhezustand ausblendet. Ein Klick auf das Chevron blendet sie kurz wieder ein.",
-                  systemImage: "eye.slash")
+            Label(L("menubar.engine.help"), systemImage: "eye.slash")
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 6) {
-                Text("Menüleisten-Apps").font(.headline)
+                Text(L("menubar.engine.apps")).font(.headline)
                 Spacer()
                 Button {
                     scanner.refreshMenuBarApps()
                 } label: {
-                    Label("Neu scannen", systemImage: "arrow.clockwise")
+                    Label(L("menubar.engine.rescan"), systemImage: "arrow.clockwise")
                 }
                 .controlSize(.small)
             }
 
             if scanner.menuBarApps.isEmpty {
-                Text("Keine Apps gefunden. Stelle sicher, dass Bedienungshilfen erlaubt sind, und scanne neu.")
+                Text(L("menubar.engine.empty"))
                     .font(.callout).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
@@ -194,11 +201,11 @@ private struct MenuBarTab: View {
                 .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
             }
 
-            Text("Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst.")
+            Text(L("menubar.engine.appsNote"))
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("System-Symbole").font(.headline).padding(.top, 4)
+            Text(L("menubar.engine.system")).font(.headline).padding(.top, 4)
             VStack(spacing: 0) {
                 ForEach(Array(MenuBarHideEngine.knownSystemItems.enumerated()), id: \.element.id) { i, item in
                     SystemItemRow(item: item, prefs: prefs)
@@ -208,7 +215,7 @@ private struct MenuBarTab: View {
             .padding(.horizontal, 10)
             .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
 
-            Text("Spotlight, Siri und die Eingabequelle lassen sich systembedingt nicht ausblenden.")
+            Text(L("menubar.engine.systemNote"))
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -351,7 +358,7 @@ private struct SystemItemRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: item.symbol).frame(width: 22, height: 18).foregroundStyle(.secondary)
-            Text(item.label).lineLimit(1)
+            Text(L(item.labelKey)).lineLimit(1)
             Spacer(minLength: 8)
             Toggle("", isOn: Binding(
                 get: { !prefs.isSystemItemHidden(item.id) },

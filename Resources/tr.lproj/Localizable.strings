@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Ağ";
 "sysitem.battery" = "Pil";
+
+"menubar.engine.help" = "Tidier'ın beklemede hangi uygulama simgelerini gizleyeceğini seçin. Kısaca göstermek için şevrona tıklayın.";
+"menubar.engine.apps" = "Menü çubuğu uygulamaları";
+"menubar.engine.rescan" = "Yeniden tara";
+"menubar.engine.empty" = "Uygulama bulunamadı. Erişilebilirlik'in izinli olduğundan emin olun ve yeniden tarayın.";
+"menubar.engine.appsNote" = "Kapattığınız uygulamalar, göstermek için Tidier'a tıklayana kadar çubuktan kaybolur.";
+"menubar.engine.system" = "Sistem simgeleri";
+"menubar.engine.systemNote" = "Spotlight, Siri ve giriş kaynağı, sistem kısıtlamaları nedeniyle gizlenemez.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Ses düzeyi";
+"sysitem.clock" = "Saat";
+"sysitem.displays" = "Ekranlar";
+"sysitem.keyboard" = "Klavye";
+"sysitem.screenMirror" = "Ekran Yansıtma";
+"sysitem.controlCenter" = "Denetim Merkezi";

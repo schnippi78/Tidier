@@ -58,3 +58,18 @@
 "sysitem.disk" = "Lemez";
 "sysitem.network" = "Hálózat";
 "sysitem.battery" = "Akkumulátor";
+
+"menubar.engine.help" = "Válaszd ki, mely alkalmazásikonokat rejti el a Tidier nyugalmi állapotban. Kattints a chevronra a rövid megjelenítéshez.";
+"menubar.engine.apps" = "Menüsor-alkalmazások";
+"menubar.engine.rescan" = "Újraszkennelés";
+"menubar.engine.empty" = "Nincs alkalmazás. Győződj meg róla, hogy a Kisegítő lehetőségek engedélyezve van, majd szkennelj újra.";
+"menubar.engine.appsNote" = "A kikapcsolt alkalmazások eltűnnek a sorból, amíg a Tidierre kattintva meg nem jeleníted őket.";
+"menubar.engine.system" = "Rendszerikonok";
+"menubar.engine.systemNote" = "A Spotlight, a Siri és a beviteli forrás rendszerkorlátok miatt nem rejthető el.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Hangerő";
+"sysitem.clock" = "Óra";
+"sysitem.displays" = "Kijelzők";
+"sysitem.keyboard" = "Billentyűzet";
+"sysitem.screenMirror" = "Képernyőtükrözés";
+"sysitem.controlCenter" = "Vezérlőközpont";

@@ -58,3 +58,18 @@
 "sysitem.disk" = "Δίσκος";
 "sysitem.network" = "Δίκτυο";
 "sysitem.battery" = "Μπαταρία";
+
+"menubar.engine.help" = "Επιλέξτε ποια εικονίδια εφαρμογών κρύβει το Tidier σε ηρεμία. Κάντε κλικ στο βέλος για να τα εμφανίσετε για λίγο.";
+"menubar.engine.apps" = "Εφαρμογές γραμμής μενού";
+"menubar.engine.rescan" = "Νέα σάρωση";
+"menubar.engine.empty" = "Δεν βρέθηκαν εφαρμογές. Βεβαιωθείτε ότι επιτρέπεται η Προσβασιμότητα και κάντε νέα σάρωση.";
+"menubar.engine.appsNote" = "Οι εφαρμογές που απενεργοποιείτε εξαφανίζονται από τη γραμμή μέχρι να κάνετε κλικ στο Tidier για να τις εμφανίσετε.";
+"menubar.engine.system" = "Εικονίδια συστήματος";
+"menubar.engine.systemNote" = "Το Spotlight, το Siri και η πηγή εισαγωγής δεν μπορούν να κρυφτούν λόγω περιορισμών συστήματος.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Ένταση";
+"sysitem.clock" = "Ρολόι";
+"sysitem.displays" = "Οθόνες";
+"sysitem.keyboard" = "Πληκτρολόγιο";
+"sysitem.screenMirror" = "Καθρεφτισμός οθόνης";
+"sysitem.controlCenter" = "Κέντρο ελέγχου";

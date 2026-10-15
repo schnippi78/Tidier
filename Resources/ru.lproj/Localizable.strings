@@ -58,3 +58,18 @@
 "sysitem.disk" = "Диск";
 "sysitem.network" = "Сеть";
 "sysitem.battery" = "Батарея";
+
+"menubar.engine.help" = "Выберите, какие значки приложений Tidier скрывает в покое. Нажмите шеврон, чтобы ненадолго показать их.";
+"menubar.engine.apps" = "Приложения строки меню";
+"menubar.engine.rescan" = "Сканировать снова";
+"menubar.engine.empty" = "Приложения не найдены. Убедитесь, что разрешён Универсальный доступ, и просканируйте снова.";
+"menubar.engine.appsNote" = "Отключённые приложения исчезают из строки, пока вы не нажмёте Tidier, чтобы показать их.";
+"menubar.engine.system" = "Системные значки";
+"menubar.engine.systemNote" = "Spotlight, Siri и источник ввода нельзя скрыть из-за ограничений системы.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Громкость";
+"sysitem.clock" = "Часы";
+"sysitem.displays" = "Мониторы";
+"sysitem.keyboard" = "Клавиатура";
+"sysitem.screenMirror" = "Повтор экрана";
+"sysitem.controlCenter" = "Пункт управления";

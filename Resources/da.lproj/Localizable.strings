@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Netværk";
 "sysitem.battery" = "Batteri";
+
+"menubar.engine.help" = "Vælg hvilke app-ikoner Tidier skjuler i hviletilstand. Klik på chevronen for at vise dem kortvarigt.";
+"menubar.engine.apps" = "Menulinjeapps";
+"menubar.engine.rescan" = "Scan igen";
+"menubar.engine.empty" = "Ingen apps fundet. Sørg for, at Tilgængelighed er tilladt, og scan igen.";
+"menubar.engine.appsNote" = "Apps, du slår fra, forsvinder fra linjen, indtil du klikker på Tidier for at vise dem.";
+"menubar.engine.system" = "Systemikoner";
+"menubar.engine.systemNote" = "Spotlight, Siri og inputkilden kan ikke skjules på grund af systembegrænsninger.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Lydstyrke";
+"sysitem.clock" = "Ur";
+"sysitem.displays" = "Skærme";
+"sysitem.keyboard" = "Tastatur";
+"sysitem.screenMirror" = "Skærmdublering";
+"sysitem.controlCenter" = "Kontrolcenter";

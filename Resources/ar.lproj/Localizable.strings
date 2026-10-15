@@ -58,3 +58,18 @@
 "sysitem.disk" = "القرص";
 "sysitem.network" = "الشبكة";
 "sysitem.battery" = "البطارية";
+
+"menubar.engine.help" = "اختر أيقونات التطبيقات التي يخفيها Tidier في وضع الخمول. انقر على السهم لإظهارها مؤقتًا.";
+"menubar.engine.apps" = "تطبيقات شريط القوائم";
+"menubar.engine.rescan" = "إعادة الفحص";
+"menubar.engine.empty" = "لم يتم العثور على تطبيقات. تأكد من السماح بإمكانية الوصول، ثم أعد الفحص.";
+"menubar.engine.appsNote" = "تختفي التطبيقات التي توقفها من الشريط حتى تنقر على Tidier لإظهارها.";
+"menubar.engine.system" = "أيقونات النظام";
+"menubar.engine.systemNote" = "لا يمكن إخفاء Spotlight وSiri ومصدر الإدخال بسبب قيود النظام.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "مستوى الصوت";
+"sysitem.clock" = "الساعة";
+"sysitem.displays" = "الشاشات";
+"sysitem.keyboard" = "لوحة المفاتيح";
+"sysitem.screenMirror" = "نسخ الشاشة";
+"sysitem.controlCenter" = "مركز التحكم";

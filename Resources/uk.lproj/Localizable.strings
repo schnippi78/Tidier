@@ -58,3 +58,18 @@
 "sysitem.disk" = "Диск";
 "sysitem.network" = "Мережа";
 "sysitem.battery" = "Акумулятор";
+
+"menubar.engine.help" = "Виберіть, які значки програм Tidier приховує в стані спокою. Натисніть шеврон, щоб ненадовго показати їх.";
+"menubar.engine.apps" = "Програми рядка меню";
+"menubar.engine.rescan" = "Сканувати знову";
+"menubar.engine.empty" = "Програм не знайдено. Переконайтеся, що дозволено Доступність, і проскануйте знову.";
+"menubar.engine.appsNote" = "Вимкнені програми зникають з рядка, доки ви не натиснете Tidier, щоб показати їх.";
+"menubar.engine.system" = "Системні значки";
+"menubar.engine.systemNote" = "Spotlight, Siri та джерело вводу не можна приховати через обмеження системи.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Гучність";
+"sysitem.clock" = "Годинник";
+"sysitem.displays" = "Дисплеї";
+"sysitem.keyboard" = "Клавіатура";
+"sysitem.screenMirror" = "Повтор екрана";
+"sysitem.controlCenter" = "Пункт керування";

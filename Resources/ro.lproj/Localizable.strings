@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disc";
 "sysitem.network" = "Rețea";
 "sysitem.battery" = "Baterie";
+
+"menubar.engine.help" = "Alege ce pictograme de aplicații ascunde Tidier în repaus. Fă clic pe chevron pentru a le afișa pe scurt.";
+"menubar.engine.apps" = "Aplicații din bara de meniu";
+"menubar.engine.rescan" = "Rescanează";
+"menubar.engine.empty" = "Nicio aplicație găsită. Asigură-te că Accesibilitatea este permisă și rescanează.";
+"menubar.engine.appsNote" = "Aplicațiile dezactivate dispar din bară până dai clic pe Tidier pentru a le afișa.";
+"menubar.engine.system" = "Pictograme de sistem";
+"menubar.engine.systemNote" = "Spotlight, Siri și sursa de intrare nu pot fi ascunse din cauza limitărilor sistemului.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volum";
+"sysitem.clock" = "Ceas";
+"sysitem.displays" = "Afișaje";
+"sysitem.keyboard" = "Tastatură";
+"sysitem.screenMirror" = "Oglindire ecran";
+"sysitem.controlCenter" = "Centru de control";

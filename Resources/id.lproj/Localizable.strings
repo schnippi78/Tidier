@@ -58,3 +58,18 @@
 "sysitem.disk" = "Disk";
 "sysitem.network" = "Jaringan";
 "sysitem.battery" = "Baterai";
+
+"menubar.engine.help" = "Pilih ikon aplikasi mana yang disembunyikan Tidier saat diam. Klik chevron untuk menampilkannya sebentar.";
+"menubar.engine.apps" = "Aplikasi bilah menu";
+"menubar.engine.rescan" = "Pindai ulang";
+"menubar.engine.empty" = "Tidak ada aplikasi. Pastikan Aksesibilitas diizinkan, lalu pindai ulang.";
+"menubar.engine.appsNote" = "Aplikasi yang Anda matikan hilang dari bilah sampai Anda mengeklik Tidier untuk menampilkannya.";
+"menubar.engine.system" = "Ikon sistem";
+"menubar.engine.systemNote" = "Spotlight, Siri, dan sumber masukan tidak dapat disembunyikan karena batasan sistem.";
+"sysitem.bluetooth" = "Bluetooth";
+"sysitem.volume" = "Volume";
+"sysitem.clock" = "Jam";
+"sysitem.displays" = "Layar";
+"sysitem.keyboard" = "Papan ketik";
+"sysitem.screenMirror" = "Pencerminan Layar";
+"sysitem.controlCenter" = "Pusat Kontrol";
