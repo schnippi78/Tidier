@@ -149,6 +149,20 @@ Notification Center nicht (Uhr-Klick) → beim Hover auf die Uhr kurz `release()
 **Caveat:** privates Framework, undokumentiert → Klassen-/Selektor-Namen können sich
 zwischen Builds ändern (`isAvailable` fängt das ab); bei jedem macOS-Update re-testen.
 
+### Integration in Tidier (Commit af381c2) — zwei harte Lehren
+
+1. **Allow-Liste klein & präzise halten.** `Set(alleLaufendenApps) − hidden` (wie MenuBarHider
+   es notiert) funktioniert NICHT: eine fast-alles-erlaubende Liste lässt MenuBarAgent die
+   Restriction stillschweigend NO-OPen (48 von ~50 erlaubt → nichts versteckt). Richtig:
+   `allow = scanThirdParty() − hidden + Tidier-eigene-Bundle-ID`. Tidiers Chevron MUSS in der
+   Liste stehen, sonst versteckt MenuBarAgent es mit.
+2. **Menüleisten-Apps über `AXExtrasMenuBar` enumerieren, nicht per Positions-Hit-Test.** Je
+   laufende App: `AXUIElementCreateApplication(pid)` → Attribut `"AXExtrasMenuBar"` → dessen
+   `kAXChildrenAttribute`; nicht leer ⇒ App hat ein Item. Zuverlässig und unabhängig davon, ob
+   das Item gerade on-screen ist (Positions-Scan fand nur 3 von 6 Apps).
+3. **Race:** `release()` während die `activate`-Completion noch läuft → `released`-Flag, sonst
+   installiert die Completion die gerade aufgehobene Restriction wieder.
+
 ## Fazit / Richtung
 
 Weg gewählt & belegt: **MenuBarClientCore** (oben). Die zwei früheren Optionen zur Einordnung:
