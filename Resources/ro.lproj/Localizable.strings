@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Tastatură";
 "sysitem.screenMirror" = "Oglindire ecran";
 "sysitem.controlCenter" = "Centru de control";
+
+"menubar.engine.inputNote" = "Sursa de intrare (meniul tastaturii) nu poate fi ascunsă din cauza limitărilor sistemului.";

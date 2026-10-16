@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Tangentbord";
 "sysitem.screenMirror" = "Skärmdublering";
 "sysitem.controlCenter" = "Kontrollcenter";
+
+"menubar.engine.inputNote" = "Inmatningskällan (tangentbordsmenyn) kan inte döljas på grund av systembegränsningar.";

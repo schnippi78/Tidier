@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Keyboard";
 "sysitem.screenMirror" = "Screen Mirroring";
 "sysitem.controlCenter" = "Control Center";
+
+"menubar.engine.inputNote" = "The input source (keyboard menu) can't be hidden, due to system limitations.";

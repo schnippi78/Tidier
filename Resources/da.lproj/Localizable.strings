@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Tastatur";
 "sysitem.screenMirror" = "Skærmdublering";
 "sysitem.controlCenter" = "Kontrolcenter";
+
+"menubar.engine.inputNote" = "Inputkilden (tastaturmenuen) kan ikke skjules på grund af systembegrænsninger.";

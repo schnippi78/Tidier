@@ -207,15 +207,26 @@ private struct MenuBarTab: View {
 
             Text(L("menubar.engine.system")).font(.headline).padding(.top, 4)
             VStack(spacing: 0) {
-                ForEach(Array(MenuBarHideEngine.knownSystemItems.enumerated()), id: \.element.id) { i, item in
+                ForEach(Array(MenuBarHideEngine.knownSystemItems.enumerated()), id: \.element.id) { _, item in
                     SystemItemRow(item: item, prefs: prefs)
-                    if i < MenuBarHideEngine.knownSystemItems.count - 1 { Divider() }
+                    Divider()
                 }
+                // Spotlight/Siri search (bundle-based `com.apple.campo`, not a system-item number).
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass").frame(width: 22, height: 18).foregroundStyle(.secondary)
+                    Text("Spotlight").lineLimit(1)
+                    Spacer(minLength: 8)
+                    Toggle("", isOn: Binding(
+                        get: { !prefs.hideSpotlight },
+                        set: { prefs.hideSpotlight = !$0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.mini)
+                }
+                .padding(.vertical, 7)
             }
             .padding(.horizontal, 10)
             .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8))
 
-            Text(L("menubar.engine.systemNote"))
+            Text(L("menubar.engine.inputNote"))
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }

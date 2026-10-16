@@ -36,6 +36,7 @@ enum PrefKey {
     static let barPinnedItems     = "barPinnedItems" // stable keys pinned to the real menu bar
     static let hiddenBundleIDs    = "hiddenBundleIDs" // macOS 27: app bundle ids to hide when collapsed
     static let hiddenSystemItems  = "hiddenSystemItemIDs" // macOS 27: MBSystemItemIdentifier numbers to hide
+    static let hideSpotlight      = "hideSpotlight"      // macOS 27: hide the Spotlight/Siri (campo) search item
 }
 
 /// Where a menu bar item lives, as chosen per item in Settings.
@@ -141,6 +142,12 @@ final class Preferences: ObservableObject {
         var s = hiddenSystemItemIDs
         if hidden { s.insert(id) } else { s.remove(id) }
         hiddenSystemItemIDs = s
+    }
+
+    /// macOS 27: hide the Spotlight/Siri search item (com.apple.campo).
+    var hideSpotlight: Bool {
+        get { d.bool(forKey: PrefKey.hideSpotlight) }
+        set { d.set(newValue, forKey: PrefKey.hideSpotlight); changed() }
     }
 
     /// Stable item keys the user pinned to stay visible in the real menu bar.

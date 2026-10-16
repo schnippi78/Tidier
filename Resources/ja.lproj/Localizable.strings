@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "キーボード";
 "sysitem.screenMirror" = "画面ミラーリング";
 "sysitem.controlCenter" = "コントロールセンター";
+
+"menubar.engine.inputNote" = "入力ソース（キーボードメニュー）はシステム上の制約で非表示にできません。";

@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "鍵盤";
 "sysitem.screenMirror" = "螢幕鏡像輸出";
 "sysitem.controlCenter" = "控制中心";
+
+"menubar.engine.inputNote" = "由於系統限制，輸入來源（鍵盤選單）無法隱藏。";

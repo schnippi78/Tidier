@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Teclado";
 "sysitem.screenMirror" = "Espelhamento de tela";
 "sysitem.controlCenter" = "Central de Controle";
+
+"menubar.engine.inputNote" = "A fonte de entrada (menu de teclado) não pode ser ocultada devido a limitações do sistema.";

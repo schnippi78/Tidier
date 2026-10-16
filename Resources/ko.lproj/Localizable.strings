@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "키보드";
 "sysitem.screenMirror" = "화면 미러링";
 "sysitem.controlCenter" = "제어 센터";
+
+"menubar.engine.inputNote" = "입력 소스(키보드 메뉴)는 시스템 제한으로 숨길 수 없습니다.";

@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Tastiera";
 "sysitem.screenMirror" = "Duplicazione schermo";
 "sysitem.controlCenter" = "Centro di Controllo";
+
+"menubar.engine.inputNote" = "La sorgente di input (menu tastiera) non può essere nascosta per limiti di sistema.";

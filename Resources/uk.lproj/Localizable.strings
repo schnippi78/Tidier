@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Клавіатура";
 "sysitem.screenMirror" = "Повтор екрана";
 "sysitem.controlCenter" = "Пункт керування";
+
+"menubar.engine.inputNote" = "Джерело вводу (меню клавіатури) не можна приховати через обмеження системи.";

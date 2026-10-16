@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Billentyűzet";
 "sysitem.screenMirror" = "Képernyőtükrözés";
 "sysitem.controlCenter" = "Vezérlőközpont";
+
+"menubar.engine.inputNote" = "A beviteli forrás (billentyűzetmenü) rendszerkorlátok miatt nem rejthető el.";

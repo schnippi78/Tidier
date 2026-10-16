@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Teclado";
 "sysitem.screenMirror" = "Duplicar pantalla";
 "sysitem.controlCenter" = "Centro de Control";
+
+"menubar.engine.inputNote" = "La fuente de entrada (menú de teclado) no se puede ocultar por limitaciones del sistema.";

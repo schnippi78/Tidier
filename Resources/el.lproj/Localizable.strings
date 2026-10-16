@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Πληκτρολόγιο";
 "sysitem.screenMirror" = "Καθρεφτισμός οθόνης";
 "sysitem.controlCenter" = "Κέντρο ελέγχου";
+
+"menubar.engine.inputNote" = "Η πηγή εισαγωγής (μενού πληκτρολογίου) δεν μπορεί να κρυφτεί λόγω περιορισμών συστήματος.";

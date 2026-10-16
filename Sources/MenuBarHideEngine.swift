@@ -52,13 +52,21 @@ final class MenuBarHideEngine {
         (0..<64).filter { !hidden.contains($0) }.map { NSNumber(value: $0) }
     }
 
-    /// Apple agents addressed by bundle id (not by system-item number) that must never be hidden.
-    static let alwaysAllowedBundleIDs: [String] = [
+    /// Apple agents that must NEVER be hidden (they host the system items / core UI). Always
+    /// appended to the allow-list by `restrict`.
+    static let mandatoryBundleIDs: [String] = [
         "com.apple.controlcenter", "com.apple.MenuBarAgent", "com.apple.systemuiserver",
-        "com.apple.TextInputMenuAgent", "com.apple.Siri", "com.apple.Spotlight", "com.apple.campo",
+        "com.apple.TextInputMenuAgent",
         "com.apple.wifi.WiFiAgent", "com.apple.ScreenTimeAgent", "com.apple.AirPlayUIAgent",
         "com.apple.UserNotificationCenter", "com.apple.notificationcenterui", "com.apple.loginwindow",
     ]
+
+    /// The Spotlight/Siri search item (one process `com.apple.campo` on macOS 27; older aliases
+    /// kept for safety). Allowed by default, but hideable via the Spotlight toggle.
+    static let spotlightBundleIDs: [String] = ["com.apple.campo", "com.apple.Spotlight", "com.apple.Siri"]
+
+    /// Apple agents never offered in the third-party app list (mandatory + Spotlight).
+    static let alwaysAllowedBundleIDs: [String] = mandatoryBundleIDs + spotlightBundleIDs
 
     private let log = OSLog(subsystem: "de.csho.Tidier", category: "HideEngine")
     private let assertionClass: NSObject.Type?
@@ -93,7 +101,7 @@ final class MenuBarHideEngine {
                                userInfo: [NSLocalizedDescriptionKey: "MenuBarClientCore nicht verfügbar"]))
             return
         }
-        let allowed = Array(Set(keepVisibleBundleIDs + Self.alwaysAllowedBundleIDs))
+        let allowed = Array(Set(keepVisibleBundleIDs + Self.mandatoryBundleIDs))
         // [[MBAssessmentModeConfiguration alloc] initWithAllowedSystemItems:allowedBundleIdentifiers:]
         guard let allocated = (configClass as AnyObject).perform(NSSelectorFromString("alloc"))?.takeUnretainedValue(),
               let config = allocated.perform(Self.configInit,

@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "מקלדת";
 "sysitem.screenMirror" = "שיקוף מסך";
 "sysitem.controlCenter" = "מרכז הבקרה";
+
+"menubar.engine.inputNote" = "לא ניתן להסתיר את מקור הקלט (תפריט המקלדת) בשל מגבלות מערכת.";

@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Klavye";
 "sysitem.screenMirror" = "Ekran Yansıtma";
 "sysitem.controlCenter" = "Denetim Merkezi";
+
+"menubar.engine.inputNote" = "Giriş kaynağı (klavye menüsü), sistem kısıtlamaları nedeniyle gizlenemez.";

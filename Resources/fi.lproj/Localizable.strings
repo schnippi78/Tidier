@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Näppäimistö";
 "sysitem.screenMirror" = "Näytön peilaus";
 "sysitem.controlCenter" = "Ohjauskeskus";
+
+"menubar.engine.inputNote" = "Syöttölähdettä (näppäimistövalikko) ei voi piilottaa järjestelmän rajoitusten vuoksi.";

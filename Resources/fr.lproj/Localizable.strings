@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Clavier";
 "sysitem.screenMirror" = "Recopie d'écran";
 "sysitem.controlCenter" = "Centre de contrôle";
+
+"menubar.engine.inputNote" = "La source de saisie (menu clavier) ne peut pas être masquée, en raison de limites du système.";

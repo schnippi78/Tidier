@@ -103,6 +103,8 @@ final class StatusBarController {
         // is over-permissive and makes MenuBarAgent no-op the restriction.
         var allow = Set(MenuBarApps.scanBundleIDs()).subtracting(hidden)
         if let own = Bundle.main.bundleIdentifier { allow.insert(own) }
+        // Spotlight/Siri (campo) is allowed unless the user chose to hide it.
+        if !Preferences.shared.hideSpotlight { allow.formUnion(MenuBarHideEngine.spotlightBundleIDs) }
         let allowedSys = MenuBarHideEngine.allowedSystemItems(hiding: Preferences.shared.hiddenSystemItemIDs)
         MenuBarHideEngine.shared.restrict(keepVisibleBundleIDs: Array(allow),
                                           allowedSystemItems: allowedSys) { _ in }

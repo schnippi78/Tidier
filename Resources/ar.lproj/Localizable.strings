@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "لوحة المفاتيح";
 "sysitem.screenMirror" = "نسخ الشاشة";
 "sysitem.controlCenter" = "مركز التحكم";
+
+"menubar.engine.inputNote" = "لا يمكن إخفاء مصدر الإدخال (قائمة لوحة المفاتيح) بسبب قيود النظام.";

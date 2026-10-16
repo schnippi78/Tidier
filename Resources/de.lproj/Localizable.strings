@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Tastatur";
 "sysitem.screenMirror" = "Bildschirmsync.";
 "sysitem.controlCenter" = "Kontrollzentrum";
+
+"menubar.engine.inputNote" = "Die Eingabequelle (Tastaturmenü) lässt sich systembedingt nicht ausblenden.";

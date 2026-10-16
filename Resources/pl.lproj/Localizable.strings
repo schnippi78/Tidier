@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Klawiatura";
 "sysitem.screenMirror" = "Powielanie ekranu";
 "sysitem.controlCenter" = "Centrum sterowania";
+
+"menubar.engine.inputNote" = "Źródła wprowadzania (menu klawiatury) nie można ukryć z powodu ograniczeń systemu.";

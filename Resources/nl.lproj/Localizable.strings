@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Toetsenbord";
 "sysitem.screenMirror" = "Schermspiegeling";
 "sysitem.controlCenter" = "Bedieningspaneel";
+
+"menubar.engine.inputNote" = "De invoerbron (toetsenbordmenu) kan vanwege systeembeperkingen niet worden verborgen.";

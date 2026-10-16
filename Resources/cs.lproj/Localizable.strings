@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Klávesnice";
 "sysitem.screenMirror" = "Zrcadlení obrazovky";
 "sysitem.controlCenter" = "Ovládací centrum";
+
+"menubar.engine.inputNote" = "Zdroj vstupu (nabídka klávesnice) nelze skrýt kvůli systémovým omezením.";

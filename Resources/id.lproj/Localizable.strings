@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Papan ketik";
 "sysitem.screenMirror" = "Pencerminan Layar";
 "sysitem.controlCenter" = "Pusat Kontrol";
+
+"menubar.engine.inputNote" = "Sumber masukan (menu papan ketik) tidak dapat disembunyikan karena batasan sistem.";

@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "Клавиатура";
 "sysitem.screenMirror" = "Повтор экрана";
 "sysitem.controlCenter" = "Пункт управления";
+
+"menubar.engine.inputNote" = "Источник ввода (меню клавиатуры) нельзя скрыть из-за ограничений системы.";

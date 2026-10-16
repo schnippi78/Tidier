@@ -73,3 +73,5 @@
 "sysitem.keyboard" = "键盘";
 "sysitem.screenMirror" = "屏幕镜像";
 "sysitem.controlCenter" = "控制中心";
+
+"menubar.engine.inputNote" = "由于系统限制，输入法（键盘菜单）无法隐藏。";
