@@ -1,109 +1,112 @@
 # Tidier
 
-Ein freier, offener **Menüleisten-Manager für macOS** — versteckt, ordnet und
-zeigt Menüleisten-Symbole. Gedacht als bessere Alternative zu
-[Ice](https://icemenubar.app/) (kostenlos, aber nur teilweise übersetzt) und
-[Bartender](https://www.macbartender.com/) (mächtig, aber kostenpflichtig und
-Closed-Source).
+Ein freier, quelloffener **Menüleisten-Manager für macOS** — blendet Menüleisten-Symbole
+aus, holt sie per Klick zurück und hält die Leiste aufgeräumt. Freie Alternative zu
+[Bartender](https://www.macbartender.com/) (mächtig, aber kostenpflichtig und Closed-Source)
+und [Ice](https://icemenubar.app/) (kostenlos, aber nur teilweise übersetzt).
 
-**Alleinstellungsmerkmal:** echte Voll-Lokalisierung in **26 Sprachen**
-(inkl. CJK und RTL) — hand­übersetzt, nicht maschinell. Umschaltbar direkt in
-der App, ohne Systemsprache zu ändern.
+**Alleinstellungsmerkmal:** echte Voll-Lokalisierung in **26 Sprachen** (inkl. CJK und RTL) —
+handübersetzt, nicht maschinell, direkt in der App umschaltbar (ohne die Systemsprache zu ändern).
+
+Produktseite: **https://tidier.csho.de**
 
 ---
 
-## Status (MVP, v0.1.0)
+## Download
 
-> ⚠️ **macOS 26/27-Hinweis:** Ab macOS 27.0.1 ist das **Ausblenden** fremder
-> Menüleisten-Items über **öffentliche** APIs **nicht mehr möglich** (alle drei bisher
-> genutzten Mechanismen geschlossen). Verstecken geht weiterhin nur noch über **private
-> WindowServer-APIs** (SkyLight/CGS) in einer unsandboxed + notarisierten App — so machen
-> es Bartender 7, BetterTouchTool und Bar Keeper's Friend. Details, Belege und die noch
-> öffentlich funktionierenden Teile (AX-Enumeration, Umsortieren, Panel/Launcher) in
-> [`docs/MACOS27.md`](docs/MACOS27.md). Das Hide-Feature ist **pausiert** (Richtung offen).
-> Die Zustandstabelle unten beschreibt den Stand auf macOS ≤ 15.
+- **Neueste Version:** [**Releases**](https://github.com/schnippi78/Tidier/releases/latest) →
+  `Tidier-x.y.z.dmg` (Universal: Apple Silicon + Intel, **macOS 14–27**)
+- ⚠️ Tidier ist aktuell **self-signed und nicht notarisiert** → macOS blockiert den ersten Start.
+  So erlaubst du es einmalig: siehe **[INSTALL.md](INSTALL.md)**.
 
-| Bereich | Zustand |
-|---|---|
-| Nativer Build (Swift 6 / AppKit + SwiftUI) | ✅ kompiliert & läuft (macOS 14+) |
-| Verstecken/Zeigen von Menüleisten-Items | ✅ macOS ≤ 15 — 1 Klick versteckt alle Icons links des Trenners · ☠️ **macOS 26/27: nicht mehr möglich** (s. `docs/MACOS27.md`) |
-| Aktive Positionierung (Umschalter rechts vorbelegt) | ✅ Seeding der „Preferred Position" → kein manuelles ⌘-Drag nötig |
-| **Tidier Bar** (Panel für versteckte Items, Control-Center-Look) | ✅ fertig: elegantes NSPanel, gruppiert Apple/System · Drittanbieter, echte App-Icons + SF-Symbole, echte Namen (AX), schließt bei Klick außerhalb |
-| Icons nur in der Kachel (Leiste bleibt sauber) | ✅ Ruhezustand eingeklappt; Klick öffnet/schließt nur die Kachel |
-| — Kacheln anklickbar (Item aktivieren) + selbst anordnen | ⏳ geplant (Klick-Weiterleitung + Repositioning) |
-| Berechtigung | **Bedienungshilfen** (+ Screen-Recording für Glyph-Capture/Enumeration); ✅ TCC überlebt jetzt Rebuilds dank stabiler Selbst-Signatur „Tidier Self-Signed" (`build.sh`, signiert per SHA-1-Hash) |
-| „Immer ausgeblendet"-Sektion | ✅ zuschaltbar |
-| Auto-Rehide (mit Intervall) | ✅ |
-| Reveal-on-Hover | ✅ (Basis) |
-| Kontextmenü (Rechtsklick auf Icon) | ✅ Zeigen/Verstecken, Einstellungen, Beenden |
-| SwiftUI-Einstellungen (4 Tabs) | ✅ getestet DE / JA / AR |
-| **26 Sprachen, live umschaltbar** | ✅ getestet (LTR, CJK, RTL) |
-| Launch-at-Login (SMAppService) | ✅ verdrahtet |
-| Menüleisten-Styling (Tint/Rand/Pills) | ⏳ geplant |
-| Trigger (WLAN/Akku/VPN/Script) — Bartenders Killer-Feature | ⏳ geplant |
-| Suche in Menüleisten-Items | ⏳ geplant |
-| Globale Hotkeys | ⏳ geplant |
-| App-Icon / Notarisierung / Sparkle-Updates | ⏳ geplant |
+## Status
 
-## So funktioniert das Verstecken
+**v1.1.1 (Beta)** — läuft und wird weiter ausgebaut.
 
-Wie Hidden Bar / Dozer (und im Kern auch Bartender): Die Menüleiste ordnet
-Status-Items von rechts nach links an. Tidier legt einen **Trenner** als
-Status-Item an; wird dessen Breite riesig gesetzt, rutscht **alles links davon**
-über den linken Bildschirmrand und verschwindet. Kein Accessibility- oder
-Screen-Recording-Recht nötig.
+macOS 27 hat die früher genutzten **öffentlichen** Wege zum Ausblenden geschlossen (der
+Längen-Trick und das ⌘-Drag-Umsortieren — darum funktionieren Ice/Dozer dort nicht mehr).
+Tidier nutzt stattdessen eine **neu gebaute Hide-Engine** über private WindowServer-APIs
+(wie Bartender 7, BetterTouchTool) und blendet auf **macOS 14–27** weiter aus — Drittanbieter-
+Apps **und** System-Items. Untersuchung, Belege und Technik: [`docs/MACOS27.md`](docs/MACOS27.md).
 
-**Einrichtung:** Halte **⌘** und ziehe deine Symbole links neben Tidiers
-Trenner. Mit aktivierter „immer ausgeblendet"-Sektion gibt es einen zweiten,
-gedimmten Trenner ganz links.
+**Fertig**
+- Ausblenden/Einblenden der Menüleisten-Symbole (macOS 14–27, live verifiziert)
+- Hide-Engine für macOS 27, auch **System-Items** (WLAN, Bluetooth, Batterie, Uhr, Spotlight …)
+- Auswahl **pro App** und **pro System-Symbol** (Einstellungen → „Menüleiste")
+- **26 Sprachen**, live umschaltbar (LTR, CJK, RTL)
+- Auto-Rehide (Intervall), Reveal-on-Hover, „immer ausgeblendet"-Sektion, Kontextmenü
+- Launch-at-Login, Einstellungen (4 Tabs), App-Icon, Universal-Build + DMG
 
-### Aktive Positionierung (verifiziert 2026-09-11)
+**Geplant**
+- Items in der Menüleiste selbst umsortieren
+- Menüleisten-Styling (Tint / Rand / Pills)
+- Trigger (WLAN / Akku / VPN / Script), Suche in Items, globale Hotkeys
+- Notarisierung & automatische Updates
 
-Beim ersten Start setzt Tidier die „Preferred Position" seiner Items vor
-(`Tidier.Main` ganz rechts, `Tidier.HiddenSeparator` direkt links daneben) — so
-liegen **alle** anderen Icons links des Trenners und verschwinden beim ersten
-Klick, **ohne manuelles ⌘-Drag**. Live getestet: ein Klick blendet die komplette
-Icon-Reihe aus, ein weiterer holt sie zurück.
+## So funktioniert's
 
-Hinweis: Auf einem **randvollen Notch-Rand** muss ggf. einmalig **ein** Slot frei
-sein, damit Tidier überhaupt einen Platz bekommt (danach räumt es selbst auf).
+1. Installieren und einmalig die **Bedienungshilfen** erlauben.
+2. In den **Einstellungen → Menüleiste** festlegen, welche Apps und System-Symbole
+   ausgeblendet werden sollen.
+3. Ein Klick auf das **Tidier-Symbol** (Chevron) versteckt die ausgewählten Symbole —
+   noch ein Klick holt sie zurück; optional automatisch nach Intervall.
 
-**Noch offen (Komfort):** „Tidier Bar" — versteckte Items zusätzlich in einem
-eigenen Panel anzeigen, statt sie nur aus-/einzublenden.
+## Berechtigungen
 
-## Bauen & Starten
+- **Bedienungshilfen** (nötig) — fürs Ausblenden über die WindowServer-API.
+- **Bildschirmaufnahme** (optional) — nur, um echte Icon-Glyphen zu erfassen.
+- Keine Cloud, kein Tracking — alles bleibt lokal.
+
+> **Hinweis (self-signed):** Ein Rebuild mit selbst­signiertem Zertifikat kann die
+> TCC-Freigaben zurücksetzen. Bei Problemen: `tccutil reset Accessibility de.csho.Tidier`
+> (und ggf. `ScreenCapture`), dann einmal neu erlauben. Dauerhaft stabil erst mit
+> Developer-ID + Notarisierung.
+
+## Aus dem Quellcode bauen
 
 Kein volles Xcode nötig — nur die Command Line Tools (`swiftc`).
 
 ```bash
-./build.sh
+./build.sh                # baut build/Tidier.app (aktuelle Architektur), self-signed
 open build/Tidier.app
 ```
 
-Übersetzungen neu erzeugen (Quelle: `scripts/gen_strings.py`):
+Release-DMG (Universal arm64 + x86_64; notarisiert, falls Developer-ID + Profil vorhanden):
+
+```bash
+scripts/release.sh        # → build/Tidier-<version>.dmg
+```
+
+Übersetzungen neu erzeugen (Single Source of Truth: `scripts/gen_strings.py`):
 
 ```bash
 python3 scripts/gen_strings.py
 ```
 
-Tidier läuft als Menüleisten-Agent (kein Dock-Icon). Einstellungen: Rechtsklick
-auf das Tidier-Symbol → „Einstellungen …", oder `open build/Tidier.app` erneut.
+Tidier läuft als Menüleisten-Agent (kein Dock-Icon). Einstellungen: Rechtsklick auf das
+Tidier-Symbol → „Einstellungen …".
 
 ## Projektstruktur
 
 ```
 Sources/
-  main.swift               AppKit-Einstieg (Agent)
-  AppDelegate.swift        Lifecycle
-  StatusBarController.swift Verstecken/Zeigen, Auto-Rehide, Hover, Kontextmenü
-  Preferences.swift        UserDefaults-Wrapper (ObservableObject)
-  LanguageManager.swift    Sprachliste (26) + Live-Override + L("…")-Helfer
-  LaunchAtLogin.swift      SMAppService
-  SettingsView.swift       SwiftUI-Einstellungen (Allgemein/Menüleiste/Sprache/Über)
+  main.swift / AppDelegate.swift   App-Einstieg (LSUIElement-Agent) + Lifecycle
+  StatusBarController.swift        Toggle, Auto-Rehide, Reveal-on-Hover, Kontextmenü
+  MenuBarHideEngine.swift          Hide-Engine (macOS 27, private WindowServer-API)
+  MenuBarScanner.swift             Menüleisten-Items abtasten (Geometrie)
+  MenuBarApps.swift / AXResolver   App-/System-Item-Identität (Accessibility)
+  CaptureEngine.swift              Icon-Glyphen erfassen (optional, Bildschirmaufnahme)
+  PermissionManager.swift          Bedienungshilfen / Bildschirmaufnahme preflight
+  SettingsView.swift               SwiftUI-Einstellungen (Allgemein / Menüleiste / Sprache / Über)
+  LanguageManager.swift            26 Sprachen + Live-Umschaltung + L("…")-Helfer
+  Preferences.swift                UserDefaults-Wrapper (ObservableObject)
+  LaunchAtLogin.swift              SMAppService
 Resources/<code>.lproj/Localizable.strings   handübersetzte Strings
-scripts/gen_strings.py     Generator (Single Source of Truth der Übersetzungen)
-Info.plist                 LSUIElement, CFBundleLocalizations, Bundle-ID de.csho.Tidier
-build.sh                   swiftc-Build + Bundle-Assemblierung + Ad-hoc-Signatur
+Resources/AppIcon.icns             App-Icon
+scripts/gen_strings.py             Übersetzungs-Generator
+scripts/release.sh                 Universal-Build + DMG (+ optionale Notarisierung)
+Info.plist                         LSUIElement, CFBundleLocalizations, Bundle-ID de.csho.Tidier
+docs/MACOS27.md                    Warum/Wie des Ausblendens unter macOS 27
 ```
 
 ## Unterstützte Sprachen (26)
@@ -111,10 +114,12 @@ build.sh                   swiftc-Build + Bundle-Assemblierung + Ad-hoc-Signatur
 en, de, fr, es, it, pt-BR, nl, sv, da, nb, fi, pl, cs, ru, uk, tr, el, ro, hu,
 id, ja, ko, zh-Hans, zh-Hant, ar, he
 
-Eine Sprache hinzufügen: Eintrag in `scripts/gen_strings.py` (`T[...]`) und in
-`Languages.all` (LanguageManager.swift) ergänzen, `CFBundleLocalizations` in
-`Info.plist` erweitern, `python3 scripts/gen_strings.py` und `./build.sh`.
+Eine Sprache hinzufügen: Eintrag in `scripts/gen_strings.py` und `LanguageManager.swift`
+ergänzen, `CFBundleLocalizations` in `Info.plist` erweitern, dann
+`python3 scripts/gen_strings.py` und `./build.sh`.
 
 ## Lizenz
 
-Noch offen. Vorschlag: MIT (permissiv) oder GPL-3.0 (wie Ice). — Christians Entscheidung.
+**GPL-3.0** — siehe [LICENSE](LICENSE). Tidier adaptiert Technik aus
+[Ice](https://github.com/jordanbaird/Ice) (Umsortieren/Positionierung) und MenuBarHider
+(Hide-Engine für macOS 27) — Attribution in [NOTICE](NOTICE).
