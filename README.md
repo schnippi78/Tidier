@@ -1,9 +1,7 @@
 # Tidier
 
 Ein freier, quelloffener **Menüleisten-Manager für macOS** — blendet Menüleisten-Symbole
-aus, holt sie per Klick zurück und hält die Leiste aufgeräumt. Freie Alternative zu
-[Bartender](https://www.macbartender.com/) (mächtig, aber kostenpflichtig und Closed-Source)
-und [Ice](https://icemenubar.app/) (kostenlos, aber nur teilweise übersetzt).
+aus, holt sie per Klick zurück und hält die Leiste aufgeräumt. Freie Alternative zu den anderen;-)
 
 **Alleinstellungsmerkmal:** echte Voll-Lokalisierung in **26 Sprachen** (inkl. CJK und RTL) —
 handübersetzt, nicht maschinell, direkt in der App umschaltbar (ohne die Systemsprache zu ändern).
