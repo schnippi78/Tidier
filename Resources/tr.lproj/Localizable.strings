@@ -59,11 +59,11 @@
 "sysitem.network" = "Ağ";
 "sysitem.battery" = "Pil";
 
-"menubar.engine.help" = "Tidier'ın beklemede hangi uygulama simgelerini gizleyeceğini seçin. Kısaca göstermek için şevrona tıklayın.";
+"menubar.engine.help" = "Tidier'ın beklemede hangi uygulama simgelerini gizleyeceğini seçin. Menü çubuğunun altındaki Tidier çubuğunda görmek için “<” işaretine tıklayın.";
 "menubar.engine.apps" = "Menü çubuğu uygulamaları";
 "menubar.engine.rescan" = "Yeniden tara";
 "menubar.engine.empty" = "Uygulama bulunamadı. Erişilebilirlik'in izinli olduğundan emin olun ve yeniden tarayın.";
-"menubar.engine.appsNote" = "Kapattığınız uygulamalar, göstermek için Tidier'a tıklayana kadar çubuktan kaybolur.";
+"menubar.engine.appsNote" = "Kapattığınız uygulamalar menü çubuğundan kaybolur ve Tidier çubuğunda görünür – açmak için orada tıklayın.";
 "menubar.engine.system" = "Sistem simgeleri";
 "menubar.engine.systemNote" = "Spotlight, Siri ve giriş kaynağı, sistem kısıtlamaları nedeniyle gizlenemez.";
 "sysitem.bluetooth" = "Bluetooth";

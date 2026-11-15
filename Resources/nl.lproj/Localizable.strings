@@ -59,11 +59,11 @@
 "sysitem.network" = "Netwerk";
 "sysitem.battery" = "Batterij";
 
-"menubar.engine.help" = "Kies welke app-symbolen Tidier in ruststand verbergt. Klik op de chevron om ze kort te tonen.";
+"menubar.engine.help" = "Kies welke app-symbolen Tidier in ruststand verbergt. Klik op ‘<’ om ze in de Tidier-balk onder de menubalk te zien.";
 "menubar.engine.apps" = "Menubalk-apps";
 "menubar.engine.rescan" = "Opnieuw scannen";
 "menubar.engine.empty" = "Geen apps gevonden. Zorg dat Toegankelijkheid is toegestaan en scan opnieuw.";
-"menubar.engine.appsNote" = "Uitgeschakelde apps verdwijnen uit de balk totdat je op Tidier klikt om ze te tonen.";
+"menubar.engine.appsNote" = "Uitgeschakelde apps verdwijnen uit de menubalk en verschijnen in de Tidier-balk – klik daar om ze te openen.";
 "menubar.engine.system" = "Systeemsymbolen";
 "menubar.engine.systemNote" = "Spotlight, Siri en de invoerbron kunnen vanwege systeembeperkingen niet worden verborgen.";
 "sysitem.bluetooth" = "Bluetooth";

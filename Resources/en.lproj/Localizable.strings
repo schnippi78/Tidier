@@ -59,11 +59,11 @@
 "sysitem.network" = "Network";
 "sysitem.battery" = "Battery";
 
-"menubar.engine.help" = "Choose which app icons Tidier hides at rest. Click the chevron to reveal them briefly.";
+"menubar.engine.help" = "Choose which app icons Tidier hides at rest. Click “<” to see them in the Tidier Bar below the menu bar.";
 "menubar.engine.apps" = "Menu bar apps";
 "menubar.engine.rescan" = "Rescan";
 "menubar.engine.empty" = "No apps found. Make sure Accessibility is allowed, then rescan.";
-"menubar.engine.appsNote" = "Apps you switch off disappear from the bar until you click Tidier to reveal them.";
+"menubar.engine.appsNote" = "Apps you switch off disappear from the menu bar and show up in the Tidier Bar – click one there to open it.";
 "menubar.engine.system" = "System icons";
 "menubar.engine.systemNote" = "Spotlight, Siri and the input source can't be hidden, due to system limitations.";
 "sysitem.bluetooth" = "Bluetooth";

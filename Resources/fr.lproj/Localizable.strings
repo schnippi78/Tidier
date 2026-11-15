@@ -59,11 +59,11 @@
 "sysitem.network" = "Réseau";
 "sysitem.battery" = "Batterie";
 
-"menubar.engine.help" = "Choisissez les icônes d'apps que Tidier masque au repos. Cliquez sur le chevron pour les afficher brièvement.";
+"menubar.engine.help" = "Choisissez les icônes d'apps que Tidier masque au repos. Cliquez sur « < » pour les voir dans la barre Tidier, sous la barre des menus.";
 "menubar.engine.apps" = "Apps de la barre des menus";
 "menubar.engine.rescan" = "Réanalyser";
 "menubar.engine.empty" = "Aucune app trouvée. Vérifiez que l'Accessibilité est autorisée, puis réanalysez.";
-"menubar.engine.appsNote" = "Les apps désactivées disparaissent de la barre jusqu'à ce que vous cliquiez sur Tidier pour les afficher.";
+"menubar.engine.appsNote" = "Les apps désactivées disparaissent de la barre des menus et apparaissent dans la barre Tidier – cliquez dessus pour les ouvrir.";
 "menubar.engine.system" = "Icônes système";
 "menubar.engine.systemNote" = "Spotlight, Siri et la source de saisie ne peuvent pas être masqués, en raison de limites du système.";
 "sysitem.bluetooth" = "Bluetooth";

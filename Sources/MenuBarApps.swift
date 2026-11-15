@@ -26,11 +26,17 @@ enum MenuBarApps {
     static func scanThirdParty() -> [Entry] {
         guard PermissionManager.hasAccessibility else { return [] }
         let ownPID = ProcessInfo.processInfo.processIdentifier
+        // Items MenuBarAgent currently hides vanish from AX (kAXErrorNoValue), so a hidden app
+        // would drop out of the list and could never be shown again — keep those listed too.
+        let hidden = Preferences.shared.hiddenBundleIDs
         var out: [Entry] = []
+        var seen = Set<String>()
         for app in NSWorkspace.shared.runningApplications {
             guard app.activationPolicy != .prohibited, app.processIdentifier != ownPID,
                   let bid = app.bundleIdentifier, !systemBundleIDs.contains(bid) else { continue }
-            if appHasMenuBarExtra(pid: app.processIdentifier) {
+            guard !seen.contains(bid) else { continue }
+            if hidden.contains(bid) || appHasMenuBarExtra(pid: app.processIdentifier) {
+                seen.insert(bid)
                 out.append(Entry(bundleID: bid, name: app.localizedName ?? bid))
             }
         }

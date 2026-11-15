@@ -59,11 +59,11 @@
 "sysitem.network" = "Verkko";
 "sysitem.battery" = "Akku";
 
-"menubar.engine.help" = "Valitse, mitkä sovelluskuvakkeet Tidier piilottaa lepotilassa. Napsauta chevronia näyttääksesi ne hetkeksi.";
+"menubar.engine.help" = "Valitse, mitkä sovelluskuvakkeet Tidier piilottaa lepotilassa. Napsauta ”<” nähdäksesi ne Tidier-palkissa valikkopalkin alla.";
 "menubar.engine.apps" = "Valikkopalkin sovellukset";
 "menubar.engine.rescan" = "Skannaa uudelleen";
 "menubar.engine.empty" = "Sovelluksia ei löytynyt. Varmista, että Käyttöapu on sallittu, ja skannaa uudelleen.";
-"menubar.engine.appsNote" = "Pois kytkemäsi sovellukset katoavat palkista, kunnes napsautat Tidieriä näyttääksesi ne.";
+"menubar.engine.appsNote" = "Pois kytkemäsi sovellukset katoavat valikkopalkista ja näkyvät Tidier-palkissa – avaa ne napsauttamalla siellä.";
 "menubar.engine.system" = "Järjestelmäkuvakkeet";
 "menubar.engine.systemNote" = "Spotlightia, Siriä ja syöttölähdettä ei voi piilottaa järjestelmän rajoitusten vuoksi.";
 "sysitem.bluetooth" = "Bluetooth";

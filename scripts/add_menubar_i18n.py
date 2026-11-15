@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Appends the remaining Menü-Leiste tab strings to every Localizable.strings (idempotent).
 import os
+import re
 
 RES = os.path.join(os.path.dirname(__file__), "..", "Resources")
 
@@ -172,32 +173,32 @@ T = {
   "ar":"البطارية","he":"סוללה","id":"Baterai"},
  # --- macOS 27 hide-engine UI ---
  "menubar.engine.help": {
-  "de":"Wähle aus, welche App-Symbole Tidier im Ruhezustand ausblendet. Ein Klick auf das Chevron blendet sie kurz wieder ein.",
-  "en":"Choose which app icons Tidier hides at rest. Click the chevron to reveal them briefly.",
-  "es":"Elige qué iconos de apps oculta Tidier en reposo. Haz clic en el chevrón para mostrarlos brevemente.",
-  "fr":"Choisissez les icônes d'apps que Tidier masque au repos. Cliquez sur le chevron pour les afficher brièvement.",
-  "it":"Scegli quali icone delle app Tidier nasconde a riposo. Fai clic sul chevron per mostrarle brevemente.",
-  "pt-BR":"Escolha quais ícones de apps o Tidier oculta em repouso. Clique no chevron para mostrá-los brevemente.",
-  "nl":"Kies welke app-symbolen Tidier in ruststand verbergt. Klik op de chevron om ze kort te tonen.",
-  "sv":"Välj vilka appikoner Tidier döljer i viloläge. Klicka på chevronen för att visa dem kort.",
-  "nb":"Velg hvilke appikoner Tidier skjuler i hvilemodus. Klikk på chevronen for å vise dem kort.",
-  "da":"Vælg hvilke app-ikoner Tidier skjuler i hviletilstand. Klik på chevronen for at vise dem kortvarigt.",
-  "fi":"Valitse, mitkä sovelluskuvakkeet Tidier piilottaa lepotilassa. Napsauta chevronia näyttääksesi ne hetkeksi.",
-  "pl":"Wybierz, które ikony aplikacji Tidier ukrywa w stanie spoczynku. Kliknij strzałkę, aby je na chwilę pokazać.",
-  "cs":"Vyberte, které ikony aplikací Tidier skryje v klidu. Klikněte na šipku pro jejich krátké zobrazení.",
-  "hu":"Válaszd ki, mely alkalmazásikonokat rejti el a Tidier nyugalmi állapotban. Kattints a chevronra a rövid megjelenítéshez.",
-  "ro":"Alege ce pictograme de aplicații ascunde Tidier în repaus. Fă clic pe chevron pentru a le afișa pe scurt.",
-  "tr":"Tidier'ın beklemede hangi uygulama simgelerini gizleyeceğini seçin. Kısaca göstermek için şevrona tıklayın.",
-  "el":"Επιλέξτε ποια εικονίδια εφαρμογών κρύβει το Tidier σε ηρεμία. Κάντε κλικ στο βέλος για να τα εμφανίσετε για λίγο.",
-  "ru":"Выберите, какие значки приложений Tidier скрывает в покое. Нажмите шеврон, чтобы ненадолго показать их.",
-  "uk":"Виберіть, які значки програм Tidier приховує в стані спокою. Натисніть шеврон, щоб ненадовго показати їх.",
-  "ja":"Tidier が待機時に隠すアプリアイコンを選びます。シェブロンをクリックすると一時的に表示します。",
-  "ko":"Tidier가 대기 상태에서 숨길 앱 아이콘을 선택하세요. 셰브런을 클릭하면 잠시 표시됩니다.",
-  "zh-Hans":"选择 Tidier 在静置时隐藏哪些应用图标。点按箭头可短暂显示它们。",
-  "zh-Hant":"選擇 Tidier 在靜置時隱藏哪些應用程式圖示。點按箭頭可短暫顯示它們。",
-  "ar":"اختر أيقونات التطبيقات التي يخفيها Tidier في وضع الخمول. انقر على السهم لإظهارها مؤقتًا.",
-  "he":"בחר אילו סמלי יישומים Tidier מסתיר במצב מנוחה. לחץ על החץ כדי להציג אותם לרגע.",
-  "id":"Pilih ikon aplikasi mana yang disembunyikan Tidier saat diam. Klik chevron untuk menampilkannya sebentar."},
+  "de":"Wähle aus, welche App-Symbole Tidier im Ruhezustand ausblendet. Ein Klick auf „<“ zeigt sie in der Tidier-Leiste unter der Menüleiste.",
+  "en":"Choose which app icons Tidier hides at rest. Click “<” to see them in the Tidier Bar below the menu bar.",
+  "es":"Elige qué iconos de apps oculta Tidier en reposo. Haz clic en «<» para verlos en la barra de Tidier, bajo la barra de menús.",
+  "fr":"Choisissez les icônes d'apps que Tidier masque au repos. Cliquez sur « < » pour les voir dans la barre Tidier, sous la barre des menus.",
+  "it":"Scegli quali icone delle app Tidier nasconde a riposo. Fai clic su «<» per vederle nella barra di Tidier sotto la barra dei menu.",
+  "pt-BR":"Escolha quais ícones de apps o Tidier oculta em repouso. Clique em “<” para vê-los na barra do Tidier, abaixo da barra de menus.",
+  "nl":"Kies welke app-symbolen Tidier in ruststand verbergt. Klik op ‘<’ om ze in de Tidier-balk onder de menubalk te zien.",
+  "sv":"Välj vilka appikoner Tidier döljer i viloläge. Klicka på ”<” för att se dem i Tidier-fältet under menyraden.",
+  "nb":"Velg hvilke appikoner Tidier skjuler i hvilemodus. Klikk på «<» for å se dem i Tidier-linjen under menylinjen.",
+  "da":"Vælg hvilke app-ikoner Tidier skjuler i hviletilstand. Klik på »<« for at se dem i Tidier-linjen under menulinjen.",
+  "fi":"Valitse, mitkä sovelluskuvakkeet Tidier piilottaa lepotilassa. Napsauta ”<” nähdäksesi ne Tidier-palkissa valikkopalkin alla.",
+  "pl":"Wybierz, które ikony aplikacji Tidier ukrywa w stanie spoczynku. Kliknij „<”, aby zobaczyć je na pasku Tidier pod paskiem menu.",
+  "cs":"Vyberte, které ikony aplikací Tidier skryje v klidu. Kliknutím na „<“ je uvidíte v liště Tidier pod řádkem nabídek.",
+  "hu":"Válaszd ki, mely alkalmazásikonokat rejti el a Tidier nyugalmi állapotban. Kattints a „<” jelre, és a menüsor alatti Tidier-sávban láthatod őket.",
+  "ro":"Alege ce pictograme de aplicații ascunde Tidier în repaus. Fă clic pe „<” ca să le vezi în bara Tidier de sub bara de meniu.",
+  "tr":"Tidier'ın beklemede hangi uygulama simgelerini gizleyeceğini seçin. Menü çubuğunun altındaki Tidier çubuğunda görmek için “<” işaretine tıklayın.",
+  "el":"Επιλέξτε ποια εικονίδια εφαρμογών κρύβει το Tidier σε ηρεμία. Κάντε κλικ στο «<» για να τα δείτε στη γραμμή Tidier κάτω από τη γραμμή μενού.",
+  "ru":"Выберите, какие значки приложений Tidier скрывает в покое. Нажмите «<», чтобы увидеть их на панели Tidier под строкой меню.",
+  "uk":"Виберіть, які значки програм Tidier приховує в стані спокою. Натисніть «<», щоб побачити їх на панелі Tidier під рядком меню.",
+  "ja":"Tidier が待機時に隠すアプリアイコンを選びます。「<」をクリックすると、メニューバーの下の Tidier バーに表示されます。",
+  "ko":"Tidier가 대기 상태에서 숨길 앱 아이콘을 선택하세요. ‘<’를 클릭하면 메뉴 막대 아래 Tidier 막대에 표시됩니다.",
+  "zh-Hans":"选择 Tidier 在静置时隐藏哪些应用图标。点按“<”即可在菜单栏下方的 Tidier 栏中查看它们。",
+  "zh-Hant":"選擇 Tidier 在靜置時隱藏哪些應用程式圖示。點按「<」即可在選單列下方的 Tidier 列中查看它們。",
+  "ar":"اختر أيقونات التطبيقات التي يخفيها Tidier في وضع الخمول. انقر على «<» لعرضها في شريط Tidier أسفل شريط القوائم.",
+  "he":"בחר אילו סמלי יישומים Tidier מסתיר במצב מנוחה. לחץ על ‚<’ כדי לראות אותם בסרגל Tidier מתחת לשורת התפריטים.",
+  "id":"Pilih ikon aplikasi mana yang disembunyikan Tidier saat diam. Klik “<” untuk melihatnya di bilah Tidier di bawah bilah menu."},
  "menubar.engine.apps": {
   "de":"Menüleisten-Apps","en":"Menu bar apps","es":"Apps de la barra de menús","fr":"Apps de la barre des menus",
   "it":"App della barra dei menu","pt-BR":"Apps da barra de menus","nl":"Menubalk-apps","sv":"Menyradsappar",
@@ -242,32 +243,32 @@ T = {
   "he":"לא נמצאו יישומים. ודא שהנגישות מאופשרת, ואז סרוק מחדש.",
   "id":"Tidak ada aplikasi. Pastikan Aksesibilitas diizinkan, lalu pindai ulang."},
  "menubar.engine.appsNote": {
-  "de":"Ausgeschaltete Apps verschwinden aus der Leiste, bis du Tidier zum Einblenden anklickst.",
-  "en":"Apps you switch off disappear from the bar until you click Tidier to reveal them.",
-  "es":"Las apps que desactives desaparecen de la barra hasta que hagas clic en Tidier para mostrarlas.",
-  "fr":"Les apps désactivées disparaissent de la barre jusqu'à ce que vous cliquiez sur Tidier pour les afficher.",
-  "it":"Le app disattivate scompaiono dalla barra finché non fai clic su Tidier per mostrarle.",
-  "pt-BR":"Os apps desativados somem da barra até você clicar no Tidier para mostrá-los.",
-  "nl":"Uitgeschakelde apps verdwijnen uit de balk totdat je op Tidier klikt om ze te tonen.",
-  "sv":"Appar du stänger av försvinner från raden tills du klickar på Tidier för att visa dem.",
-  "nb":"Apper du slår av, forsvinner fra linjen til du klikker på Tidier for å vise dem.",
-  "da":"Apps, du slår fra, forsvinder fra linjen, indtil du klikker på Tidier for at vise dem.",
-  "fi":"Pois kytkemäsi sovellukset katoavat palkista, kunnes napsautat Tidieriä näyttääksesi ne.",
-  "pl":"Wyłączone aplikacje znikają z paska, dopóki nie klikniesz Tidier, aby je pokazać.",
-  "cs":"Vypnuté aplikace zmizí z řádku, dokud neklepnete na Tidier pro jejich zobrazení.",
-  "hu":"A kikapcsolt alkalmazások eltűnnek a sorból, amíg a Tidierre kattintva meg nem jeleníted őket.",
-  "ro":"Aplicațiile dezactivate dispar din bară până dai clic pe Tidier pentru a le afișa.",
-  "tr":"Kapattığınız uygulamalar, göstermek için Tidier'a tıklayana kadar çubuktan kaybolur.",
-  "el":"Οι εφαρμογές που απενεργοποιείτε εξαφανίζονται από τη γραμμή μέχρι να κάνετε κλικ στο Tidier για να τις εμφανίσετε.",
-  "ru":"Отключённые приложения исчезают из строки, пока вы не нажмёте Tidier, чтобы показать их.",
-  "uk":"Вимкнені програми зникають з рядка, доки ви не натиснете Tidier, щоб показати їх.",
-  "ja":"オフにしたアプリは、Tidier をクリックして表示するまでバーから消えます。",
-  "ko":"끈 앱은 Tidier를 클릭해 표시할 때까지 막대에서 사라집니다.",
-  "zh-Hans":"关闭的应用会从菜单栏消失，直到你点按 Tidier 显示它们。",
-  "zh-Hant":"關閉的應用程式會從選單列消失，直到你點按 Tidier 顯示它們。",
-  "ar":"تختفي التطبيقات التي توقفها من الشريط حتى تنقر على Tidier لإظهارها.",
-  "he":"יישומים שתכבה ייעלמו מהשורה עד שתלחץ על Tidier כדי להציג אותם.",
-  "id":"Aplikasi yang Anda matikan hilang dari bilah sampai Anda mengeklik Tidier untuk menampilkannya."},
+  "de":"Ausgeschaltete Apps verschwinden aus der Menüleiste und erscheinen in der Tidier-Leiste – ein Klick dort öffnet sie.",
+  "en":"Apps you switch off disappear from the menu bar and show up in the Tidier Bar – click one there to open it.",
+  "es":"Las apps que desactives desaparecen de la barra de menús y aparecen en la barra de Tidier; haz clic allí para abrirlas.",
+  "fr":"Les apps désactivées disparaissent de la barre des menus et apparaissent dans la barre Tidier – cliquez dessus pour les ouvrir.",
+  "it":"Le app disattivate scompaiono dalla barra dei menu e compaiono nella barra di Tidier: fai clic lì per aprirle.",
+  "pt-BR":"Os apps desativados somem da barra de menus e aparecem na barra do Tidier – clique neles lá para abri-los.",
+  "nl":"Uitgeschakelde apps verdwijnen uit de menubalk en verschijnen in de Tidier-balk – klik daar om ze te openen.",
+  "sv":"Appar du stänger av försvinner från menyraden och visas i Tidier-fältet – klicka där för att öppna dem.",
+  "nb":"Apper du slår av, forsvinner fra menylinjen og vises i Tidier-linjen – klikk der for å åpne dem.",
+  "da":"Apps, du slår fra, forsvinder fra menulinjen og vises i Tidier-linjen – klik der for at åbne dem.",
+  "fi":"Pois kytkemäsi sovellukset katoavat valikkopalkista ja näkyvät Tidier-palkissa – avaa ne napsauttamalla siellä.",
+  "pl":"Wyłączone aplikacje znikają z paska menu i pojawiają się na pasku Tidier – kliknij tam, aby je otworzyć.",
+  "cs":"Vypnuté aplikace zmizí z řádku nabídek a objeví se v liště Tidier – kliknutím tam je otevřete.",
+  "hu":"A kikapcsolt alkalmazások eltűnnek a menüsorból, és a Tidier-sávban jelennek meg – ott kattintva megnyithatod őket.",
+  "ro":"Aplicațiile dezactivate dispar din bara de meniu și apar în bara Tidier – fă clic acolo ca să le deschizi.",
+  "tr":"Kapattığınız uygulamalar menü çubuğundan kaybolur ve Tidier çubuğunda görünür – açmak için orada tıklayın.",
+  "el":"Οι εφαρμογές που απενεργοποιείτε εξαφανίζονται από τη γραμμή μενού και εμφανίζονται στη γραμμή Tidier – κάντε κλικ εκεί για να τις ανοίξετε.",
+  "ru":"Отключённые приложения исчезают из строки меню и появляются на панели Tidier – нажмите там, чтобы открыть их.",
+  "uk":"Вимкнені програми зникають з рядка меню й з’являються на панелі Tidier – натисніть там, щоб відкрити їх.",
+  "ja":"オフにしたアプリはメニューバーから消え、Tidier バーに表示されます。そこでクリックすると開きます。",
+  "ko":"끈 앱은 메뉴 막대에서 사라지고 Tidier 막대에 표시됩니다. 거기서 클릭하면 열립니다.",
+  "zh-Hans":"关闭的应用会从菜单栏消失并显示在 Tidier 栏中，在那里点按即可打开。",
+  "zh-Hant":"關閉的應用程式會從選單列消失並顯示在 Tidier 列中，在那裡點按即可打開。",
+  "ar":"تختفي التطبيقات التي توقفها من شريط القوائم وتظهر في شريط Tidier – انقر عليها هناك لفتحها.",
+  "he":"יישומים שתכבה ייעלמו משורת התפריטים ויופיעו בסרגל Tidier – לחץ עליהם שם כדי לפתוח אותם.",
+  "id":"Aplikasi yang Anda matikan hilang dari bilah menu dan muncul di bilah Tidier – klik di sana untuk membukanya."},
  "menubar.engine.system": {
   "de":"System-Symbole","en":"System icons","es":"Iconos del sistema","fr":"Icônes système",
   "it":"Icone di sistema","pt-BR":"Ícones do sistema","nl":"Systeemsymbolen","sv":"Systemikoner",
@@ -304,7 +305,7 @@ T = {
   "he":"לא ניתן להסתיר את Spotlight, Siri ומקור הקלט בשל מגבלות מערכת.",
   "id":"Spotlight, Siri, dan sumber masukan tidak dapat disembunyikan karena batasan sistem."},
  # --- system item labels (macOS 27) ---
- "sysitem.wifi": {"de":"WLAN", **{l:"Wi-Fi" for l in ["en","es","fr","it","pt-BR","sv","da","nb","fi","pl","cs","hu","ro","tr","el","ru","uk","ja","ko","zh-Hans","zh-Hant","ar","he","id"]}, "nl":"wifi"},
+ "sysitem.wifi": {"de":"WLAN", **{l:"Wi-Fi" for l in ["en","es","fr","it","pt-BR","sv","da","nb","fi","pl","cs","hu","ro","tr","el","ru","uk","ja","ko","zh-Hans","zh-Hant","ar","he","id"]}, "nl":"Wi-Fi"},
  "sysitem.bluetooth": {l:"Bluetooth" for l in ["de","en","es","fr","it","pt-BR","nl","sv","nb","da","fi","pl","cs","hu","ro","tr","el","ru","uk","ja","ko","zh-Hans","zh-Hant","ar","he","id"]},
  "sysitem.volume": {
   "de":"Lautstärke","en":"Volume","es":"Volumen","fr":"Volume","it":"Volume","pt-BR":"Volume","nl":"Volume","sv":"Volym",
@@ -335,7 +336,7 @@ T = {
   "de":"Kontrollzentrum","en":"Control Center","es":"Centro de Control","fr":"Centre de contrôle","it":"Centro di Controllo","pt-BR":"Central de Controle","nl":"Bedieningspaneel","sv":"Kontrollcenter",
   "nb":"Kontrollsenter","da":"Kontrolcenter","fi":"Ohjauskeskus","pl":"Centrum sterowania","cs":"Ovládací centrum","hu":"Vezérlőközpont","ro":"Centru de control","tr":"Denetim Merkezi",
   "el":"Κέντρο ελέγχου","ru":"Пункт управления","uk":"Пункт керування","ja":"コントロールセンター","ko":"제어 센터","zh-Hans":"控制中心","zh-Hant":"控制中心",
-  "ar":"مركز التحكم","he":"מרכز הבקרה","id":"Pusat Kontrol"},
+  "ar":"مركز التحكم","he":"מרכז הבקרה","id":"Pusat Kontrol"},
  "menubar.engine.inputNote": {
   "de":"Die Eingabequelle (Tastaturmenü) lässt sich systembedingt nicht ausblenden.",
   "en":"The input source (keyboard menu) can't be hidden, due to system limitations.",
@@ -373,10 +374,15 @@ for lang in langs:
     existing = open(path, encoding="utf-8").read()
     add = []
     for key, m in T.items():
-        if f'"{key}"' in existing: continue
         val = m.get(lang) or m["en"]
-        add.append(f'"{key}" = "{val}";')
+        line = f'"{key}" = "{val}";'
+        if f'"{key}"' in existing:
+            # keep the file in sync with this script: rewrite the existing line if it changed
+            existing = re.sub(rf'^"{re.escape(key)}" = ".*";$', lambda _: line, existing, flags=re.M)
+            continue
+        add.append(line)
     if add:
-        with open(path, "a", encoding="utf-8") as f:
-            f.write("\n" + "\n".join(add) + "\n")
+        existing += "\n" + "\n".join(add) + "\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(existing)
     print(lang, "+", len(add))
