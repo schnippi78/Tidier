@@ -19,7 +19,7 @@ Produktseite: **https://tidier.csho.de**
 
 ## Status
 
-**v1.1.1 (Beta)** — läuft und wird weiter ausgebaut.
+**v1.2.0 (Beta)** — läuft und wird weiter ausgebaut.
 
 macOS 27 hat die früher genutzten **öffentlichen** Wege zum Ausblenden geschlossen (der
 Längen-Trick und das ⌘-Drag-Umsortieren — darum funktionieren Ice/Dozer dort nicht mehr).
