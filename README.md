@@ -30,6 +30,8 @@ Apps **und** System-Items. Untersuchung, Belege und Technik: [`docs/MACOS27.md`]
 **Fertig**
 - Ausblenden/Einblenden der Menüleisten-Symbole (macOS 14–27, live verifiziert)
 - Hide-Engine für macOS 27, auch **System-Items** (WLAN, Bluetooth, Batterie, Uhr, Spotlight …)
+- **Tidier-Leiste** (macOS 27): Klick auf „<" öffnet eine eigene Leiste unter der Menüleiste
+  mit allen versteckten Symbolen — auch wenn die Apple-Leiste (Notch) gar nicht alle fassen kann
 - Auswahl **pro App** und **pro System-Symbol** (Einstellungen → „Menüleiste")
 - **26 Sprachen**, live umschaltbar (LTR, CJK, RTL)
 - Auto-Rehide (Intervall), Reveal-on-Hover, „immer ausgeblendet"-Sektion, Kontextmenü
@@ -46,8 +48,11 @@ Apps **und** System-Items. Untersuchung, Belege und Technik: [`docs/MACOS27.md`]
 1. Installieren und einmalig die **Bedienungshilfen** erlauben.
 2. In den **Einstellungen → Menüleiste** festlegen, welche Apps und System-Symbole
    ausgeblendet werden sollen.
-3. Ein Klick auf das **Tidier-Symbol** (Chevron) versteckt die ausgewählten Symbole —
-   noch ein Klick holt sie zurück; optional automatisch nach Intervall.
+3. Die ausgewählten Symbole sind ausgeblendet. Ein Klick auf das **Tidier-Symbol** („<")
+   öffnet darunter die **Tidier-Leiste** mit allen versteckten Symbolen. Ein Klick auf ein
+   Symbol holt nur dieses kurz in die Menüleiste und öffnet sein Menü; ein Klick daneben
+   blendet es wieder aus. (macOS 14–26: Chevron blendet ein/aus wie bisher.)
+   „Alle einblenden" in die echte Menüleiste gibt es weiter im Rechtsklick-Menü.
 
 ## Berechtigungen
 
@@ -91,6 +96,7 @@ Sources/
   main.swift / AppDelegate.swift   App-Einstieg (LSUIElement-Agent) + Lifecycle
   StatusBarController.swift        Toggle, Auto-Rehide, Reveal-on-Hover, Kontextmenü
   MenuBarHideEngine.swift          Hide-Engine (macOS 27, private WindowServer-API)
+  EngineBar.swift                  Tidier-Leiste unter der Menüleiste (macOS 27)
   MenuBarScanner.swift             Menüleisten-Items abtasten (Geometrie)
   MenuBarApps.swift / AXResolver   App-/System-Item-Identität (Accessibility)
   CaptureEngine.swift              Icon-Glyphen erfassen (optional, Bildschirmaufnahme)

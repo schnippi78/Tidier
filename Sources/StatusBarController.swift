@@ -47,6 +47,11 @@ final class StatusBarController {
     private let usesEngine = MenuBarHideEngine.shared.isAvailable
     /// Engine path only: true while the bar is revealed (restriction lifted).
     private var engineRevealed = false
+    /// Engine path only: one hidden item let back into the bar because the user clicked it in
+    /// the Tidier-Leiste. Collapses on a click outside that item's app/menu (or a safety timeout).
+    private var enginePeeking = false
+    private var peekMonitor: Any?
+    private var peekSafetyTimer: Timer?
 
     init() {
         StatusBarController.shared = self
@@ -59,6 +64,7 @@ final class StatusBarController {
         if usesEngine {
             // macOS 27 path: drive MenuBarAgent directly. No panel/capture/move.
             updateChevron()
+            EngineBar.shared.onClose = { [weak self] in self?.lastTileClose = Date() }
             // Small settle so every app's AXExtrasMenuBar is ready before the first scan —
             // otherwise an app the scan misses would briefly get hidden until the next re-apply.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
@@ -92,7 +98,8 @@ final class StatusBarController {
 
     /// Compute the allow-list for the collapsed state and apply it: every running app stays
     /// visible EXCEPT the ones the user hid. Revealing lifts the restriction entirely.
-    private func applyEngineAllowList() {
+    private func applyEngineAllowList(peekBundleID: String? = nil, peekSystemItem: Int? = nil,
+                                      completion: (() -> Void)? = nil) {
         // Keep visible = the Apple system agents (always) + the third-party menu-bar apps the
         // user did NOT hide. Precise, scan-based: allow-listing *all* running apps (over-permissive)
         // makes MenuBarAgent no-op the restriction, so we list only real menu-bar apps.
@@ -102,16 +109,20 @@ final class StatusBarController {
         // left out → MenuBarAgent hides it. Scan-based (precise): allow-listing *all* running apps
         // is over-permissive and makes MenuBarAgent no-op the restriction.
         var allow = Set(MenuBarApps.scanBundleIDs()).subtracting(hidden)
+        if let peekBundleID { allow.insert(peekBundleID) }
         if let own = Bundle.main.bundleIdentifier { allow.insert(own) }
         // Spotlight/Siri (campo) is allowed unless the user chose to hide it.
         if !Preferences.shared.hideSpotlight { allow.formUnion(MenuBarHideEngine.spotlightBundleIDs) }
-        let allowedSys = MenuBarHideEngine.allowedSystemItems(hiding: Preferences.shared.hiddenSystemItemIDs)
+        var hiddenSys = Preferences.shared.hiddenSystemItemIDs
+        if let peekSystemItem { hiddenSys.remove(peekSystemItem) }
+        let allowedSys = MenuBarHideEngine.allowedSystemItems(hiding: hiddenSys)
         MenuBarHideEngine.shared.restrict(keepVisibleBundleIDs: Array(allow),
-                                          allowedSystemItems: allowedSys) { _ in }
+                                          allowedSystemItems: allowedSys) { _ in completion?() }
     }
 
     private func engineCollapse() {
         engineRevealed = false
+        endPeek()
         disarmRevealCollapse()
         rehideTimer?.invalidate()
         applyEngineAllowList()
@@ -119,6 +130,8 @@ final class StatusBarController {
     }
 
     private func engineReveal() {
+        EngineBar.shared.hide()
+        endPeek()
         engineRevealed = true
         MenuBarHideEngine.shared.release()     // show everything
         updateChevron()
@@ -145,10 +158,115 @@ final class StatusBarController {
         }
     }
 
+    // MARK: - macOS 27 Tidier-Leiste (strip under the menu bar)
+
+    /// Left-click on the chevron: open/close the strip with all hidden items. The real menu
+    /// bar stays collapsed — with many apps Apple's (notched) bar can't fit them all anyway.
+    private func toggleEngineBar() {
+        if EngineBar.shared.isVisible {
+            EngineBar.shared.hide()
+        } else if Date().timeIntervalSince(lastTileClose) > 0.25 {   // same click that dismissed it
+            openEngineBar()
+        }
+    }
+
+    private func openEngineBar() {
+        EngineBar.shared.show(entries: EngineBarEntry.currentlyHidden(),
+                              near: toggleScreenRect()) { [weak self] in self?.peek($0) }
+    }
+
+    /// Clicking an icon in the strip: let just that item back into the real menu bar, wait
+    /// until MenuBarAgent has placed it, then open it. Only ONE extra item is revealed, so it
+    /// finds room even on a full notched bar.
+    private func peek(_ entry: EngineBarEntry) {
+        endPeek()
+        enginePeeking = true
+        updateChevron()
+        switch entry.kind {
+        case .app(let bid, let pid):
+            applyEngineAllowList(peekBundleID: bid) { [weak self] in
+                self?.waitForItem(tries: 20, find: { MenuBarApps.extraFrame(pid: pid) }) { frame in
+                    guard let self, let frame else { return }
+                    let key = bid.lowercased()
+                    if Self.syntheticClickHints.contains(where: { key.contains($0) })
+                        || !MenuBarApps.pressExtra(pid: pid) {
+                        self.postClick(atX: frame.midX, y: frame.midY)
+                    }
+                    self.armPeekCollapse(pid: pid)
+                }
+            }
+        case .system(let id):
+            // System items carry no identity in AX — find the new one by diffing positions.
+            let before = MenuBarApps.systemItemFrames()
+            applyEngineAllowList(peekSystemItem: id) { [weak self] in
+                self?.waitForItem(tries: 20, find: {
+                    MenuBarApps.systemItemFrames().first { f in !before.contains { abs($0.minX - f.minX) < 2 } }
+                }) { frame in
+                    guard let self, let frame else { return }
+                    self.postClick(atX: frame.midX, y: frame.midY)
+                    self.armPeekCollapse(pid: MenuBarApps.pid(of: "com.apple.controlcenter"))
+                }
+            }
+        }
+    }
+
+    /// Poll (main thread) until `find` returns a frame or tries run out; gives MenuBarAgent
+    /// a moment to lay the item out before the first look.
+    private func waitForItem(tries: Int, find: @escaping () -> CGRect?, then: @escaping (CGRect?) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+            guard let self, self.enginePeeking else { return }
+            if let f = find(), f.minX >= 0 { then(f); return }
+            if tries <= 0 { then(nil); return }
+            self.waitForItem(tries: tries - 1, find: find, then: then)
+        }
+    }
+
+    /// Hide the peeked item again once the user is done with it: a click outside the menu bar
+    /// that doesn't land in the item's own menu/popover window, or after a generous timeout.
+    private func armPeekCollapse(pid: pid_t?) {
+        if let m = peekMonitor { NSEvent.removeMonitor(m) }
+        peekMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            guard let self else { return }
+            if self.clickIsInMenuBar() { self.bumpPeekSafety(); return }
+            if let pid, Self.windowOwnerUnderMouse() == pid { self.bumpPeekSafety(); return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.engineCollapse() }
+        }
+        bumpPeekSafety()
+    }
+
+    private func bumpPeekSafety() {
+        peekSafetyTimer?.invalidate()
+        peekSafetyTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { [weak self] _ in
+            self?.engineCollapse()
+        }
+    }
+
+    private func endPeek() {
+        enginePeeking = false
+        if let m = peekMonitor { NSEvent.removeMonitor(m); peekMonitor = nil }
+        peekSafetyTimer?.invalidate(); peekSafetyTimer = nil
+    }
+
+    /// PID owning the frontmost on-screen window under the mouse (menus/popovers included).
+    private static func windowOwnerUnderMouse() -> pid_t? {
+        let loc = NSEvent.mouseLocation
+        guard let primary = NSScreen.screens.first else { return nil }
+        let p = CGPoint(x: loc.x, y: primary.frame.maxY - loc.y)   // Cocoa → CG (top-left) coords
+        guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+                                                    kCGNullWindowID) as? [[String: Any]] else { return nil }
+        for w in list {
+            guard let b = w[kCGWindowBounds as String] as? [String: CGFloat],
+                  CGRect(x: b["X"] ?? 0, y: b["Y"] ?? 0, width: b["Width"] ?? 0, height: b["Height"] ?? 0).contains(p)
+            else { continue }
+            return (w[kCGWindowOwnerPID as String] as? Int).map { pid_t($0) }
+        }
+        return nil
+    }
+
     @objc private func engineAppsChanged() {
         watchTimer?.invalidate()
         let t = Timer(timeInterval: 1.2, repeats: false) { [weak self] _ in
-            guard let self = self, !self.engineRevealed else { return }
+            guard let self = self, !self.engineRevealed, !self.enginePeeking else { return }
             self.applyEngineAllowList()
         }
         RunLoop.main.add(t, forMode: .common)
@@ -157,7 +275,7 @@ final class StatusBarController {
 
     /// Point the chevron the right way for the current state (both paths).
     private func updateChevron() {
-        let revealed = usesEngine ? engineRevealed : expanded
+        let revealed = usesEngine ? (engineRevealed || enginePeeking) : expanded
         mainItem.button?.image = symbol(revealed ? "chevron.right" : "chevron.left")
         mainItem.button?.image?.isTemplate = true
     }
@@ -322,7 +440,7 @@ final class StatusBarController {
            e.type == .rightMouseUp || e.modifierFlags.contains(.control) {
             showMenu()
         } else if usesEngine {
-            engineToggle()
+            if engineRevealed || enginePeeking { engineCollapse() } else { toggleEngineBar() }
         } else {
             toggleTile()
         }
@@ -777,7 +895,9 @@ final class StatusBarController {
         // along the menu bar (which would trigger on the clock, Control Center, …).
         guard let frame = mainItem.button?.window?.frame else { return }
         if frame.insetBy(dx: -3, dy: -3).contains(NSEvent.mouseLocation) {
-            if usesEngine { if !engineRevealed { engineReveal() } } else { openTile() }
+            if usesEngine {
+                if !engineRevealed, !enginePeeking, !EngineBar.shared.isVisible { openEngineBar() }
+            } else { openTile() }
         }
     }
 

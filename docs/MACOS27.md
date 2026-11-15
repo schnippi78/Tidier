@@ -163,6 +163,28 @@ zwischen Builds ändern (`isAvailable` fängt das ab); bei jedem macOS-Update re
 3. **Race:** `release()` während die `activate`-Completion noch läuft → `released`-Flag, sonst
    installiert die Completion die gerade aufgehobene Restriction wieder.
 
+## Tidier-Leiste (15.11.2026)
+
+Problem: „Alle einblenden" über `release()` hilft bei vielen Apps nicht — die Notch-Leiste fasst
+nicht alle Symbole, MenuBarAgent verschluckt den Überlauf. Lösung (`Sources/EngineBar.swift`):
+
+- **Linksklick auf „<"** öffnet ein eigenes Panel direkt unter der Menüleiste (rechtsbündig zum
+  Chevron) mit allen versteckten Items: versteckte laufende Apps (App-Icon, da versteckte Items
+  nicht gerendert und nicht capturebar sind), danach Spotlight und versteckte System-Items
+  (SF-Symbol). Rechtsklick-Menü behält „Ausgeblendete Objekte einblenden" (alles in die Leiste).
+- **Klick auf ein Symbol = „Peek"**: `restrict()` mit der normalen Allow-Liste **plus genau diesem
+  einen** Bundle bzw. System-Item → es passt auch in eine volle Leiste. Dann pollt Tidier bis das
+  Item da ist und öffnet es:
+  - Apps: `AXExtrasMenuBar`-Child → `AXPress`/`AXShowMenu`, sonst synthetischer Klick.
+    **Wichtig:** solange ein App-Item versteckt ist, liefert `AXExtrasMenuBar` `kAXErrorNoValue`
+    (−25212) — es taucht erst nach dem Freigeben wieder auf.
+  - System-Items: die `com.apple.MenuBarAgent`-Children haben **keine** Identität und keine
+    Actions → Positionen vor/nach der Freigabe vergleichen, das neue Item synthetisch anklicken.
+- **Wieder verstecken:** globaler Klick-Monitor — Klick außerhalb der Menüleiste und nicht in
+  einem Fenster der PID des Items (Menü/Popover) → `engineCollapse()`; Sicherheits-Timeout 60 s.
+- Live verifiziert auf 27.x: Telegram (Menü), WLAN (Control-Center-Modul), ChatGPT (Menü),
+  Wieder-Ausblenden per Klick daneben.
+
 ## Fazit / Richtung
 
 Weg gewählt & belegt: **MenuBarClientCore** (oben). Die zwei früheren Optionen zur Einordnung:
